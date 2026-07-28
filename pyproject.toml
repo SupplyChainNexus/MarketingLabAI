@@ -1,0 +1,52 @@
+[project]
+name = "marketinglabai"
+version = "0.4.1"
+description = "AI marketing operating system with brand voice preservation"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "google-genai",
+    "python-dotenv",
+]
+
+[tool.black]
+line-length = 88
+target-version = ["py311"]
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+    \.git
+  | \.venv
+  | backups
+  | database
+  | outputs
+)/
+'''
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+exclude = [
+    ".git",
+    ".venv",
+    "backups",
+    "database",
+    "outputs",
+]
+
+[tool.ruff.lint]
+select = [
+    "E4",
+    "E7",
+    "E9",
+    "F",
+    "I",
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"

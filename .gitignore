@@ -1,12 +1,77 @@
-# Secret environment variables
+﻿# ============================================================
+# Secrets and local configuration
+# ============================================================
+
 .env
+.env.*
+!.env.example
 
-# Python virtual environment
+# ============================================================
+# Python virtual environments
+# ============================================================
+
 .venv/
+venv/
+env/
 
-# Python cache files
+# ============================================================
+# Python caches and compiled files
+# ============================================================
+
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
 
-# Generated marketing content
+# ============================================================
+# Editors and operating systems
+# ============================================================
+
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ============================================================
+# Runtime application data
+# ============================================================
+
+database/*
+!database/.gitkeep
+
+database/brands/*
+!database/brands/.gitkeep
+
+database/voices/*
+!database/voices/.gitkeep
+
+database/campaigns/*
+!database/campaigns/.gitkeep
+
 outputs/*
+!outputs/.gitkeep
+
+outputs/campaigns/*
+!outputs/campaigns/.gitkeep
+
+# ============================================================
+# Temporary backups and logs
+# ============================================================
+
+backups/
+*.log
+*.tmp
+*.bak
+
+# ============================================================
+# Build and package output
+# ============================================================
+
+build/
+dist/
+*.egg-info/

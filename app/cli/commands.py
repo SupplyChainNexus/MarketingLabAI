@@ -1,7 +1,6 @@
 ﻿"""Command handlers for MarketingLabAI workflows."""
 
 import json
-from pathlib import Path
 
 from app.brands.brand_service import BrandService
 from app.campaigns.campaign_engine import CampaignEngine
@@ -52,10 +51,7 @@ def analyse_voice(
     brand = BrandService().get_brand(brand_id)
     samples = read_writing_samples(samples_file)
 
-    print(
-        f"Analysing {len(samples)} writing sample(s) "
-        f"for {brand.name}..."
-    )
+    print(f"Analysing {len(samples)} writing sample(s) " f"for {brand.name}...")
 
     voice = VoiceEngine().analyse_voice(
         brand,
@@ -66,10 +62,7 @@ def analyse_voice(
     print(f"Voice ID: {voice.voice_id}")
     print(f"Brand ID: {voice.brand_id}")
     print(f"Summary: {voice.summary}")
-    print(
-        "Tone traits: "
-        + ", ".join(voice.tone_traits)
-    )
+    print("Tone traits: " + ", ".join(voice.tone_traits))
 
 
 def list_voices() -> None:
@@ -120,16 +113,12 @@ def generate_campaign(
 
     if brief.brand_id != brand_id:
         raise ValueError(
-            "The campaign brief brand_id does not match "
-            "the supplied brand ID."
+            "The campaign brief brand_id does not match " "the supplied brand ID."
         )
 
     campaign_service.save_brief(brief)
 
-    print(
-        f"Generating {brief.content_type} for "
-        f"{brief.platform}..."
-    )
+    print(f"Generating {brief.content_type} for " f"{brief.platform}...")
 
     generated = CampaignEngine().generate_campaign_content(
         brand=brand,
@@ -137,11 +126,7 @@ def generate_campaign(
         brief=brief,
     )
 
-    output_path = (
-        campaign_service.save_generated_content(
-            generated
-        )
-    )
+    output_path = campaign_service.save_generated_content(generated)
 
     print("")
     print("Generated content")
@@ -154,9 +139,7 @@ def generate_campaign(
 def list_campaigns() -> None:
     """List saved campaign records."""
 
-    records = (
-        CampaignService().list_campaign_records()
-    )
+    records = CampaignService().list_campaign_records()
 
     if not records:
         print("No campaign records have been saved.")

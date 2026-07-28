@@ -14,13 +14,9 @@ class CampaignService:
 
     def __init__(self, settings: Settings | None = None):
         self.settings = settings or load_settings()
-        self.storage = JsonStorage(
-            self.settings.database_folder / "campaigns"
-        )
+        self.storage = JsonStorage(self.settings.database_folder / "campaigns")
 
-        self.output_folder = (
-            self.settings.output_folder / "campaigns"
-        )
+        self.output_folder = self.settings.output_folder / "campaigns"
         self.output_folder.mkdir(
             parents=True,
             exist_ok=True,
@@ -32,9 +28,7 @@ class CampaignService:
     ) -> CampaignBrief:
         record = {
             "record_type": "campaign_brief",
-            "saved_at": datetime.now(
-                timezone.utc
-            ).isoformat(),
+            "saved_at": datetime.now(timezone.utc).isoformat(),
             "data": brief.to_dict(),
         }
 
@@ -49,14 +43,9 @@ class CampaignService:
         self,
         generated: GeneratedContent,
     ) -> Path:
-        timestamp = datetime.now(
-            timezone.utc
-        ).strftime("%Y%m%d-%H%M%S")
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
 
-        filename = (
-            f"{generated.campaign_id}-"
-            f"{timestamp}.txt"
-        )
+        filename = f"{generated.campaign_id}-" f"{timestamp}.txt"
 
         path = self.output_folder / filename
 
@@ -77,9 +66,7 @@ class CampaignService:
 
         metadata: dict[str, Any] = {
             "record_type": "generated_content",
-            "saved_at": datetime.now(
-                timezone.utc
-            ).isoformat(),
+            "saved_at": datetime.now(timezone.utc).isoformat(),
             "output_file": str(path),
             "data": generated.to_dict(),
         }

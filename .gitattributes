@@ -1,0 +1,24 @@
+﻿# Normalize text files in the repository.
+* text=auto
+
+# Source and configuration files use LF in Git.
+*.py text eol=lf
+*.toml text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# Windows command files retain CRLF.
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary files must not be modified.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary

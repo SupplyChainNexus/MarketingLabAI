@@ -19,14 +19,10 @@ def read_json_file(file_path: str | Path) -> dict[str, Any]:
     try:
         data = json.loads(path.read_text(encoding="utf-8-sig"))
     except json.JSONDecodeError as error:
-        raise ValueError(
-            f"Invalid JSON in {path}: {error.msg}"
-        ) from error
+        raise ValueError(f"Invalid JSON in {path}: {error.msg}") from error
 
     if not isinstance(data, dict):
-        raise ValueError(
-            f"Expected a JSON object in {path}."
-        )
+        raise ValueError(f"Expected a JSON object in {path}.")
 
     return data
 
@@ -47,21 +43,13 @@ def read_writing_samples(file_path: str | Path) -> list[str]:
     path = Path(file_path)
 
     if not path.exists():
-        raise FileNotFoundError(
-            f"Writing-samples file not found: {path}"
-        )
+        raise FileNotFoundError(f"Writing-samples file not found: {path}")
 
     text = path.read_text(encoding="utf-8-sig")
 
-    samples = [
-        section.strip()
-        for section in text.split("\n---\n")
-        if section.strip()
-    ]
+    samples = [section.strip() for section in text.split("\n---\n") if section.strip()]
 
     if not samples:
-        raise ValueError(
-            "The writing-samples file contains no usable samples."
-        )
+        raise ValueError("The writing-samples file contains no usable samples.")
 
     return samples

@@ -28,9 +28,7 @@ class VoiceEngineTests(unittest.TestCase):
         )
 
     def test_prompt_contains_brand_information(self):
-        engine = VoiceEngine(
-            gemini_client=FakeGeminiClient()
-        )
+        engine = VoiceEngine(gemini_client=FakeGeminiClient())
 
         prompt = engine.build_analysis_prompt(
             self.brand,
@@ -42,9 +40,7 @@ class VoiceEngineTests(unittest.TestCase):
         self.assertIn("Do not invent", prompt)
 
     def test_requires_writing_sample(self):
-        engine = VoiceEngine(
-            gemini_client=FakeGeminiClient()
-        )
+        engine = VoiceEngine(gemini_client=FakeGeminiClient())
 
         with self.assertRaises(ValueError):
             engine.build_analysis_prompt(self.brand, [])

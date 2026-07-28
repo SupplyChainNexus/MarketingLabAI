@@ -35,9 +35,7 @@ class CampaignServiceTests(unittest.TestCase):
                 model="test-model",
             )
 
-            path = service.save_generated_content(
-                generated
-            )
+            path = service.save_generated_content(generated)
 
             self.assertTrue(path.exists())
             self.assertIn(

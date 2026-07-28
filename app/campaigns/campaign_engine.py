@@ -16,9 +16,7 @@ class CampaignEngine:
         self,
         gemini_client: GeminiClient | None = None,
     ):
-        self.gemini_client = (
-            gemini_client or get_gemini_client()
-        )
+        self.gemini_client = gemini_client or get_gemini_client()
 
     def build_campaign_prompt(
         self,
@@ -27,29 +25,16 @@ class CampaignEngine:
         brief: CampaignBrief,
     ) -> str:
         if brand.brand_id != voice.brand_id:
-            raise ValueError(
-                "The voice profile does not belong to this brand."
-            )
+            raise ValueError("The voice profile does not belong to this brand.")
 
         if brand.brand_id != brief.brand_id:
-            raise ValueError(
-                "The campaign brief does not belong to this brand."
-            )
+            raise ValueError("The campaign brief does not belong to this brand.")
 
-        preferred_words = (
-            ", ".join(voice.preferred_words)
-            or "None specified"
-        )
+        preferred_words = ", ".join(voice.preferred_words) or "None specified"
 
-        avoided_words = (
-            ", ".join(voice.avoided_words)
-            or "None specified"
-        )
+        avoided_words = ", ".join(voice.avoided_words) or "None specified"
 
-        authenticity_rules = "\n".join(
-            f"- {rule}"
-            for rule in voice.authenticity_rules
-        )
+        authenticity_rules = "\n".join(f"- {rule}" for rule in voice.authenticity_rules)
 
         return f"""
 You are the MarketingLabAI Campaign Engine.
@@ -111,14 +96,10 @@ Do not provide analysis, notes, headings about your process, or explanations.
             brief=brief,
         )
 
-        content = (
-            self.gemini_client.generate_text(prompt)
-        ).strip()
+        content = (self.gemini_client.generate_text(prompt)).strip()
 
         if not content:
-            raise RuntimeError(
-                "The Campaign Engine returned empty content."
-            )
+            raise RuntimeError("The Campaign Engine returned empty content.")
 
         return GeneratedContent(
             campaign_id=brief.campaign_id,

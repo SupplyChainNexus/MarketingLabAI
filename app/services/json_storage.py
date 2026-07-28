@@ -18,7 +18,10 @@ class JsonStorage:
         if not safe_id:
             raise ValueError("Record ID cannot be empty.")
 
-        if any(character in safe_id for character in ('/', '\\', ':', '*', '?', '"', '<', '>', '|')):
+        if any(
+            character in safe_id
+            for character in ("/", "\\", ":", "*", "?", '"', "<", ">", "|")
+        ):
             raise ValueError("Record ID contains invalid filename characters.")
 
         return self.folder / f"{safe_id}.json"

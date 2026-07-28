@@ -33,9 +33,7 @@ class CampaignEngineTests(unittest.TestCase):
             brand_id="brand-1",
             summary="Clear and helpful.",
             tone_traits=["clear", "helpful"],
-            authenticity_rules=[
-                "Never claim results that were not supplied."
-            ],
+            authenticity_rules=["Never claim results that were not supplied."],
         )
 
         self.brief = CampaignBrief(
@@ -51,9 +49,7 @@ class CampaignEngineTests(unittest.TestCase):
         )
 
     def test_campaign_prompt_contains_authenticity_rules(self):
-        engine = CampaignEngine(
-            gemini_client=FakeGeminiClient()
-        )
+        engine = CampaignEngine(gemini_client=FakeGeminiClient())
 
         prompt = engine.build_campaign_prompt(
             self.brand,
@@ -73,9 +69,7 @@ class CampaignEngineTests(unittest.TestCase):
             tone_traits=["formal"],
         )
 
-        engine = CampaignEngine(
-            gemini_client=FakeGeminiClient()
-        )
+        engine = CampaignEngine(gemini_client=FakeGeminiClient())
 
         with self.assertRaises(ValueError):
             engine.build_campaign_prompt(

@@ -10,9 +10,7 @@ class GeminiClient:
 
     def __init__(self, settings: Settings | None = None):
         self.settings = settings or load_settings()
-        self.client = genai.Client(
-            api_key=self.settings.gemini_api_key
-        )
+        self.client = genai.Client(api_key=self.settings.gemini_api_key)
 
     def generate_text(self, prompt: str) -> str:
         """Generate text from Gemini."""
@@ -28,9 +26,7 @@ class GeminiClient:
         text = getattr(response, "text", None)
 
         if not text:
-            raise RuntimeError(
-                "Gemini returned no text."
-            )
+            raise RuntimeError("Gemini returned no text.")
 
         return text.strip()
 

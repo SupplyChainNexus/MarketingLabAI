@@ -105,17 +105,13 @@ def build_parser() -> argparse.ArgumentParser:
         help="Generate and manage campaigns.",
     )
 
-    campaign_subparsers = (
-        campaign_parser.add_subparsers(
-            dest="campaign_command",
-        )
+    campaign_subparsers = campaign_parser.add_subparsers(
+        dest="campaign_command",
     )
 
-    campaign_generate = (
-        campaign_subparsers.add_parser(
-            "generate",
-            help="Generate marketing content.",
-        )
+    campaign_generate = campaign_subparsers.add_parser(
+        "generate",
+        help="Generate marketing content.",
     )
 
     campaign_generate.add_argument(
@@ -143,9 +139,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 def run_command(args: argparse.Namespace) -> None:
     if args.command == "health":
-        run_health_check(
-            include_api_test=args.api
-        )
+        run_health_check(include_api_test=args.api)
         return
 
     if args.command == "brand":
@@ -186,10 +180,7 @@ def run_command(args: argparse.Namespace) -> None:
             list_campaigns()
             return
 
-    raise ValueError(
-        "No valid command was selected. "
-        "Run: python -m app.main --help"
-    )
+    raise ValueError("No valid command was selected. " "Run: python -m app.main --help")
 
 
 def main() -> None:

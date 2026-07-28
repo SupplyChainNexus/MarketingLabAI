@@ -10,9 +10,7 @@ class BrandService:
 
     def __init__(self, settings: Settings | None = None):
         self.settings = settings or load_settings()
-        self.storage = JsonStorage(
-            self.settings.database_folder / "brands"
-        )
+        self.storage = JsonStorage(self.settings.database_folder / "brands")
 
     def save_brand(self, brand: BrandProfile) -> BrandProfile:
         self.storage.save(brand.brand_id, brand.to_dict())

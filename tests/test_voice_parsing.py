@@ -20,9 +20,7 @@ class VoiceParsingTests(unittest.TestCase):
         }
         """
 
-        data = VoiceEngine.parse_analysis_response(
-            response
-        )
+        data = VoiceEngine.parse_analysis_response(response)
 
         self.assertEqual(
             data["summary"],
@@ -36,9 +34,7 @@ class VoiceParsingTests(unittest.TestCase):
 }
 ```"""
 
-        data = VoiceEngine.parse_analysis_response(
-            response
-        )
+        data = VoiceEngine.parse_analysis_response(response)
 
         self.assertEqual(
             data["summary"],
@@ -47,9 +43,7 @@ class VoiceParsingTests(unittest.TestCase):
 
     def test_validation_detects_missing_fields(self):
         with self.assertRaises(RuntimeError):
-            VoiceEngine.validate_analysis_data(
-                {"summary": "Incomplete"}
-            )
+            VoiceEngine.validate_analysis_data({"summary": "Incomplete"})
 
 
 if __name__ == "__main__":
