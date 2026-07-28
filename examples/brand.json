@@ -1,0 +1,17 @@
+﻿{
+  "brand_id": "example-brand",
+  "name": "Example Brand",
+  "industry": "Business services",
+  "description": "A practical business that helps customers solve everyday operational problems.",
+  "target_audience": "Small and medium-sized businesses",
+  "products_or_services": [
+    "Operational support",
+    "Business consulting"
+  ],
+  "values": [
+    "reliability",
+    "clarity",
+    "honest service"
+  ],
+  "website": ""
+}

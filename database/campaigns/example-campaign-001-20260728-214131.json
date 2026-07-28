@@ -1,0 +1,12 @@
+{
+  "record_type": "generated_content",
+  "saved_at": "2026-07-28T21:41:31.096296+00:00",
+  "output_file": "C:\\Ai Projects\\MarketingLabAI\\outputs\\campaigns\\example-campaign-001-20260728-214131.txt",
+  "data": {
+    "campaign_id": "example-campaign-001",
+    "platform": "Facebook",
+    "content_type": "Social media post",
+    "content": "Running a small business often means managing endless operational tasks on your own. Practical operational support can help you save time and work with greater clarity. \n\nAt Example Brand, we offer dependable support and business consulting to help solve everyday operational problems. We take the time to listen and understand your situation so we can provide clear information and straightforward options—without any unnecessary pressure.\n\nIf you are looking for practical solutions for your operations, we invite you to connect with us for an introductory business consultation. \n\nSend us a message to discuss your business needs.",
+    "model": "gemini-3.6-flash"
+  }
+}

@@ -10,15 +10,13 @@ from app.models import (
 
 
 class CampaignEngine:
-    """Generate content using verified brand and voice information."""
+    """Generate marketing content using brand and voice profiles."""
 
     def __init__(
         self,
         gemini_client: GeminiClient | None = None,
     ):
-        self.gemini_client = (
-            gemini_client or get_gemini_client()
-        )
+        self.gemini_client = gemini_client or get_gemini_client()
 
     def build_campaign_prompt(
         self,
@@ -36,34 +34,25 @@ class CampaignEngine:
                 "The campaign brief does not belong to this brand."
             )
 
-        preferred_words = (
-            ", ".join(voice.preferred_words)
-            or "None specified"
-        )
-
-        avoided_words = (
-            ", ".join(voice.avoided_words)
-            or "None specified"
-        )
-
+        preferred_words = ", ".join(voice.preferred_words) or "None specified"
+        avoided_words = ", ".join(voice.avoided_words) or "None specified"
         authenticity_rules = "\n".join(
-            f"- {rule}"
-            for rule in voice.authenticity_rules
+            f"- {rule}" for rule in voice.authenticity_rules
         )
 
         return f"""
 You are the MarketingLabAI Campaign Engine.
 
-Create one finished marketing asset using only the verified brand information,
+Create one finished marketing asset using the verified brand information,
 campaign brief, and voice profile below.
 
 NON-NEGOTIABLE AUTHENTICITY RULES
 
 - Do not fabricate customer stories, statistics, awards, credentials,
-  partnerships, guarantees, outcomes, prices, or personal experience.
-- Do not introduce facts that were not supplied.
-- When information is insufficient, use neutral wording instead of guessing.
-{authenticity_rules or "- Preserve factual accuracy."}
+  partnerships, guarantees, outcomes, or personal experience.
+- Do not introduce facts that are not supplied.
+- When information is insufficient, use neutral wording rather than guessing.
+{authenticity_rules}
 
 BRAND
 
@@ -73,7 +62,6 @@ Description: {brand.description}
 Audience: {brand.target_audience}
 Products or services: {", ".join(brand.products_or_services)}
 Values: {", ".join(brand.values)}
-Website: {brand.website or "Not supplied"}
 
 VOICE PROFILE
 
@@ -96,7 +84,7 @@ Call to action: {brief.call_to_action}
 Additional context: {brief.additional_context or "None"}
 
 Return only the finished marketing content.
-Do not provide analysis, notes, headings about your process, or explanations.
+Do not provide an explanation or analysis.
 """.strip()
 
     def generate_campaign_content(
@@ -111,14 +99,7 @@ Do not provide analysis, notes, headings about your process, or explanations.
             brief=brief,
         )
 
-        content = (
-            self.gemini_client.generate_text(prompt)
-        ).strip()
-
-        if not content:
-            raise RuntimeError(
-                "The Campaign Engine returned empty content."
-            )
+        content = self.gemini_client.generate_text(prompt)
 
         return GeneratedContent(
             campaign_id=brief.campaign_id,

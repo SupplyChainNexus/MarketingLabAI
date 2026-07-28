@@ -1,0 +1,16 @@
+{
+  "record_type": "campaign_brief",
+  "saved_at": "2026-07-28T21:41:24.817626+00:00",
+  "data": {
+    "campaign_id": "example-campaign-001",
+    "brand_id": "example-brand",
+    "objective": "Generate qualified enquiries",
+    "audience": "Small business owners who need operational support",
+    "offer": "An introductory business consultation",
+    "platform": "Facebook",
+    "content_type": "Social media post",
+    "key_message": "Practical operational support can help business owners save time and work more clearly",
+    "call_to_action": "Send us a message to discuss your business needs",
+    "additional_context": "Keep the post concise. Do not state a price or guarantee business results."
+  }
+}
