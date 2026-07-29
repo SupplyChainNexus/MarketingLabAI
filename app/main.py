@@ -1,4 +1,4 @@
-﻿"""MarketingLabAI command-line application."""
+"""MarketingLabAI command-line application."""
 
 import argparse
 import sys
@@ -13,6 +13,7 @@ from app.cli.commands import (
     show_voice,
 )
 from app.health import run_health_check
+from app.workflows.company_brain_onboarding import run_onboarding
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -134,12 +135,21 @@ def build_parser() -> argparse.ArgumentParser:
         help="List saved campaign records.",
     )
 
+    subparsers.add_parser(
+        "onboard",
+        help="Interactively onboard a new business.",
+    )
+
     return parser
 
 
 def run_command(args: argparse.Namespace) -> None:
     if args.command == "health":
         run_health_check(include_api_test=args.api)
+        return
+
+    if args.command == "onboard":
+        run_onboarding()
         return
 
     if args.command == "brand":
