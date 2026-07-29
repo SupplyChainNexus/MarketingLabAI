@@ -1,0 +1,1445 @@
+﻿MARKETINGLABAI SQLITE CUTOVER CONTEXT
+
+
+===== app\config.py =====
+
+"""Application configuration for MarketingLabAI."""
+
+import os
+from dataclasses import dataclass
+from pathlib import Path
+
+from dotenv import load_dotenv
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+ENV_FILE = PROJECT_ROOT / ".env"
+
+DATABASE_FOLDER = PROJECT_ROOT / "database"
+OUTPUT_FOLDER = PROJECT_ROOT / "outputs"
+ASSETS_FOLDER = PROJECT_ROOT / "assets"
+PROMPTS_FOLDER = PROJECT_ROOT / "prompts"
+
+
+@dataclass(frozen=True)
+class Settings:
+    project_root: Path
+    gemini_api_key: str
+    gemini_model: str
+    database_folder: Path
+    output_folder: Path
+    assets_folder: Path
+    prompts_folder: Path
+
+
+def create_required_folders():
+    for folder in (
+        DATABASE_FOLDER,
+        OUTPUT_FOLDER,
+        ASSETS_FOLDER,
+        PROMPTS_FOLDER,
+    ):
+        folder.mkdir(parents=True, exist_ok=True)
+
+
+def load_settings():
+    if not ENV_FILE.exists():
+        raise FileNotFoundError(f"Missing .env file: {ENV_FILE}")
+
+    load_dotenv(ENV_FILE)
+
+    api_key = os.getenv("GEMINI_API_KEY", "").strip()
+    model = os.getenv("GEMINI_MODEL", "gemini-3.6-flash").strip()
+
+    if not api_key:
+        raise ValueError("GEMINI_API_KEY is missing.")
+
+    create_required_folders()
+
+    return Settings(
+        project_root=PROJECT_ROOT,
+        gemini_api_key=api_key,
+        gemini_model=model,
+        database_folder=DATABASE_FOLDER,
+        output_folder=OUTPUT_FOLDER,
+        assets_folder=ASSETS_FOLDER,
+        prompts_folder=PROMPTS_FOLDER,
+    )
+
+
+===== app\database\connection.py =====
+
+"""SQLite connection management for MarketingLabAI."""
+
+from __future__ import annotations
+
+import sqlite3
+from collections.abc import Iterator
+from contextlib import contextmanager
+from pathlib import Path
+
+
+class SQLiteDatabase:
+    """Manage SQLite connections and database initialisation."""
+
+    def __init__(
+        self,
+        database_path: str | Path = "database/marketinglabai.db",
+    ) -> None:
+        self.database_path = Path(database_path)
+        self.database_path.parent.mkdir(parents=True, exist_ok=True)
+
+    def connect(self) -> sqlite3.Connection:
+        """Create and return a configured SQLite connection."""
+
+        connection = sqlite3.connect(
+            self.database_path,
+            timeout=30,
+        )
+        connection.row_factory = sqlite3.Row
+        connection.execute("PRAGMA foreign_keys = ON")
+        connection.execute("PRAGMA journal_mode = WAL")
+        connection.execute("PRAGMA synchronous = NORMAL")
+        connection.execute("PRAGMA busy_timeout = 30000")
+
+        return connection
+
+    @contextmanager
+    def connection(self) -> Iterator[sqlite3.Connection]:
+        """Provide a connection that is always closed after use."""
+
+        connection = self.connect()
+
+        try:
+            yield connection
+        finally:
+            connection.close()
+
+    @contextmanager
+    def transaction(self) -> Iterator[sqlite3.Connection]:
+        """Provide a transaction with commit, rollback, and guaranteed close."""
+
+        connection = self.connect()
+
+        try:
+            connection.execute("BEGIN")
+            yield connection
+            connection.commit()
+        except Exception:
+            connection.rollback()
+            raise
+        finally:
+            connection.close()
+
+    def initialise(self) -> None:
+        """Create all current database tables and indexes."""
+
+        with self.transaction() as connection:
+            connection.executescript(
+                """
+                CREATE TABLE IF NOT EXISTS schema_migrations (
+                    version INTEGER PRIMARY KEY,
+                    description TEXT NOT NULL,
+                    applied_at TEXT NOT NULL
+                );
+
+                CREATE TABLE IF NOT EXISTS brands (
+                    brand_id TEXT PRIMARY KEY,
+                    name TEXT NOT NULL,
+                    industry TEXT NOT NULL DEFAULT '',
+                    description TEXT NOT NULL DEFAULT '',
+                    target_audience_json TEXT NOT NULL DEFAULT '[]',
+                    products_json TEXT NOT NULL DEFAULT '[]',
+                    values_json TEXT NOT NULL DEFAULT '[]',
+                    website TEXT NOT NULL DEFAULT '',
+                    payload_json TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL
+                );
+
+                CREATE TABLE IF NOT EXISTS business_intelligence_profiles (
+                    brand_id TEXT PRIMARY KEY,
+                    revenue_model TEXT NOT NULL DEFAULT '',
+                    average_order_value REAL,
+                    gross_margin_percent REAL,
+                    customer_lifetime_value REAL,
+                    customer_acquisition_cost REAL,
+                    sales_cycle_days INTEGER,
+                    monthly_marketing_budget REAL,
+                    team_size INTEGER,
+                    sales_channels_json TEXT NOT NULL DEFAULT '[]',
+                    geographic_markets_json TEXT NOT NULL DEFAULT '[]',
+                    capacity_constraints_json TEXT NOT NULL DEFAULT '[]',
+                    seasonality_json TEXT NOT NULL DEFAULT '[]',
+                    competitors_json TEXT NOT NULL DEFAULT '[]',
+                    business_goals_json TEXT NOT NULL DEFAULT '[]',
+                    payload_json TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    FOREIGN KEY (brand_id)
+                        REFERENCES brands(brand_id)
+                        ON DELETE CASCADE
+                );
+
+                CREATE TABLE IF NOT EXISTS data_migration_log (
+                    migration_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    source_type TEXT NOT NULL,
+                    source_path TEXT NOT NULL,
+                    record_id TEXT NOT NULL,
+                    status TEXT NOT NULL,
+                    message TEXT NOT NULL DEFAULT '',
+                    migrated_at TEXT NOT NULL
+                );
+
+                CREATE INDEX IF NOT EXISTS idx_brands_name
+                    ON brands(name);
+
+                CREATE INDEX IF NOT EXISTS idx_brands_industry
+                    ON brands(industry);
+
+                CREATE INDEX IF NOT EXISTS
+                    idx_business_intelligence_revenue_model
+                    ON business_intelligence_profiles(revenue_model);
+
+                CREATE INDEX IF NOT EXISTS idx_data_migration_log_record
+                    ON data_migration_log(source_type, record_id);
+                """
+            )
+
+            connection.execute(
+                """
+                INSERT OR IGNORE INTO schema_migrations (
+                    version,
+                    description,
+                    applied_at
+                )
+                VALUES (
+                    1,
+                    'Initial MarketingLabAI relational schema',
+                    strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+                )
+                """
+            )
+
+    def table_names(self) -> list[str]:
+        """Return application table names."""
+
+        with self.connection() as connection:
+            rows = connection.execute(
+                """
+                SELECT name
+                FROM sqlite_master
+                WHERE type = 'table'
+                  AND name NOT LIKE 'sqlite_%'
+                ORDER BY name
+                """
+            ).fetchall()
+
+        return [str(row["name"]) for row in rows]
+
+    def integrity_check(self) -> str:
+        """Run SQLite's built-in database integrity check."""
+
+        with self.connection() as connection:
+            row = connection.execute(
+                "PRAGMA integrity_check"
+            ).fetchone()
+
+        if row is None:
+            raise RuntimeError(
+                "SQLite did not return an integrity result."
+            )
+
+        return str(row[0])
+
+    def checkpoint(self) -> None:
+        """Checkpoint and truncate SQLite's write-ahead log."""
+
+        with self.connection() as connection:
+            connection.execute(
+                "PRAGMA wal_checkpoint(TRUNCATE)"
+            ).fetchone()
+
+
+===== app\database\repositories.py =====
+
+"""Relational repositories for MarketingLabAI data."""
+
+from __future__ import annotations
+
+import json
+from datetime import UTC, datetime
+from typing import Any
+
+from app.database.connection import SQLiteDatabase
+from app.intelligence.models import BusinessIntelligenceProfile
+
+
+def current_utc_timestamp() -> str:
+    """Return the current UTC timestamp."""
+
+    return datetime.now(UTC).isoformat()
+
+
+def encode_json(value: Any) -> str:
+    """Encode a value as deterministic JSON."""
+
+    return json.dumps(
+        value,
+        ensure_ascii=False,
+        sort_keys=True,
+    )
+
+
+def decode_json(value: str) -> Any:
+    """Decode stored JSON."""
+
+    return json.loads(value)
+
+
+class BrandRepository:
+    """Store and retrieve brand payloads in SQLite."""
+
+    def __init__(self, database: SQLiteDatabase | None = None) -> None:
+        self.database = database or SQLiteDatabase()
+        self.database.initialise()
+
+    def save(self, payload: dict[str, Any]) -> None:
+        """Insert or update a brand record."""
+
+        brand_id = str(payload.get("brand_id", "")).strip()
+        name = str(payload.get("name", "")).strip()
+
+        if not brand_id:
+            raise ValueError("brand_id is required.")
+
+        if not name:
+            raise ValueError("Brand name is required.")
+
+        timestamp = current_utc_timestamp()
+
+        target_audience = payload.get("target_audience", [])
+        products = payload.get("products", [])
+        values = payload.get("values", [])
+
+        with self.database.transaction() as connection:
+            connection.execute(
+                """
+                INSERT INTO brands (
+                    brand_id,
+                    name,
+                    industry,
+                    description,
+                    target_audience_json,
+                    products_json,
+                    values_json,
+                    website,
+                    payload_json,
+                    created_at,
+                    updated_at
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(brand_id) DO UPDATE SET
+                    name = excluded.name,
+                    industry = excluded.industry,
+                    description = excluded.description,
+                    target_audience_json = excluded.target_audience_json,
+                    products_json = excluded.products_json,
+                    values_json = excluded.values_json,
+                    website = excluded.website,
+                    payload_json = excluded.payload_json,
+                    updated_at = excluded.updated_at
+                """,
+                (
+                    brand_id,
+                    name,
+                    str(payload.get("industry", "")),
+                    str(payload.get("description", "")),
+                    encode_json(target_audience),
+                    encode_json(products),
+                    encode_json(values),
+                    str(payload.get("website", "")),
+                    encode_json(payload),
+                    timestamp,
+                    timestamp,
+                ),
+            )
+
+    def get(self, brand_id: str) -> dict[str, Any]:
+        """Return a complete brand payload."""
+
+        with self.database.connection() as connection:
+            row = connection.execute(
+                """
+                SELECT payload_json
+                FROM brands
+                WHERE brand_id = ?
+                """,
+                (brand_id,),
+            ).fetchone()
+
+        if row is None:
+            raise FileNotFoundError(
+                f"No brand exists with ID '{brand_id}'."
+            )
+
+        payload = decode_json(str(row["payload_json"]))
+
+        if not isinstance(payload, dict):
+            raise ValueError(
+                f"Invalid stored brand payload for '{brand_id}'."
+            )
+
+        return payload
+
+    def exists(self, brand_id: str) -> bool:
+        """Return whether a brand exists."""
+
+        with self.database.connection() as connection:
+            row = connection.execute(
+                """
+                SELECT 1
+                FROM brands
+                WHERE brand_id = ?
+                LIMIT 1
+                """,
+                (brand_id,),
+            ).fetchone()
+
+        return row is not None
+
+    def list_ids(self) -> list[str]:
+        """Return all brand IDs."""
+
+        with self.database.connection() as connection:
+            rows = connection.execute(
+                """
+                SELECT brand_id
+                FROM brands
+                ORDER BY brand_id
+                """
+            ).fetchall()
+
+        return [str(row["brand_id"]) for row in rows]
+
+    def count(self) -> int:
+        """Return the number of stored brands."""
+
+        with self.database.connection() as connection:
+            row = connection.execute(
+                "SELECT COUNT(*) AS total FROM brands"
+            ).fetchone()
+
+        return int(row["total"]) if row else 0
+
+
+class BusinessIntelligenceRepository:
+    """Store and retrieve Company Brain profiles in SQLite."""
+
+    def __init__(self, database: SQLiteDatabase | None = None) -> None:
+        self.database = database or SQLiteDatabase()
+        self.database.initialise()
+
+    def save(self, profile: BusinessIntelligenceProfile) -> None:
+        """Insert or update a business intelligence profile."""
+
+        timestamp = current_utc_timestamp()
+        payload = profile.to_dict()
+        profile.updated_at = timestamp
+        payload["updated_at"] = timestamp
+
+        with self.database.transaction() as connection:
+            connection.execute(
+                """
+                INSERT INTO business_intelligence_profiles (
+                    brand_id,
+                    revenue_model,
+                    average_order_value,
+                    gross_margin_percent,
+                    customer_lifetime_value,
+                    customer_acquisition_cost,
+                    sales_cycle_days,
+                    monthly_marketing_budget,
+                    team_size,
+                    sales_channels_json,
+                    geographic_markets_json,
+                    capacity_constraints_json,
+                    seasonality_json,
+                    competitors_json,
+                    business_goals_json,
+                    payload_json,
+                    created_at,
+                    updated_at
+                )
+                VALUES (
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+                )
+                ON CONFLICT(brand_id) DO UPDATE SET
+                    revenue_model = excluded.revenue_model,
+                    average_order_value = excluded.average_order_value,
+                    gross_margin_percent = excluded.gross_margin_percent,
+                    customer_lifetime_value = excluded.customer_lifetime_value,
+                    customer_acquisition_cost = excluded.customer_acquisition_cost,
+                    sales_cycle_days = excluded.sales_cycle_days,
+                    monthly_marketing_budget =
+                        excluded.monthly_marketing_budget,
+                    team_size = excluded.team_size,
+                    sales_channels_json = excluded.sales_channels_json,
+                    geographic_markets_json =
+                        excluded.geographic_markets_json,
+                    capacity_constraints_json =
+                        excluded.capacity_constraints_json,
+                    seasonality_json = excluded.seasonality_json,
+                    competitors_json = excluded.competitors_json,
+                    business_goals_json = excluded.business_goals_json,
+                    payload_json = excluded.payload_json,
+                    updated_at = excluded.updated_at
+                """,
+                (
+                    profile.brand_id,
+                    profile.revenue_model,
+                    profile.average_order_value,
+                    profile.gross_margin_percent,
+                    profile.customer_lifetime_value,
+                    profile.customer_acquisition_cost,
+                    profile.sales_cycle_days,
+                    profile.monthly_marketing_budget,
+                    profile.team_size,
+                    encode_json(profile.sales_channels),
+                    encode_json(profile.geographic_markets),
+                    encode_json(profile.capacity_constraints),
+                    encode_json(profile.seasonality),
+                    encode_json(profile.competitors),
+                    encode_json(profile.business_goals),
+                    encode_json(payload),
+                    timestamp,
+                    timestamp,
+                ),
+            )
+
+    def get(self, brand_id: str) -> BusinessIntelligenceProfile:
+        """Return the Company Brain profile for a brand."""
+
+        with self.database.connection() as connection:
+            row = connection.execute(
+                """
+                SELECT payload_json
+                FROM business_intelligence_profiles
+                WHERE brand_id = ?
+                """,
+                (brand_id,),
+            ).fetchone()
+
+        if row is None:
+            raise FileNotFoundError(
+                f"No business intelligence profile exists for '{brand_id}'."
+            )
+
+        payload = decode_json(str(row["payload_json"]))
+
+        if not isinstance(payload, dict):
+            raise ValueError(
+                f"Invalid business intelligence data for '{brand_id}'."
+            )
+
+        return BusinessIntelligenceProfile.from_dict(payload)
+
+    def exists(self, brand_id: str) -> bool:
+        """Return whether a Company Brain profile exists."""
+
+        with self.database.connection() as connection:
+            row = connection.execute(
+                """
+                SELECT 1
+                FROM business_intelligence_profiles
+                WHERE brand_id = ?
+                LIMIT 1
+                """,
+                (brand_id,),
+            ).fetchone()
+
+        return row is not None
+
+    def list_brand_ids(self) -> list[str]:
+        """Return IDs with Company Brain profiles."""
+
+        with self.database.connection() as connection:
+            rows = connection.execute(
+                """
+                SELECT brand_id
+                FROM business_intelligence_profiles
+                ORDER BY brand_id
+                """
+            ).fetchall()
+
+        return [str(row["brand_id"]) for row in rows]
+
+    def count(self) -> int:
+        """Return the number of Company Brain profiles."""
+
+        with self.database.connection() as connection:
+            row = connection.execute(
+                """
+                SELECT COUNT(*) AS total
+                FROM business_intelligence_profiles
+                """
+            ).fetchone()
+
+        return int(row["total"]) if row else 0
+
+
+===== app\database\__init__.py =====
+
+"""SQLite persistence components for MarketingLabAI."""
+
+from __future__ import annotations
+
+from typing import Any
+
+from app.database.connection import SQLiteDatabase
+from app.database.repositories import (
+    BrandRepository,
+    BusinessIntelligenceRepository,
+)
+
+__all__ = [
+    "SQLiteDatabase",
+    "JsonToSQLiteMigrator",
+    "BrandRepository",
+    "BusinessIntelligenceRepository",
+]
+
+
+def __getattr__(name: str) -> Any:
+    """Load migration components only when explicitly requested."""
+
+    if name == "JsonToSQLiteMigrator":
+        from app.database.migration import JsonToSQLiteMigrator
+
+        return JsonToSQLiteMigrator
+
+    raise AttributeError(
+        f"module 'app.database' has no attribute {name!r}"
+    )
+
+
+===== app\brands\brand_service.py =====
+
+"""Brand profile management."""
+
+from app.config import Settings, load_settings
+from app.models import BrandProfile
+from app.services.json_storage import JsonStorage
+
+
+class BrandService:
+    """Create, retrieve, and list brand profiles."""
+
+    def __init__(self, settings: Settings | None = None):
+        self.settings = settings or load_settings()
+        self.storage = JsonStorage(self.settings.database_folder / "brands")
+
+    def save_brand(self, brand: BrandProfile) -> BrandProfile:
+        self.storage.save(brand.brand_id, brand.to_dict())
+        return brand
+
+    def get_brand(self, brand_id: str) -> BrandProfile:
+        data = self.storage.load(brand_id)
+        return BrandProfile(**data)
+
+    def brand_exists(self, brand_id: str) -> bool:
+        return self.storage.exists(brand_id)
+
+    def list_brand_ids(self) -> list[str]:
+        return self.storage.list_records()
+
+
+===== app\intelligence\service.py =====
+
+"""Persistence service for business intelligence profiles."""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+from tempfile import NamedTemporaryFile
+
+from app.intelligence.models import (
+    BusinessIntelligenceProfile,
+    current_utc_timestamp,
+)
+
+
+class BusinessIntelligenceService:
+    """Store and retrieve Company Brain business intelligence profiles."""
+
+    def __init__(
+        self,
+        storage_directory: str | Path = "database/business_intelligence",
+    ) -> None:
+        self.storage_directory = Path(storage_directory)
+        self.storage_directory.mkdir(parents=True, exist_ok=True)
+
+    def save_profile(
+        self,
+        profile: BusinessIntelligenceProfile,
+    ) -> Path:
+        """Save a profile using an atomic file replacement."""
+
+        profile.updated_at = current_utc_timestamp()
+        destination = self._profile_path(profile.brand_id)
+
+        with NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            dir=self.storage_directory,
+            prefix=f"{profile.brand_id}-",
+            suffix=".tmp",
+            delete=False,
+        ) as temporary_file:
+            json.dump(
+                profile.to_dict(),
+                temporary_file,
+                indent=2,
+                ensure_ascii=False,
+                sort_keys=True,
+            )
+            temporary_file.write("\n")
+            temporary_path = Path(temporary_file.name)
+
+        temporary_path.replace(destination)
+        return destination
+
+    def get_profile(
+        self,
+        brand_id: str,
+    ) -> BusinessIntelligenceProfile:
+        """Load the intelligence profile belonging to a brand."""
+
+        profile_path = self._profile_path(brand_id)
+
+        if not profile_path.exists():
+            raise FileNotFoundError(
+                f"No business intelligence profile exists for '{brand_id}'."
+            )
+
+        with profile_path.open("r", encoding="utf-8") as profile_file:
+            stored_data = json.load(profile_file)
+
+        if not isinstance(stored_data, dict):
+            raise ValueError(f"Invalid business intelligence data for '{brand_id}'.")
+
+        return BusinessIntelligenceProfile.from_dict(stored_data)
+
+    def profile_exists(self, brand_id: str) -> bool:
+        """Return whether an intelligence profile exists."""
+
+        return self._profile_path(brand_id).exists()
+
+    def list_brand_ids(self) -> list[str]:
+        """Return sorted brand IDs with stored intelligence profiles."""
+
+        return sorted(
+            profile_path.stem
+            for profile_path in self.storage_directory.glob("*.json")
+            if profile_path.is_file()
+        )
+
+    def delete_profile(self, brand_id: str) -> bool:
+        """Delete a profile and report whether one existed."""
+
+        profile_path = self._profile_path(brand_id)
+
+        if not profile_path.exists():
+            return False
+
+        profile_path.unlink()
+        return True
+
+    def _profile_path(self, brand_id: str) -> Path:
+        cleaned_brand_id = brand_id.strip()
+
+        if not cleaned_brand_id:
+            raise ValueError("brand_id is required.")
+
+        if any(character in cleaned_brand_id for character in r'\/:*?"<>|'):
+            raise ValueError("brand_id contains invalid path characters.")
+
+        return self.storage_directory / f"{cleaned_brand_id}.json"
+
+
+===== app\models.py =====
+
+"""Core data models for MarketingLabAI."""
+
+from dataclasses import asdict, dataclass, field
+from typing import Any
+
+
+@dataclass
+class BrandProfile:
+    """Represents a company or organisation using MarketingLabAI."""
+
+    brand_id: str
+    name: str
+    industry: str
+    description: str
+    target_audience: str
+    products_or_services: list[str] = field(default_factory=list)
+    values: list[str] = field(default_factory=list)
+    website: str = ""
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass
+class VoiceProfile:
+    """Defines how a brand communicates."""
+
+    voice_id: str
+    brand_id: str
+    summary: str
+    tone_traits: list[str]
+    preferred_words: list[str] = field(default_factory=list)
+    avoided_words: list[str] = field(default_factory=list)
+    sentence_style: str = ""
+    call_to_action_style: str = ""
+    authenticity_rules: list[str] = field(default_factory=list)
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass
+class CampaignBrief:
+    """Input requirements for a marketing campaign."""
+
+    campaign_id: str
+    brand_id: str
+    objective: str
+    audience: str
+    offer: str
+    platform: str
+    content_type: str
+    key_message: str
+    call_to_action: str
+    additional_context: str = ""
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass
+class GeneratedContent:
+    """A generated marketing asset."""
+
+    campaign_id: str
+    platform: str
+    content_type: str
+    content: str
+    model: str
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+===== app\intelligence\models.py =====
+
+"""Business intelligence models for the MarketingLabAI Company Brain."""
+
+from __future__ import annotations
+
+from dataclasses import asdict, dataclass, field
+from datetime import UTC, datetime
+from typing import Any
+
+
+def current_utc_timestamp() -> str:
+    """Return an ISO-formatted UTC timestamp."""
+
+    return datetime.now(UTC).isoformat()
+
+
+@dataclass(slots=True)
+class BusinessIntelligenceProfile:
+    """Commercial and operational context linked to a brand."""
+
+    brand_id: str
+    revenue_model: str = ""
+    average_order_value: float | None = None
+    gross_margin_percent: float | None = None
+    customer_lifetime_value: float | None = None
+    customer_acquisition_cost: float | None = None
+    sales_cycle_days: int | None = None
+    monthly_marketing_budget: float | None = None
+    team_size: int | None = None
+    sales_channels: list[str] = field(default_factory=list)
+    geographic_markets: list[str] = field(default_factory=list)
+    capacity_constraints: list[str] = field(default_factory=list)
+    seasonality: list[str] = field(default_factory=list)
+    competitors: list[str] = field(default_factory=list)
+    business_goals: list[str] = field(default_factory=list)
+    updated_at: str = field(default_factory=current_utc_timestamp)
+
+    def __post_init__(self) -> None:
+        """Validate profile values after initialisation."""
+
+        self.brand_id = self.brand_id.strip()
+
+        if not self.brand_id:
+            raise ValueError("brand_id is required.")
+
+        self.revenue_model = self.revenue_model.strip()
+
+        self._validate_non_negative_float(
+            "average_order_value",
+            self.average_order_value,
+        )
+        self._validate_non_negative_float(
+            "customer_lifetime_value",
+            self.customer_lifetime_value,
+        )
+        self._validate_non_negative_float(
+            "customer_acquisition_cost",
+            self.customer_acquisition_cost,
+        )
+        self._validate_non_negative_float(
+            "monthly_marketing_budget",
+            self.monthly_marketing_budget,
+        )
+
+        if self.gross_margin_percent is not None:
+            if not 0 <= self.gross_margin_percent <= 100:
+                raise ValueError("gross_margin_percent must be between 0 and 100.")
+
+        self._validate_non_negative_integer(
+            "sales_cycle_days",
+            self.sales_cycle_days,
+        )
+        self._validate_non_negative_integer(
+            "team_size",
+            self.team_size,
+        )
+
+        self.sales_channels = self._clean_list(self.sales_channels)
+        self.geographic_markets = self._clean_list(self.geographic_markets)
+        self.capacity_constraints = self._clean_list(self.capacity_constraints)
+        self.seasonality = self._clean_list(self.seasonality)
+        self.competitors = self._clean_list(self.competitors)
+        self.business_goals = self._clean_list(self.business_goals)
+
+        if not self.updated_at.strip():
+            self.updated_at = current_utc_timestamp()
+
+    @staticmethod
+    def _validate_non_negative_float(
+        field_name: str,
+        value: float | None,
+    ) -> None:
+        if value is not None and value < 0:
+            raise ValueError(f"{field_name} cannot be negative.")
+
+    @staticmethod
+    def _validate_non_negative_integer(
+        field_name: str,
+        value: int | None,
+    ) -> None:
+        if value is not None and value < 0:
+            raise ValueError(f"{field_name} cannot be negative.")
+
+    @staticmethod
+    def _clean_list(values: list[str]) -> list[str]:
+        cleaned_values: list[str] = []
+
+        for value in values:
+            cleaned_value = value.strip()
+
+            if cleaned_value and cleaned_value not in cleaned_values:
+                cleaned_values.append(cleaned_value)
+
+        return cleaned_values
+
+    def to_dict(self) -> dict[str, Any]:
+        """Convert the profile into a JSON-serialisable dictionary."""
+
+        return asdict(self)
+
+    @classmethod
+    def from_dict(
+        cls,
+        data: dict[str, Any],
+    ) -> BusinessIntelligenceProfile:
+        """Create a profile from stored dictionary data."""
+
+        return cls(**data)
+
+
+===== tests\test_business_intelligence.py =====
+
+"""Tests for the MarketingLabAI Business Intelligence Profile."""
+
+from __future__ import annotations
+
+import tempfile
+import unittest
+from pathlib import Path
+
+from app.intelligence.models import BusinessIntelligenceProfile
+from app.intelligence.service import BusinessIntelligenceService
+
+
+class BusinessIntelligenceProfileTests(unittest.TestCase):
+    def test_profile_requires_brand_id(self) -> None:
+        with self.assertRaisesRegex(ValueError, "brand_id is required"):
+            BusinessIntelligenceProfile(brand_id="  ")
+
+    def test_profile_rejects_negative_financial_values(self) -> None:
+        with self.assertRaisesRegex(
+            ValueError,
+            "monthly_marketing_budget cannot be negative",
+        ):
+            BusinessIntelligenceProfile(
+                brand_id="test-brand",
+                monthly_marketing_budget=-1,
+            )
+
+    def test_profile_rejects_invalid_margin(self) -> None:
+        with self.assertRaisesRegex(
+            ValueError,
+            "gross_margin_percent must be between 0 and 100",
+        ):
+            BusinessIntelligenceProfile(
+                brand_id="test-brand",
+                gross_margin_percent=101,
+            )
+
+    def test_profile_cleans_and_deduplicates_lists(self) -> None:
+        profile = BusinessIntelligenceProfile(
+            brand_id="test-brand",
+            sales_channels=[
+                " Website ",
+                "",
+                "Website",
+                "Retail",
+            ],
+        )
+
+        self.assertEqual(
+            profile.sales_channels,
+            ["Website", "Retail"],
+        )
+
+    def test_profile_round_trip_dictionary_conversion(self) -> None:
+        profile = self._build_profile()
+
+        restored_profile = BusinessIntelligenceProfile.from_dict(profile.to_dict())
+
+        self.assertEqual(restored_profile.to_dict(), profile.to_dict())
+
+    @staticmethod
+    def _build_profile() -> BusinessIntelligenceProfile:
+        return BusinessIntelligenceProfile(
+            brand_id="marketinglabai-demo",
+            revenue_model="Monthly SaaS subscriptions",
+            average_order_value=99.0,
+            gross_margin_percent=80.0,
+            customer_lifetime_value=1200.0,
+            customer_acquisition_cost=150.0,
+            sales_cycle_days=14,
+            monthly_marketing_budget=5000.0,
+            team_size=3,
+            sales_channels=["Website", "Direct sales"],
+            geographic_markets=["South Africa"],
+            capacity_constraints=["Limited development capacity"],
+            seasonality=["Annual planning season"],
+            competitors=["Competitor A", "Competitor B"],
+            business_goals=[
+                "Acquire paying customers",
+                "Improve customer retention",
+            ],
+        )
+
+
+class BusinessIntelligenceServiceTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.temporary_directory = tempfile.TemporaryDirectory()
+        self.storage_path = Path(self.temporary_directory.name)
+        self.service = BusinessIntelligenceService(self.storage_path)
+
+    def tearDown(self) -> None:
+        self.temporary_directory.cleanup()
+
+    def test_service_saves_and_loads_profile(self) -> None:
+        profile = self._build_profile()
+
+        saved_path = self.service.save_profile(profile)
+        loaded_profile = self.service.get_profile(profile.brand_id)
+
+        self.assertTrue(saved_path.exists())
+        self.assertEqual(
+            loaded_profile.brand_id,
+            "marketinglabai-demo",
+        )
+        self.assertEqual(
+            loaded_profile.revenue_model,
+            "Monthly SaaS subscriptions",
+        )
+
+    def test_service_reports_profile_existence(self) -> None:
+        profile = self._build_profile()
+
+        self.assertFalse(self.service.profile_exists(profile.brand_id))
+
+        self.service.save_profile(profile)
+
+        self.assertTrue(self.service.profile_exists(profile.brand_id))
+
+    def test_service_lists_brand_ids_in_sorted_order(self) -> None:
+        self.service.save_profile(BusinessIntelligenceProfile(brand_id="zeta-brand"))
+        self.service.save_profile(BusinessIntelligenceProfile(brand_id="alpha-brand"))
+
+        self.assertEqual(
+            self.service.list_brand_ids(),
+            ["alpha-brand", "zeta-brand"],
+        )
+
+    def test_service_overwrites_existing_profile(self) -> None:
+        profile = self._build_profile()
+        self.service.save_profile(profile)
+
+        profile.revenue_model = "Usage-based SaaS"
+        self.service.save_profile(profile)
+
+        loaded_profile = self.service.get_profile(profile.brand_id)
+
+        self.assertEqual(
+            loaded_profile.revenue_model,
+            "Usage-based SaaS",
+        )
+
+    def test_service_raises_for_missing_profile(self) -> None:
+        with self.assertRaisesRegex(
+            FileNotFoundError,
+            "No business intelligence profile exists",
+        ):
+            self.service.get_profile("missing-brand")
+
+    def test_service_deletes_existing_profile(self) -> None:
+        profile = self._build_profile()
+        self.service.save_profile(profile)
+
+        first_result = self.service.delete_profile(profile.brand_id)
+        second_result = self.service.delete_profile(profile.brand_id)
+
+        self.assertTrue(first_result)
+        self.assertFalse(second_result)
+        self.assertFalse(self.service.profile_exists(profile.brand_id))
+
+    def test_service_rejects_invalid_brand_path(self) -> None:
+        with self.assertRaisesRegex(
+            ValueError,
+            "invalid path characters",
+        ):
+            self.service.profile_exists("../unsafe-brand")
+
+    @staticmethod
+    def _build_profile() -> BusinessIntelligenceProfile:
+        return BusinessIntelligenceProfile(
+            brand_id="marketinglabai-demo",
+            revenue_model="Monthly SaaS subscriptions",
+            monthly_marketing_budget=5000.0,
+            sales_channels=["Website"],
+            geographic_markets=["South Africa"],
+            business_goals=["Acquire paying customers"],
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()
+
+
+===== tests\test_sqlite_database.py =====
+
+"""Tests for MarketingLabAI SQLite persistence and migration."""
+
+from __future__ import annotations
+
+import json
+import tempfile
+import unittest
+from pathlib import Path
+
+from app.database.connection import SQLiteDatabase
+from app.database.migration import JsonToSQLiteMigrator
+from app.database.repositories import (
+    BrandRepository,
+    BusinessIntelligenceRepository,
+)
+from app.intelligence.models import BusinessIntelligenceProfile
+
+
+class SQLiteDatabaseTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.temporary_directory = tempfile.TemporaryDirectory()
+        self.database_path = Path(self.temporary_directory.name) / "marketinglabai.db"
+        self.database = SQLiteDatabase(self.database_path)
+
+    def tearDown(self) -> None:
+        self.temporary_directory.cleanup()
+
+    def test_initialise_creates_required_tables(self) -> None:
+        self.database.initialise()
+
+        self.assertEqual(
+            self.database.table_names(),
+            [
+                "brands",
+                "business_intelligence_profiles",
+                "data_migration_log",
+                "schema_migrations",
+            ],
+        )
+
+    def test_integrity_check_returns_ok(self) -> None:
+        self.database.initialise()
+
+        self.assertEqual(self.database.integrity_check(), "ok")
+
+    def test_read_connection_is_closed_after_context(self) -> None:
+        self.database.initialise()
+
+        with self.database.connection() as connection:
+            connection.execute("SELECT 1").fetchone()
+
+        with self.assertRaises(Exception):
+            connection.execute("SELECT 1")
+
+    def test_transaction_rolls_back_after_error(self) -> None:
+        self.database.initialise()
+
+        with self.assertRaises(RuntimeError):
+            with self.database.transaction() as connection:
+                connection.execute(
+                    """
+                    INSERT INTO brands (
+                        brand_id,
+                        name,
+                        payload_json,
+                        created_at,
+                        updated_at
+                    )
+                    VALUES (?, ?, ?, ?, ?)
+                    """,
+                    (
+                        "rollback-brand",
+                        "Rollback Brand",
+                        "{}",
+                        "timestamp",
+                        "timestamp",
+                    ),
+                )
+                raise RuntimeError("Force rollback")
+
+        repository = BrandRepository(self.database)
+
+        self.assertFalse(repository.exists("rollback-brand"))
+
+
+class RepositoryTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.temporary_directory = tempfile.TemporaryDirectory()
+        self.database = SQLiteDatabase(
+            Path(self.temporary_directory.name) / "marketinglabai.db"
+        )
+        self.database.initialise()
+        self.brand_repository = BrandRepository(self.database)
+        self.intelligence_repository = BusinessIntelligenceRepository(self.database)
+
+    def tearDown(self) -> None:
+        self.temporary_directory.cleanup()
+
+    def test_brand_repository_round_trip(self) -> None:
+        payload = {
+            "brand_id": "test-brand",
+            "name": "Test Brand",
+            "industry": "Software",
+            "description": "An AI platform.",
+            "target_audience": ["Small businesses"],
+            "products": ["AI platform"],
+            "values": ["Trust"],
+            "website": "https://example.test",
+        }
+
+        self.brand_repository.save(payload)
+
+        self.assertTrue(self.brand_repository.exists("test-brand"))
+        self.assertEqual(
+            self.brand_repository.get("test-brand"),
+            payload,
+        )
+        self.assertEqual(
+            self.brand_repository.list_ids(),
+            ["test-brand"],
+        )
+
+    def test_brand_repository_updates_existing_record(self) -> None:
+        payload = {
+            "brand_id": "test-brand",
+            "name": "Original Name",
+        }
+        self.brand_repository.save(payload)
+
+        payload["name"] = "Updated Name"
+        self.brand_repository.save(payload)
+
+        stored_payload = self.brand_repository.get("test-brand")
+
+        self.assertEqual(stored_payload["name"], "Updated Name")
+        self.assertEqual(self.brand_repository.count(), 1)
+
+    def test_business_intelligence_round_trip(self) -> None:
+        self.brand_repository.save(
+            {
+                "brand_id": "test-brand",
+                "name": "Test Brand",
+            }
+        )
+
+        profile = BusinessIntelligenceProfile(
+            brand_id="test-brand",
+            revenue_model="Subscriptions",
+            gross_margin_percent=80,
+            sales_channels=["Website"],
+            business_goals=["Acquire customers"],
+        )
+
+        self.intelligence_repository.save(profile)
+        restored_profile = self.intelligence_repository.get("test-brand")
+
+        self.assertTrue(self.intelligence_repository.exists("test-brand"))
+        self.assertEqual(
+            restored_profile.revenue_model,
+            "Subscriptions",
+        )
+        self.assertEqual(
+            restored_profile.business_goals,
+            ["Acquire customers"],
+        )
+
+
+class JsonToSQLiteMigrationTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.temporary_directory = tempfile.TemporaryDirectory()
+        root = Path(self.temporary_directory.name)
+
+        self.brands_directory = root / "brands"
+        self.intelligence_directory = root / "business_intelligence"
+        self.backup_root = root / "backups"
+        self.database = SQLiteDatabase(root / "marketinglabai.db")
+
+        self.brands_directory.mkdir()
+        self.intelligence_directory.mkdir()
+
+        brand_payload = {
+            "brand_id": "marketinglabai-demo",
+            "name": "MarketingLabAI Demo",
+            "industry": "Artificial Intelligence Software",
+            "description": "AI marketing operating system.",
+            "target_audience": ["Small businesses"],
+            "products": ["AI Marketing Platform"],
+            "values": ["Innovation", "Trust"],
+            "website": "https://marketinglabai.local",
+        }
+
+        intelligence_payload = {
+            "brand_id": "marketinglabai-demo",
+            "revenue_model": "Monthly SaaS subscriptions",
+            "average_order_value": 999,
+            "gross_margin_percent": 80,
+            "customer_lifetime_value": 5000,
+            "customer_acquisition_cost": 250,
+            "sales_cycle_days": 14,
+            "monthly_marketing_budget": 10000,
+            "team_size": 4,
+            "sales_channels": ["Website", "Direct sales"],
+            "geographic_markets": ["South Africa"],
+            "capacity_constraints": ["Development capacity"],
+            "seasonality": ["Annual planning season"],
+            "competitors": ["Jasper", "HubSpot"],
+            "business_goals": ["Acquire paying customers"],
+            "updated_at": "2026-01-01T00:00:00+00:00",
+        }
+
+        self._write_json(
+            self.brands_directory / "marketinglabai-demo.json",
+            brand_payload,
+        )
+        self._write_json(
+            self.intelligence_directory / "marketinglabai-demo.json",
+            intelligence_payload,
+        )
+
+    def tearDown(self) -> None:
+        self.temporary_directory.cleanup()
+
+    def test_migration_imports_brand_and_company_brain(self) -> None:
+        migrator = self._build_migrator()
+
+        result = migrator.migrate()
+
+        brand_repository = BrandRepository(self.database)
+        intelligence_repository = BusinessIntelligenceRepository(self.database)
+
+        self.assertEqual(result.brands_imported, 1)
+        self.assertEqual(result.intelligence_profiles_imported, 1)
+        self.assertEqual(result.records_failed, 0)
+        self.assertTrue(brand_repository.exists("marketinglabai-demo"))
+        self.assertTrue(intelligence_repository.exists("marketinglabai-demo"))
+        self.assertIsNotNone(result.backup_directory)
+        self.assertTrue(result.backup_directory.exists())
+
+    def test_second_migration_skips_existing_records(self) -> None:
+        migrator = self._build_migrator()
+
+        first_result = migrator.migrate()
+        second_result = migrator.migrate()
+
+        self.assertEqual(first_result.brands_imported, 1)
+        self.assertEqual(second_result.brands_imported, 0)
+        self.assertEqual(
+            second_result.intelligence_profiles_imported,
+            0,
+        )
+        self.assertEqual(second_result.records_skipped, 2)
+
+    def test_migration_preserves_source_files(self) -> None:
+        migrator = self._build_migrator()
+
+        migrator.migrate()
+
+        self.assertTrue((self.brands_directory / "marketinglabai-demo.json").exists())
+        self.assertTrue(
+            (self.intelligence_directory / "marketinglabai-demo.json").exists()
+        )
+
+    def _build_migrator(self) -> JsonToSQLiteMigrator:
+        return JsonToSQLiteMigrator(
+            database=self.database,
+            brands_directory=self.brands_directory,
+            intelligence_directory=self.intelligence_directory,
+            backup_root=self.backup_root,
+        )
+
+    @staticmethod
+    def _write_json(
+        path: Path,
+        payload: dict[str, object],
+    ) -> None:
+        path.write_text(
+            json.dumps(payload, indent=2),
+            encoding="utf-8",
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()
