@@ -13,7 +13,7 @@ from app.cli.commands import (
     show_voice,
 )
 from app.health import run_health_check
-from app.workflows.onboarding import run_onboarding
+from app.workflows.company_brain_onboarding import run_onboarding
 
 
 def build_parser() -> argparse.ArgumentParser:
