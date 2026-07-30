@@ -130,6 +130,19 @@ class SQLiteDatabase:
                 );
 
 
+                CREATE TABLE IF NOT EXISTS memory_events (
+                    memory_id TEXT PRIMARY KEY,
+                    brand_id TEXT NOT NULL,
+                    event_type TEXT NOT NULL,
+                    source TEXT NOT NULL,
+                    summary TEXT NOT NULL,
+                    payload_json TEXT NOT NULL DEFAULT '{}',
+                    created_at TEXT NOT NULL,
+                    FOREIGN KEY (brand_id)
+                        REFERENCES brands(brand_id)
+                        ON DELETE CASCADE
+                );
+
                 CREATE TABLE IF NOT EXISTS data_migration_log (
                     migration_id INTEGER PRIMARY KEY AUTOINCREMENT,
                     source_type TEXT NOT NULL,
@@ -157,6 +170,15 @@ class SQLiteDatabase:
                     ON compliance_rules(brand_id, enabled);
 
 
+                CREATE INDEX IF NOT EXISTS idx_memory_events_brand
+                    ON memory_events(brand_id);
+
+                CREATE INDEX IF NOT EXISTS idx_memory_events_type
+                    ON memory_events(brand_id, event_type);
+
+                CREATE INDEX IF NOT EXISTS idx_memory_events_created
+                    ON memory_events(brand_id, created_at);
+
                 CREATE INDEX IF NOT EXISTS idx_data_migration_log_record
                     ON data_migration_log(source_type, record_id);
                 """
@@ -172,6 +194,22 @@ class SQLiteDatabase:
                 VALUES (
                     2,
                     'Add versioned compliance rules',
+                    strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+                )
+                """
+            )
+
+
+            connection.execute(
+                """
+                INSERT OR IGNORE INTO schema_migrations (
+                    version,
+                    description,
+                    applied_at
+                )
+                VALUES (
+                    3,
+                    'Add institutional memory events',
                     strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
                 )
                 """

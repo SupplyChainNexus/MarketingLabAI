@@ -8,6 +8,7 @@ from typing import Any
 
 from app.database.connection import SQLiteDatabase
 from app.intelligence.models import BusinessIntelligenceProfile
+from app.memory.models import MemoryEvent
 
 
 def current_utc_timestamp() -> str:
@@ -318,6 +319,218 @@ class BusinessIntelligenceRepository:
                 SELECT COUNT(*) AS total
                 FROM business_intelligence_profiles
                 """
+            ).fetchone()
+
+        return int(row["total"]) if row else 0
+
+
+class MemoryRepository:
+    """Store and retrieve institutional memory events in SQLite."""
+
+    def __init__(self, database: SQLiteDatabase | None = None) -> None:
+        self.database = database or SQLiteDatabase()
+        self.database.initialise()
+
+    def save(self, event: MemoryEvent) -> None:
+        """Store a new memory event.
+
+        Memory records are append-only. Existing IDs cannot be overwritten.
+        """
+
+        if not isinstance(event, MemoryEvent):
+            raise TypeError("event must be a MemoryEvent.")
+
+        timestamp = event.created_at or current_utc_timestamp()
+        payload = event.to_dict()
+        payload["created_at"] = timestamp
+
+        with self.database.transaction() as connection:
+            try:
+                connection.execute(
+                    """
+                    INSERT INTO memory_events (
+                        memory_id,
+                        brand_id,
+                        event_type,
+                        source,
+                        summary,
+                        payload_json,
+                        created_at
+                    )
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        event.memory_id,
+                        event.brand_id,
+                        event.event_type,
+                        event.source,
+                        event.summary,
+                        encode_json(payload),
+                        timestamp,
+                    ),
+                )
+            except Exception as error:
+                if "UNIQUE constraint failed" in str(error):
+                    raise ValueError(
+                        f"A memory event with ID "
+                        f"'{event.memory_id}' already exists."
+                    ) from error
+
+                raise
+
+        event.created_at = timestamp
+
+    def get(self, memory_id: str) -> MemoryEvent:
+        """Return one memory event by ID."""
+
+        with self.database.connection() as connection:
+            row = connection.execute(
+                """
+                SELECT payload_json
+                FROM memory_events
+                WHERE memory_id = ?
+                """,
+                (memory_id,),
+            ).fetchone()
+
+        if row is None:
+            raise FileNotFoundError(
+                f"No memory event exists with ID '{memory_id}'."
+            )
+
+        payload = decode_json(str(row["payload_json"]))
+
+        if not isinstance(payload, dict):
+            raise ValueError(
+                f"Invalid stored memory payload for '{memory_id}'."
+            )
+
+        return MemoryEvent.from_dict(payload)
+
+    def list(
+        self,
+        brand_id: str,
+        *,
+        event_type: str | None = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> list[MemoryEvent]:
+        """Return memory events for a brand, newest first."""
+
+        if limit < 1:
+            raise ValueError("limit must be at least 1.")
+
+        if offset < 0:
+            raise ValueError("offset cannot be negative.")
+
+        query = """
+            SELECT payload_json
+            FROM memory_events
+            WHERE brand_id = ?
+        """
+        parameters: list[Any] = [brand_id]
+
+        if event_type is not None:
+            query += " AND event_type = ?"
+            parameters.append(event_type)
+
+        query += """
+            ORDER BY created_at DESC, memory_id DESC
+            LIMIT ? OFFSET ?
+        """
+        parameters.extend([limit, offset])
+
+        with self.database.connection() as connection:
+            rows = connection.execute(
+                query,
+                tuple(parameters),
+            ).fetchall()
+
+        return [
+            MemoryEvent.from_dict(
+                decode_json(str(row["payload_json"]))
+            )
+            for row in rows
+        ]
+
+    def search(
+        self,
+        brand_id: str,
+        search_text: str,
+        *,
+        limit: int = 50,
+    ) -> list[MemoryEvent]:
+        """Search summaries, sources, event types, and JSON payloads."""
+
+        search_text = search_text.strip()
+
+        if not search_text:
+            return []
+
+        if limit < 1:
+            raise ValueError("limit must be at least 1.")
+
+        pattern = f"%{search_text}%"
+
+        with self.database.connection() as connection:
+            rows = connection.execute(
+                """
+                SELECT payload_json
+                FROM memory_events
+                WHERE brand_id = ?
+                  AND (
+                      summary LIKE ?
+                      OR source LIKE ?
+                      OR event_type LIKE ?
+                      OR payload_json LIKE ?
+                  )
+                ORDER BY created_at DESC, memory_id DESC
+                LIMIT ?
+                """,
+                (
+                    brand_id,
+                    pattern,
+                    pattern,
+                    pattern,
+                    pattern,
+                    limit,
+                ),
+            ).fetchall()
+
+        return [
+            MemoryEvent.from_dict(
+                decode_json(str(row["payload_json"]))
+            )
+            for row in rows
+        ]
+
+    def count(
+        self,
+        brand_id: str | None = None,
+        *,
+        event_type: str | None = None,
+    ) -> int:
+        """Return the number of matching memory events."""
+
+        query = "SELECT COUNT(*) AS total FROM memory_events"
+        conditions: list[str] = []
+        parameters: list[Any] = []
+
+        if brand_id is not None:
+            conditions.append("brand_id = ?")
+            parameters.append(brand_id)
+
+        if event_type is not None:
+            conditions.append("event_type = ?")
+            parameters.append(event_type)
+
+        if conditions:
+            query += " WHERE " + " AND ".join(conditions)
+
+        with self.database.connection() as connection:
+            row = connection.execute(
+                query,
+                tuple(parameters),
             ).fetchone()
 
         return int(row["total"]) if row else 0
