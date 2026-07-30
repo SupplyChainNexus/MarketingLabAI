@@ -33,6 +33,7 @@ class SQLiteDatabaseTests(unittest.TestCase):
             [
                 "brands",
                 "business_intelligence_profiles",
+                "compliance_rules",
                 "data_migration_log",
                 "schema_migrations",
             ],

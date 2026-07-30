@@ -1,0 +1,1290 @@
+﻿MARKETINGLABAI — COMPLIANCE PHASE 2 CONTEXT
+Generated: 2026-07-30 20:54:27
+
+PROJECT FILES INCLUDED:
+C:\Ai Projects\MarketingLabAI\app\compliance\__init__.py
+C:\Ai Projects\MarketingLabAI\app\compliance\engine.py
+C:\Ai Projects\MarketingLabAI\app\compliance\models.py
+C:\Ai Projects\MarketingLabAI\app\compliance\repository.py
+C:\Ai Projects\MarketingLabAI\app\compliance\rules.py
+C:\Ai Projects\MarketingLabAI\app\intelligence\models.py
+C:\Ai Projects\MarketingLabAI\app\models.py
+C:\Ai Projects\MarketingLabAI\tests\test_compliance_models.py
+C:\Ai Projects\MarketingLabAI\tests\test_models.py
+C:\Ai Projects\MarketingLabAI\tests\test_sqlite_database.py
+
+
+====================================================================================================
+FILE: C:\Ai Projects\MarketingLabAI\app\compliance\__init__.py
+====================================================================================================
+
+"""Compliance evaluation package for MarketingLabAI."""
+
+from app.compliance.models import (
+    BrandRule,
+    ComplianceFinding,
+    ComplianceReport,
+    ComplianceStatus,
+    EvaluationMethod,
+    ReviewSubjectType,
+    RuleSeverity,
+)
+
+__all__ = [
+    "BrandRule",
+    "ComplianceFinding",
+    "ComplianceReport",
+    "ComplianceStatus",
+    "EvaluationMethod",
+    "ReviewSubjectType",
+    "RuleSeverity",
+]
+
+====================================================================================================
+FILE: C:\Ai Projects\MarketingLabAI\app\compliance\engine.py
+====================================================================================================
+
+
+====================================================================================================
+FILE: C:\Ai Projects\MarketingLabAI\app\compliance\models.py
+====================================================================================================
+
+"""Domain models for MarketingLabAI compliance evaluation."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from datetime import UTC, datetime
+from enum import Enum
+from typing import Any
+
+
+def current_utc_timestamp() -> str:
+    """Return an ISO-formatted UTC timestamp."""
+
+    return datetime.now(UTC).isoformat()
+
+
+class ReviewSubjectType(str, Enum):
+    """Supported marketing asset types."""
+
+    TEXT = "text"
+    IMAGE = "image"
+    VIDEO = "video"
+    AUDIO = "audio"
+
+
+class RuleSeverity(str, Enum):
+    """Business impact of a compliance rule or finding."""
+
+    INFO = "info"
+    WARNING = "warning"
+    ERROR = "error"
+    BLOCKER = "blocker"
+
+
+class EvaluationMethod(str, Enum):
+    """Method used to evaluate a compliance rule."""
+
+    DETERMINISTIC = "deterministic"
+    EVIDENCE = "evidence"
+    MODEL_ASSISTED = "model_assisted"
+    HUMAN = "human"
+
+
+class ComplianceStatus(str, Enum):
+    """Compliance state of a finding or report."""
+
+    PENDING = "pending"
+    COMPLIANT = "compliant"
+    REQUIRES_REVIEW = "requires_review"
+    NON_COMPLIANT = "non_compliant"
+
+
+def _required_text(field_name: str, value: str) -> str:
+    """Clean and validate a required text value."""
+
+    cleaned_value = value.strip()
+
+    if not cleaned_value:
+        raise ValueError(f"{field_name} is required.")
+
+    return cleaned_value
+
+
+def _optional_text(value: str) -> str:
+    """Clean an optional text value."""
+
+    return value.strip()
+
+
+def _clean_string_list(values: list[str]) -> list[str]:
+    """Clean and deduplicate a list of strings."""
+
+    cleaned_values: list[str] = []
+
+    for value in values:
+        cleaned_value = value.strip()
+
+        if cleaned_value and cleaned_value not in cleaned_values:
+            cleaned_values.append(cleaned_value)
+
+    return cleaned_values
+
+
+def _coerce_enum(
+    enum_type: type[Enum],
+    value: Enum | str,
+    field_name: str,
+) -> Enum:
+    """Convert a stored string into the required enum type."""
+
+    if isinstance(value, enum_type):
+        return value
+
+    try:
+        return enum_type(value)
+    except (TypeError, ValueError) as error:
+        raise ValueError(
+            f"{field_name} must be a valid {enum_type.__name__} value."
+        ) from error
+
+
+@dataclass(slots=True)
+class BrandRule:
+    """A versionable rule used to evaluate marketing content."""
+
+    rule_id: str
+    brand_id: str
+    name: str
+    description: str
+    severity: RuleSeverity = RuleSeverity.WARNING
+    evaluation_method: EvaluationMethod = EvaluationMethod.DETERMINISTIC
+    subject_types: list[ReviewSubjectType] = field(
+        default_factory=lambda: [ReviewSubjectType.TEXT]
+    )
+    category: str = ""
+    enabled: bool = True
+    evidence_required: bool = False
+    version: int = 1
+    created_at: str = field(default_factory=current_utc_timestamp)
+    updated_at: str = field(default_factory=current_utc_timestamp)
+
+    def __post_init__(self) -> None:
+        """Validate and normalise the rule."""
+
+        self.rule_id = _required_text("rule_id", self.rule_id)
+        self.brand_id = _required_text("brand_id", self.brand_id)
+        self.name = _required_text("name", self.name)
+        self.description = _required_text("description", self.description)
+        self.category = _optional_text(self.category)
+
+        self.severity = _coerce_enum(
+            RuleSeverity,
+            self.severity,
+            "severity",
+        )
+        self.evaluation_method = _coerce_enum(
+            EvaluationMethod,
+            self.evaluation_method,
+            "evaluation_method",
+        )
+
+        cleaned_subject_types: list[ReviewSubjectType] = []
+
+        for subject_type in self.subject_types:
+            converted_type = _coerce_enum(
+                ReviewSubjectType,
+                subject_type,
+                "subject_types",
+            )
+
+            if converted_type not in cleaned_subject_types:
+                cleaned_subject_types.append(converted_type)
+
+        if not cleaned_subject_types:
+            raise ValueError("subject_types must contain at least one value.")
+
+        self.subject_types = cleaned_subject_types
+
+        if self.version < 1:
+            raise ValueError("version must be at least 1.")
+
+        if not self.created_at.strip():
+            self.created_at = current_utc_timestamp()
+
+        if not self.updated_at.strip():
+            self.updated_at = current_utc_timestamp()
+
+    def applies_to(self, subject_type: ReviewSubjectType | str) -> bool:
+        """Return whether the rule applies to a subject type."""
+
+        converted_type = _coerce_enum(
+            ReviewSubjectType,
+            subject_type,
+            "subject_type",
+        )
+
+        return converted_type in self.subject_types
+
+    def to_dict(self) -> dict[str, Any]:
+        """Convert the rule into a JSON-serialisable dictionary."""
+
+        return {
+            "rule_id": self.rule_id,
+            "brand_id": self.brand_id,
+            "name": self.name,
+            "description": self.description,
+            "severity": self.severity.value,
+            "evaluation_method": self.evaluation_method.value,
+            "subject_types": [
+                subject_type.value for subject_type in self.subject_types
+            ],
+            "category": self.category,
+            "enabled": self.enabled,
+            "evidence_required": self.evidence_required,
+            "version": self.version,
+            "created_at": self.created_at,
+            "updated_at": self.updated_at,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> BrandRule:
+        """Create a rule from stored dictionary data."""
+
+        return cls(**data)
+
+
+@dataclass(slots=True)
+class ComplianceFinding:
+    """A single evidence-backed compliance assessment."""
+
+    finding_id: str
+    rule_id: str
+    subject_id: str
+    subject_type: ReviewSubjectType
+    status: ComplianceStatus
+    severity: RuleSeverity
+    evaluation_method: EvaluationMethod
+    message: str
+    evidence: list[str] = field(default_factory=list)
+    recommendation: str = ""
+    timestamp_start_seconds: float | None = None
+    timestamp_end_seconds: float | None = None
+    created_at: str = field(default_factory=current_utc_timestamp)
+
+    def __post_init__(self) -> None:
+        """Validate and normalise the finding."""
+
+        self.finding_id = _required_text("finding_id", self.finding_id)
+        self.rule_id = _required_text("rule_id", self.rule_id)
+        self.subject_id = _required_text("subject_id", self.subject_id)
+        self.message = _required_text("message", self.message)
+        self.recommendation = _optional_text(self.recommendation)
+        self.evidence = _clean_string_list(self.evidence)
+
+        self.subject_type = _coerce_enum(
+            ReviewSubjectType,
+            self.subject_type,
+            "subject_type",
+        )
+        self.status = _coerce_enum(
+            ComplianceStatus,
+            self.status,
+            "status",
+        )
+        self.severity = _coerce_enum(
+            RuleSeverity,
+            self.severity,
+            "severity",
+        )
+        self.evaluation_method = _coerce_enum(
+            EvaluationMethod,
+            self.evaluation_method,
+            "evaluation_method",
+        )
+
+        self._validate_timestamps()
+
+        if not self.created_at.strip():
+            self.created_at = current_utc_timestamp()
+
+    def _validate_timestamps(self) -> None:
+        """Validate optional media timestamps."""
+
+        if self.timestamp_start_seconds is not None:
+            if self.timestamp_start_seconds < 0:
+                raise ValueError("timestamp_start_seconds cannot be negative.")
+
+        if self.timestamp_end_seconds is not None:
+            if self.timestamp_end_seconds < 0:
+                raise ValueError("timestamp_end_seconds cannot be negative.")
+
+        if (
+            self.timestamp_start_seconds is not None
+            and self.timestamp_end_seconds is not None
+            and self.timestamp_end_seconds < self.timestamp_start_seconds
+        ):
+            raise ValueError(
+                "timestamp_end_seconds cannot be earlier than "
+                "timestamp_start_seconds."
+            )
+
+    def to_dict(self) -> dict[str, Any]:
+        """Convert the finding into a JSON-serialisable dictionary."""
+
+        return {
+            "finding_id": self.finding_id,
+            "rule_id": self.rule_id,
+            "subject_id": self.subject_id,
+            "subject_type": self.subject_type.value,
+            "status": self.status.value,
+            "severity": self.severity.value,
+            "evaluation_method": self.evaluation_method.value,
+            "message": self.message,
+            "evidence": list(self.evidence),
+            "recommendation": self.recommendation,
+            "timestamp_start_seconds": self.timestamp_start_seconds,
+            "timestamp_end_seconds": self.timestamp_end_seconds,
+            "created_at": self.created_at,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> ComplianceFinding:
+        """Create a finding from stored dictionary data."""
+
+        return cls(**data)
+
+
+@dataclass(slots=True)
+class ComplianceReport:
+    """Versioned compliance result for one marketing asset."""
+
+    report_id: str
+    brand_id: str
+    subject_id: str
+    subject_type: ReviewSubjectType
+    status: ComplianceStatus = ComplianceStatus.PENDING
+    findings: list[ComplianceFinding] = field(default_factory=list)
+    summary: str = ""
+    ruleset_version: str = ""
+    created_at: str = field(default_factory=current_utc_timestamp)
+    completed_at: str | None = None
+
+    def __post_init__(self) -> None:
+        """Validate and normalise the report."""
+
+        self.report_id = _required_text("report_id", self.report_id)
+        self.brand_id = _required_text("brand_id", self.brand_id)
+        self.subject_id = _required_text("subject_id", self.subject_id)
+        self.summary = _optional_text(self.summary)
+        self.ruleset_version = _optional_text(self.ruleset_version)
+
+        self.subject_type = _coerce_enum(
+            ReviewSubjectType,
+            self.subject_type,
+            "subject_type",
+        )
+        self.status = _coerce_enum(
+            ComplianceStatus,
+            self.status,
+            "status",
+        )
+
+        converted_findings: list[ComplianceFinding] = []
+
+        for finding in self.findings:
+            if isinstance(finding, ComplianceFinding):
+                converted_finding = finding
+            elif isinstance(finding, dict):
+                converted_finding = ComplianceFinding.from_dict(finding)
+            else:
+                raise ValueError("findings must contain ComplianceFinding objects.")
+
+            if converted_finding.subject_id != self.subject_id:
+                raise ValueError("Every finding must belong to the report subject.")
+
+            if converted_finding.subject_type != self.subject_type:
+                raise ValueError("Every finding must use the report subject type.")
+
+            converted_findings.append(converted_finding)
+
+        self.findings = converted_findings
+
+        if not self.created_at.strip():
+            self.created_at = current_utc_timestamp()
+
+        if self.completed_at is not None:
+            self.completed_at = self.completed_at.strip() or None
+
+    def add_finding(self, finding: ComplianceFinding) -> None:
+        """Add a finding that belongs to this report."""
+
+        if finding.subject_id != self.subject_id:
+            raise ValueError("The finding does not belong to the report subject.")
+
+        if finding.subject_type != self.subject_type:
+            raise ValueError("The finding does not use the report subject type.")
+
+        self.findings.append(finding)
+
+    def to_dict(self) -> dict[str, Any]:
+        """Convert the report into a JSON-serialisable dictionary."""
+
+        return {
+            "report_id": self.report_id,
+            "brand_id": self.brand_id,
+            "subject_id": self.subject_id,
+            "subject_type": self.subject_type.value,
+            "status": self.status.value,
+            "findings": [finding.to_dict() for finding in self.findings],
+            "summary": self.summary,
+            "ruleset_version": self.ruleset_version,
+            "created_at": self.created_at,
+            "completed_at": self.completed_at,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> ComplianceReport:
+        """Create a report from stored dictionary data."""
+
+        return cls(**data)
+
+====================================================================================================
+FILE: C:\Ai Projects\MarketingLabAI\app\compliance\repository.py
+====================================================================================================
+
+
+====================================================================================================
+FILE: C:\Ai Projects\MarketingLabAI\app\compliance\rules.py
+====================================================================================================
+
+
+====================================================================================================
+FILE: C:\Ai Projects\MarketingLabAI\app\intelligence\models.py
+====================================================================================================
+
+"""Business intelligence models for the MarketingLabAI Company Brain."""
+
+from __future__ import annotations
+
+from dataclasses import asdict, dataclass, field
+from datetime import UTC, datetime
+from typing import Any
+
+
+def current_utc_timestamp() -> str:
+    """Return an ISO-formatted UTC timestamp."""
+
+    return datetime.now(UTC).isoformat()
+
+
+@dataclass(slots=True)
+class BusinessIntelligenceProfile:
+    """Commercial and operational context linked to a brand."""
+
+    brand_id: str
+    revenue_model: str = ""
+    average_order_value: float | None = None
+    gross_margin_percent: float | None = None
+    customer_lifetime_value: float | None = None
+    customer_acquisition_cost: float | None = None
+    sales_cycle_days: int | None = None
+    monthly_marketing_budget: float | None = None
+    team_size: int | None = None
+    sales_channels: list[str] = field(default_factory=list)
+    geographic_markets: list[str] = field(default_factory=list)
+    capacity_constraints: list[str] = field(default_factory=list)
+    seasonality: list[str] = field(default_factory=list)
+    competitors: list[str] = field(default_factory=list)
+    business_goals: list[str] = field(default_factory=list)
+    updated_at: str = field(default_factory=current_utc_timestamp)
+
+    def __post_init__(self) -> None:
+        """Validate profile values after initialisation."""
+
+        self.brand_id = self.brand_id.strip()
+
+        if not self.brand_id:
+            raise ValueError("brand_id is required.")
+
+        self.revenue_model = self.revenue_model.strip()
+
+        self._validate_non_negative_float(
+            "average_order_value",
+            self.average_order_value,
+        )
+        self._validate_non_negative_float(
+            "customer_lifetime_value",
+            self.customer_lifetime_value,
+        )
+        self._validate_non_negative_float(
+            "customer_acquisition_cost",
+            self.customer_acquisition_cost,
+        )
+        self._validate_non_negative_float(
+            "monthly_marketing_budget",
+            self.monthly_marketing_budget,
+        )
+
+        if self.gross_margin_percent is not None:
+            if not 0 <= self.gross_margin_percent <= 100:
+                raise ValueError("gross_margin_percent must be between 0 and 100.")
+
+        self._validate_non_negative_integer(
+            "sales_cycle_days",
+            self.sales_cycle_days,
+        )
+        self._validate_non_negative_integer(
+            "team_size",
+            self.team_size,
+        )
+
+        self.sales_channels = self._clean_list(self.sales_channels)
+        self.geographic_markets = self._clean_list(self.geographic_markets)
+        self.capacity_constraints = self._clean_list(self.capacity_constraints)
+        self.seasonality = self._clean_list(self.seasonality)
+        self.competitors = self._clean_list(self.competitors)
+        self.business_goals = self._clean_list(self.business_goals)
+
+        if not self.updated_at.strip():
+            self.updated_at = current_utc_timestamp()
+
+    @staticmethod
+    def _validate_non_negative_float(
+        field_name: str,
+        value: float | None,
+    ) -> None:
+        if value is not None and value < 0:
+            raise ValueError(f"{field_name} cannot be negative.")
+
+    @staticmethod
+    def _validate_non_negative_integer(
+        field_name: str,
+        value: int | None,
+    ) -> None:
+        if value is not None and value < 0:
+            raise ValueError(f"{field_name} cannot be negative.")
+
+    @staticmethod
+    def _clean_list(values: list[str]) -> list[str]:
+        cleaned_values: list[str] = []
+
+        for value in values:
+            cleaned_value = value.strip()
+
+            if cleaned_value and cleaned_value not in cleaned_values:
+                cleaned_values.append(cleaned_value)
+
+        return cleaned_values
+
+    def to_dict(self) -> dict[str, Any]:
+        """Convert the profile into a JSON-serialisable dictionary."""
+
+        return asdict(self)
+
+    @classmethod
+    def from_dict(
+        cls,
+        data: dict[str, Any],
+    ) -> BusinessIntelligenceProfile:
+        """Create a profile from stored dictionary data."""
+
+        return cls(**data)
+
+====================================================================================================
+FILE: C:\Ai Projects\MarketingLabAI\app\models.py
+====================================================================================================
+
+"""Core data models for MarketingLabAI."""
+
+from dataclasses import asdict, dataclass, field
+from typing import Any
+
+
+@dataclass
+class BrandProfile:
+    """Represents a company or organisation using MarketingLabAI."""
+
+    brand_id: str
+    name: str
+    industry: str
+    description: str
+    target_audience: str
+    products_or_services: list[str] = field(default_factory=list)
+    values: list[str] = field(default_factory=list)
+    website: str = ""
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass
+class VoiceProfile:
+    """Defines how a brand communicates."""
+
+    voice_id: str
+    brand_id: str
+    summary: str
+    tone_traits: list[str]
+    preferred_words: list[str] = field(default_factory=list)
+    avoided_words: list[str] = field(default_factory=list)
+    sentence_style: str = ""
+    call_to_action_style: str = ""
+    authenticity_rules: list[str] = field(default_factory=list)
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass
+class CampaignBrief:
+    """Input requirements for a marketing campaign."""
+
+    campaign_id: str
+    brand_id: str
+    objective: str
+    audience: str
+    offer: str
+    platform: str
+    content_type: str
+    key_message: str
+    call_to_action: str
+    additional_context: str = ""
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass
+class GeneratedContent:
+    """A generated marketing asset."""
+
+    campaign_id: str
+    platform: str
+    content_type: str
+    content: str
+    model: str
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+====================================================================================================
+FILE: C:\Ai Projects\MarketingLabAI\tests\test_compliance_models.py
+====================================================================================================
+
+"""Tests for MarketingLabAI compliance domain models."""
+
+import unittest
+
+from app.compliance.models import (
+    BrandRule,
+    ComplianceFinding,
+    ComplianceReport,
+    ComplianceStatus,
+    EvaluationMethod,
+    ReviewSubjectType,
+    RuleSeverity,
+)
+
+
+class BrandRuleTests(unittest.TestCase):
+    """Validate compliance rule behaviour."""
+
+    def test_rule_requires_core_identifiers(self) -> None:
+        with self.assertRaisesRegex(ValueError, "rule_id is required"):
+            BrandRule(
+                rule_id=" ",
+                brand_id="nexus",
+                name="Required disclaimer",
+                description="Require the approved disclaimer.",
+            )
+
+    def test_rule_cleans_values_and_deduplicates_subject_types(self) -> None:
+        rule = BrandRule(
+            rule_id="  rule-001  ",
+            brand_id="  nexus  ",
+            name="  Required disclaimer  ",
+            description="  Require the approved disclaimer.  ",
+            subject_types=[
+                ReviewSubjectType.TEXT,
+                ReviewSubjectType.VIDEO,
+                ReviewSubjectType.TEXT,
+            ],
+        )
+
+        self.assertEqual(rule.rule_id, "rule-001")
+        self.assertEqual(rule.brand_id, "nexus")
+        self.assertEqual(rule.name, "Required disclaimer")
+        self.assertEqual(
+            rule.subject_types,
+            [
+                ReviewSubjectType.TEXT,
+                ReviewSubjectType.VIDEO,
+            ],
+        )
+
+    def test_rule_accepts_stored_enum_strings(self) -> None:
+        rule = BrandRule(
+            rule_id="rule-001",
+            brand_id="nexus",
+            name="Required disclaimer",
+            description="Require the approved disclaimer.",
+            severity="blocker",
+            evaluation_method="evidence",
+            subject_types=["image", "video"],
+        )
+
+        self.assertEqual(rule.severity, RuleSeverity.BLOCKER)
+        self.assertEqual(
+            rule.evaluation_method,
+            EvaluationMethod.EVIDENCE,
+        )
+        self.assertTrue(rule.applies_to(ReviewSubjectType.VIDEO))
+
+    def test_rule_rejects_invalid_version(self) -> None:
+        with self.assertRaisesRegex(ValueError, "version must be at least 1"):
+            BrandRule(
+                rule_id="rule-001",
+                brand_id="nexus",
+                name="Required disclaimer",
+                description="Require the approved disclaimer.",
+                version=0,
+            )
+
+    def test_rule_round_trip_dictionary_conversion(self) -> None:
+        rule = BrandRule(
+            rule_id="rule-001",
+            brand_id="nexus",
+            name="Required disclaimer",
+            description="Require the approved disclaimer.",
+            severity=RuleSeverity.BLOCKER,
+            evaluation_method=EvaluationMethod.EVIDENCE,
+            subject_types=[
+                ReviewSubjectType.TEXT,
+                ReviewSubjectType.VIDEO,
+            ],
+            category="legal",
+            evidence_required=True,
+            version=2,
+        )
+
+        restored_rule = BrandRule.from_dict(rule.to_dict())
+
+        self.assertEqual(restored_rule, rule)
+        self.assertEqual(
+            rule.to_dict()["subject_types"],
+            ["text", "video"],
+        )
+
+
+class ComplianceFindingTests(unittest.TestCase):
+    """Validate individual compliance findings."""
+
+    def test_finding_cleans_and_deduplicates_evidence(self) -> None:
+        finding = ComplianceFinding(
+            finding_id="finding-001",
+            rule_id="rule-001",
+            subject_id="asset-001",
+            subject_type=ReviewSubjectType.VIDEO,
+            status=ComplianceStatus.NON_COMPLIANT,
+            severity=RuleSeverity.BLOCKER,
+            evaluation_method=EvaluationMethod.DETERMINISTIC,
+            message="Unsupported guarantee detected.",
+            evidence=[
+                "  Guaranteed results  ",
+                "Guaranteed results",
+                "",
+            ],
+            timestamp_start_seconds=12.0,
+            timestamp_end_seconds=17.0,
+        )
+
+        self.assertEqual(finding.evidence, ["Guaranteed results"])
+
+    def test_finding_rejects_negative_timestamp(self) -> None:
+        with self.assertRaisesRegex(
+            ValueError,
+            "timestamp_start_seconds cannot be negative",
+        ):
+            ComplianceFinding(
+                finding_id="finding-001",
+                rule_id="rule-001",
+                subject_id="asset-001",
+                subject_type=ReviewSubjectType.VIDEO,
+                status=ComplianceStatus.NON_COMPLIANT,
+                severity=RuleSeverity.BLOCKER,
+                evaluation_method=EvaluationMethod.DETERMINISTIC,
+                message="Unsupported guarantee detected.",
+                timestamp_start_seconds=-1.0,
+            )
+
+    def test_finding_rejects_reversed_timestamp_range(self) -> None:
+        with self.assertRaisesRegex(
+            ValueError,
+            "timestamp_end_seconds cannot be earlier",
+        ):
+            ComplianceFinding(
+                finding_id="finding-001",
+                rule_id="rule-001",
+                subject_id="asset-001",
+                subject_type=ReviewSubjectType.VIDEO,
+                status=ComplianceStatus.NON_COMPLIANT,
+                severity=RuleSeverity.BLOCKER,
+                evaluation_method=EvaluationMethod.DETERMINISTIC,
+                message="Unsupported guarantee detected.",
+                timestamp_start_seconds=17.0,
+                timestamp_end_seconds=12.0,
+            )
+
+    def test_finding_round_trip_dictionary_conversion(self) -> None:
+        finding = ComplianceFinding(
+            finding_id="finding-001",
+            rule_id="rule-001",
+            subject_id="asset-001",
+            subject_type=ReviewSubjectType.IMAGE,
+            status=ComplianceStatus.REQUIRES_REVIEW,
+            severity=RuleSeverity.WARNING,
+            evaluation_method=EvaluationMethod.MODEL_ASSISTED,
+            message="Logo placement requires review.",
+            evidence=["Logo appears near the lower edge."],
+            recommendation="Confirm the approved safe-area spacing.",
+        )
+
+        restored_finding = ComplianceFinding.from_dict(finding.to_dict())
+
+        self.assertEqual(restored_finding, finding)
+
+
+class ComplianceReportTests(unittest.TestCase):
+    """Validate compliance report behaviour."""
+
+    def test_report_adds_matching_finding(self) -> None:
+        report = ComplianceReport(
+            report_id="report-001",
+            brand_id="nexus",
+            subject_id="asset-001",
+            subject_type=ReviewSubjectType.VIDEO,
+        )
+        finding = ComplianceFinding(
+            finding_id="finding-001",
+            rule_id="rule-001",
+            subject_id="asset-001",
+            subject_type=ReviewSubjectType.VIDEO,
+            status=ComplianceStatus.NON_COMPLIANT,
+            severity=RuleSeverity.BLOCKER,
+            evaluation_method=EvaluationMethod.DETERMINISTIC,
+            message="Unsupported guarantee detected.",
+        )
+
+        report.add_finding(finding)
+
+        self.assertEqual(report.findings, [finding])
+
+    def test_report_rejects_finding_for_different_subject(self) -> None:
+        report = ComplianceReport(
+            report_id="report-001",
+            brand_id="nexus",
+            subject_id="asset-001",
+            subject_type=ReviewSubjectType.TEXT,
+        )
+        finding = ComplianceFinding(
+            finding_id="finding-001",
+            rule_id="rule-001",
+            subject_id="asset-002",
+            subject_type=ReviewSubjectType.TEXT,
+            status=ComplianceStatus.NON_COMPLIANT,
+            severity=RuleSeverity.ERROR,
+            evaluation_method=EvaluationMethod.DETERMINISTIC,
+            message="Prohibited phrase detected.",
+        )
+
+        with self.assertRaisesRegex(
+            ValueError,
+            "does not belong to the report subject",
+        ):
+            report.add_finding(finding)
+
+    def test_report_round_trip_dictionary_conversion(self) -> None:
+        finding = ComplianceFinding(
+            finding_id="finding-001",
+            rule_id="rule-001",
+            subject_id="asset-001",
+            subject_type=ReviewSubjectType.TEXT,
+            status=ComplianceStatus.COMPLIANT,
+            severity=RuleSeverity.INFO,
+            evaluation_method=EvaluationMethod.DETERMINISTIC,
+            message="Required call to action is present.",
+        )
+        report = ComplianceReport(
+            report_id="report-001",
+            brand_id="nexus",
+            subject_id="asset-001",
+            subject_type=ReviewSubjectType.TEXT,
+            status=ComplianceStatus.COMPLIANT,
+            findings=[finding],
+            summary="All deterministic checks passed.",
+            ruleset_version="1.0",
+        )
+
+        restored_report = ComplianceReport.from_dict(report.to_dict())
+
+        self.assertEqual(restored_report, report)
+        self.assertIsInstance(
+            restored_report.findings[0],
+            ComplianceFinding,
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()
+
+====================================================================================================
+FILE: C:\Ai Projects\MarketingLabAI\tests\test_models.py
+====================================================================================================
+
+"""Tests for core MarketingLabAI data models."""
+
+import unittest
+
+from app.models import BrandProfile, CampaignBrief, VoiceProfile
+
+
+class ModelTests(unittest.TestCase):
+
+    def test_brand_profile_to_dict(self):
+        brand = BrandProfile(
+            brand_id="test-brand",
+            name="Test Brand",
+            industry="Testing",
+            description="A test brand.",
+            target_audience="Developers",
+        )
+
+        data = brand.to_dict()
+
+        self.assertEqual(data["brand_id"], "test-brand")
+        self.assertEqual(data["name"], "Test Brand")
+
+    def test_voice_profile_to_dict(self):
+        voice = VoiceProfile(
+            voice_id="voice-1",
+            brand_id="test-brand",
+            summary="Clear and direct.",
+            tone_traits=["clear", "direct"],
+        )
+
+        self.assertEqual(
+            voice.to_dict()["tone_traits"],
+            ["clear", "direct"],
+        )
+
+    def test_campaign_brief_to_dict(self):
+        brief = CampaignBrief(
+            campaign_id="campaign-1",
+            brand_id="test-brand",
+            objective="Awareness",
+            audience="Developers",
+            offer="Free demonstration",
+            platform="LinkedIn",
+            content_type="Post",
+            key_message="Save time",
+            call_to_action="Book a demonstration",
+        )
+
+        self.assertEqual(
+            brief.to_dict()["platform"],
+            "LinkedIn",
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()
+
+====================================================================================================
+FILE: C:\Ai Projects\MarketingLabAI\tests\test_sqlite_database.py
+====================================================================================================
+
+"""Tests for MarketingLabAI SQLite persistence and migration."""
+
+from __future__ import annotations
+
+import json
+import tempfile
+import unittest
+from pathlib import Path
+
+from app.database.connection import SQLiteDatabase
+from app.database.migration import JsonToSQLiteMigrator
+from app.database.repositories import (
+    BrandRepository,
+    BusinessIntelligenceRepository,
+)
+from app.intelligence.models import BusinessIntelligenceProfile
+
+
+class SQLiteDatabaseTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.temporary_directory = tempfile.TemporaryDirectory()
+        self.database_path = Path(self.temporary_directory.name) / "marketinglabai.db"
+        self.database = SQLiteDatabase(self.database_path)
+
+    def tearDown(self) -> None:
+        self.temporary_directory.cleanup()
+
+    def test_initialise_creates_required_tables(self) -> None:
+        self.database.initialise()
+
+        self.assertEqual(
+            self.database.table_names(),
+            [
+                "brands",
+                "business_intelligence_profiles",
+                "data_migration_log",
+                "schema_migrations",
+            ],
+        )
+
+    def test_integrity_check_returns_ok(self) -> None:
+        self.database.initialise()
+
+        self.assertEqual(self.database.integrity_check(), "ok")
+
+    def test_read_connection_is_closed_after_context(self) -> None:
+        self.database.initialise()
+
+        with self.database.connection() as connection:
+            connection.execute("SELECT 1").fetchone()
+
+        with self.assertRaises(Exception):
+            connection.execute("SELECT 1")
+
+    def test_transaction_rolls_back_after_error(self) -> None:
+        self.database.initialise()
+
+        with self.assertRaises(RuntimeError):
+            with self.database.transaction() as connection:
+                connection.execute(
+                    """
+                    INSERT INTO brands (
+                        brand_id,
+                        name,
+                        payload_json,
+                        created_at,
+                        updated_at
+                    )
+                    VALUES (?, ?, ?, ?, ?)
+                    """,
+                    (
+                        "rollback-brand",
+                        "Rollback Brand",
+                        "{}",
+                        "timestamp",
+                        "timestamp",
+                    ),
+                )
+                raise RuntimeError("Force rollback")
+
+        repository = BrandRepository(self.database)
+
+        self.assertFalse(repository.exists("rollback-brand"))
+
+
+class RepositoryTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.temporary_directory = tempfile.TemporaryDirectory()
+        self.database = SQLiteDatabase(
+            Path(self.temporary_directory.name) / "marketinglabai.db"
+        )
+        self.database.initialise()
+        self.brand_repository = BrandRepository(self.database)
+        self.intelligence_repository = BusinessIntelligenceRepository(self.database)
+
+    def tearDown(self) -> None:
+        self.temporary_directory.cleanup()
+
+    def test_brand_repository_round_trip(self) -> None:
+        payload = {
+            "brand_id": "test-brand",
+            "name": "Test Brand",
+            "industry": "Software",
+            "description": "An AI platform.",
+            "target_audience": ["Small businesses"],
+            "products": ["AI platform"],
+            "values": ["Trust"],
+            "website": "https://example.test",
+        }
+
+        self.brand_repository.save(payload)
+
+        self.assertTrue(self.brand_repository.exists("test-brand"))
+        self.assertEqual(
+            self.brand_repository.get("test-brand"),
+            payload,
+        )
+        self.assertEqual(
+            self.brand_repository.list_ids(),
+            ["test-brand"],
+        )
+
+    def test_brand_repository_updates_existing_record(self) -> None:
+        payload = {
+            "brand_id": "test-brand",
+            "name": "Original Name",
+        }
+        self.brand_repository.save(payload)
+
+        payload["name"] = "Updated Name"
+        self.brand_repository.save(payload)
+
+        stored_payload = self.brand_repository.get("test-brand")
+
+        self.assertEqual(stored_payload["name"], "Updated Name")
+        self.assertEqual(self.brand_repository.count(), 1)
+
+    def test_business_intelligence_round_trip(self) -> None:
+        self.brand_repository.save(
+            {
+                "brand_id": "test-brand",
+                "name": "Test Brand",
+            }
+        )
+
+        profile = BusinessIntelligenceProfile(
+            brand_id="test-brand",
+            revenue_model="Subscriptions",
+            gross_margin_percent=80,
+            sales_channels=["Website"],
+            business_goals=["Acquire customers"],
+        )
+
+        self.intelligence_repository.save(profile)
+        restored_profile = self.intelligence_repository.get("test-brand")
+
+        self.assertTrue(self.intelligence_repository.exists("test-brand"))
+        self.assertEqual(
+            restored_profile.revenue_model,
+            "Subscriptions",
+        )
+        self.assertEqual(
+            restored_profile.business_goals,
+            ["Acquire customers"],
+        )
+
+
+class JsonToSQLiteMigrationTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.temporary_directory = tempfile.TemporaryDirectory()
+        root = Path(self.temporary_directory.name)
+
+        self.brands_directory = root / "brands"
+        self.intelligence_directory = root / "business_intelligence"
+        self.backup_root = root / "backups"
+        self.database = SQLiteDatabase(root / "marketinglabai.db")
+
+        self.brands_directory.mkdir()
+        self.intelligence_directory.mkdir()
+
+        brand_payload = {
+            "brand_id": "marketinglabai-demo",
+            "name": "MarketingLabAI Demo",
+            "industry": "Artificial Intelligence Software",
+            "description": "AI marketing operating system.",
+            "target_audience": ["Small businesses"],
+            "products": ["AI Marketing Platform"],
+            "values": ["Innovation", "Trust"],
+            "website": "https://marketinglabai.local",
+        }
+
+        intelligence_payload = {
+            "brand_id": "marketinglabai-demo",
+            "revenue_model": "Monthly SaaS subscriptions",
+            "average_order_value": 999,
+            "gross_margin_percent": 80,
+            "customer_lifetime_value": 5000,
+            "customer_acquisition_cost": 250,
+            "sales_cycle_days": 14,
+            "monthly_marketing_budget": 10000,
+            "team_size": 4,
+            "sales_channels": ["Website", "Direct sales"],
+            "geographic_markets": ["South Africa"],
+            "capacity_constraints": ["Development capacity"],
+            "seasonality": ["Annual planning season"],
+            "competitors": ["Jasper", "HubSpot"],
+            "business_goals": ["Acquire paying customers"],
+            "updated_at": "2026-01-01T00:00:00+00:00",
+        }
+
+        self._write_json(
+            self.brands_directory / "marketinglabai-demo.json",
+            brand_payload,
+        )
+        self._write_json(
+            self.intelligence_directory / "marketinglabai-demo.json",
+            intelligence_payload,
+        )
+
+    def tearDown(self) -> None:
+        self.temporary_directory.cleanup()
+
+    def test_migration_imports_brand_and_company_brain(self) -> None:
+        migrator = self._build_migrator()
+
+        result = migrator.migrate()
+
+        brand_repository = BrandRepository(self.database)
+        intelligence_repository = BusinessIntelligenceRepository(self.database)
+
+        self.assertEqual(result.brands_imported, 1)
+        self.assertEqual(result.intelligence_profiles_imported, 1)
+        self.assertEqual(result.records_failed, 0)
+        self.assertTrue(brand_repository.exists("marketinglabai-demo"))
+        self.assertTrue(intelligence_repository.exists("marketinglabai-demo"))
+        self.assertIsNotNone(result.backup_directory)
+        self.assertTrue(result.backup_directory.exists())
+
+    def test_second_migration_skips_existing_records(self) -> None:
+        migrator = self._build_migrator()
+
+        first_result = migrator.migrate()
+        second_result = migrator.migrate()
+
+        self.assertEqual(first_result.brands_imported, 1)
+        self.assertEqual(second_result.brands_imported, 0)
+        self.assertEqual(
+            second_result.intelligence_profiles_imported,
+            0,
+        )
+        self.assertEqual(second_result.records_skipped, 2)
+
+    def test_migration_preserves_source_files(self) -> None:
+        migrator = self._build_migrator()
+
+        migrator.migrate()
+
+        self.assertTrue((self.brands_directory / "marketinglabai-demo.json").exists())
+        self.assertTrue(
+            (self.intelligence_directory / "marketinglabai-demo.json").exists()
+        )
+
+    def _build_migrator(self) -> JsonToSQLiteMigrator:
+        return JsonToSQLiteMigrator(
+            database=self.database,
+            brands_directory=self.brands_directory,
+            intelligence_directory=self.intelligence_directory,
+            backup_root=self.backup_root,
+        )
+
+    @staticmethod
+    def _write_json(
+        path: Path,
+        payload: dict[str, object],
+    ) -> None:
+        path.write_text(
+            json.dumps(payload, indent=2),
+            encoding="utf-8",
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -110,6 +110,26 @@ class SQLiteDatabase:
                         ON DELETE CASCADE
                 );
 
+                CREATE TABLE IF NOT EXISTS compliance_rules (
+                    rule_id TEXT NOT NULL,
+                    version INTEGER NOT NULL,
+                    brand_id TEXT NOT NULL,
+                    name TEXT NOT NULL,
+                    category TEXT NOT NULL DEFAULT '',
+                    severity TEXT NOT NULL,
+                    evaluation_method TEXT NOT NULL,
+                    enabled INTEGER NOT NULL DEFAULT 1,
+                    evidence_required INTEGER NOT NULL DEFAULT 0,
+                    payload_json TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    PRIMARY KEY (rule_id, version),
+                    FOREIGN KEY (brand_id)
+                        REFERENCES brands(brand_id)
+                        ON DELETE CASCADE
+                );
+
+
                 CREATE TABLE IF NOT EXISTS data_migration_log (
                     migration_id INTEGER PRIMARY KEY AUTOINCREMENT,
                     source_type TEXT NOT NULL,
@@ -130,10 +150,33 @@ class SQLiteDatabase:
                     idx_business_intelligence_revenue_model
                     ON business_intelligence_profiles(revenue_model);
 
+                CREATE INDEX IF NOT EXISTS idx_compliance_rules_brand
+                    ON compliance_rules(brand_id);
+
+                CREATE INDEX IF NOT EXISTS idx_compliance_rules_enabled
+                    ON compliance_rules(brand_id, enabled);
+
+
                 CREATE INDEX IF NOT EXISTS idx_data_migration_log_record
                     ON data_migration_log(source_type, record_id);
                 """
             )
+
+            connection.execute(
+                """
+                INSERT OR IGNORE INTO schema_migrations (
+                    version,
+                    description,
+                    applied_at
+                )
+                VALUES (
+                    2,
+                    'Add versioned compliance rules',
+                    strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+                )
+                """
+            )
+
 
             connection.execute(
                 """
