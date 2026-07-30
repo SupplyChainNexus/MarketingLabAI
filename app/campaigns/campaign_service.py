@@ -1,16 +1,17 @@
-﻿"""Campaign brief and generated-content persistence."""
+﻿"""Campaign persistence, including compliance reports."""
 
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from app.compliance.models import ComplianceReport
 from app.config import Settings, load_settings
 from app.models import CampaignBrief, GeneratedContent
 from app.services.json_storage import JsonStorage
 
 
 class CampaignService:
-    """Store campaign briefs and generated marketing content."""
+    """Store campaign briefs, generated content, and compliance reports."""
 
     def __init__(self, settings: Settings | None = None):
         self.settings = settings or load_settings()
@@ -18,6 +19,12 @@ class CampaignService:
 
         self.output_folder = self.settings.output_folder / "campaigns"
         self.output_folder.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+
+        self.compliance_output_folder = self.settings.output_folder / "compliance"
+        self.compliance_output_folder.mkdir(
             parents=True,
             exist_ok=True,
         )
@@ -43,10 +50,9 @@ class CampaignService:
         self,
         generated: GeneratedContent,
     ) -> Path:
-        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S-%f")
 
-        filename = f"{generated.campaign_id}-" f"{timestamp}.txt"
-
+        filename = f"{generated.campaign_id}-{timestamp}.txt"
         path = self.output_folder / filename
 
         header = (
@@ -73,6 +79,41 @@ class CampaignService:
 
         self.storage.save(
             f"{generated.campaign_id}-{timestamp}",
+            metadata,
+        )
+
+        return path
+
+    def save_compliance_report(
+        self,
+        report: ComplianceReport,
+    ) -> Path:
+        """Persist a completed campaign compliance report."""
+
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S-%f")
+        filename = f"{report.subject_id}-{timestamp}-compliance.json"
+        path = self.compliance_output_folder / filename
+
+        report_data = report.to_dict()
+
+        path.write_text(
+            __import__("json").dumps(
+                report_data,
+                indent=2,
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+
+        metadata: dict[str, Any] = {
+            "record_type": "compliance_report",
+            "saved_at": datetime.now(timezone.utc).isoformat(),
+            "output_file": str(path),
+            "data": report_data,
+        }
+
+        self.storage.save(
+            f"{report.subject_id}-{timestamp}-compliance",
             metadata,
         )
 
