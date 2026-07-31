@@ -1,4 +1,4 @@
-"""Relational repositories for MarketingLabAI data."""
+﻿"""Relational repositories for MarketingLabAI data."""
 
 from __future__ import annotations
 
@@ -9,6 +9,7 @@ from typing import Any
 from app.database.connection import SQLiteDatabase
 from app.intelligence.models import BusinessIntelligenceProfile
 from app.memory.models import MemoryEvent
+from app.tenants.models import DEFAULT_TENANT_ID
 
 
 def current_utc_timestamp() -> str:
@@ -36,21 +37,28 @@ def decode_json(value: str) -> Any:
 class BrandRepository:
     """Store and retrieve brand payloads in SQLite."""
 
-    def __init__(self, database: SQLiteDatabase | None = None) -> None:
+    def __init__(
+        self,
+        database: SQLiteDatabase | None = None,
+    ) -> None:
         self.database = database or SQLiteDatabase()
         self.database.initialise()
 
     def save(self, payload: dict[str, Any]) -> None:
-        """Insert or update a brand record."""
+        """Insert or update a tenant-owned brand record."""
 
         brand_id = str(payload.get("brand_id", "")).strip()
         name = str(payload.get("name", "")).strip()
+        tenant_id = str(payload.get("tenant_id", DEFAULT_TENANT_ID)).strip()
 
         if not brand_id:
             raise ValueError("brand_id is required.")
 
         if not name:
             raise ValueError("Brand name is required.")
+
+        if not tenant_id:
+            tenant_id = DEFAULT_TENANT_ID
 
         timestamp = current_utc_timestamp()
 
@@ -63,6 +71,7 @@ class BrandRepository:
                 """
                 INSERT INTO brands (
                     brand_id,
+                    tenant_id,
                     name,
                     industry,
                     description,
@@ -74,8 +83,9 @@ class BrandRepository:
                     created_at,
                     updated_at
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(brand_id) DO UPDATE SET
+                    tenant_id = excluded.tenant_id,
                     name = excluded.name,
                     industry = excluded.industry,
                     description = excluded.description,
@@ -88,6 +98,7 @@ class BrandRepository:
                 """,
                 (
                     brand_id,
+                    tenant_id,
                     name,
                     str(payload.get("industry", "")),
                     str(payload.get("description", "")),
@@ -115,16 +126,12 @@ class BrandRepository:
             ).fetchone()
 
         if row is None:
-            raise FileNotFoundError(
-                f"No brand exists with ID '{brand_id}'."
-            )
+            raise FileNotFoundError(f"No brand exists with ID '{brand_id}'.")
 
         payload = decode_json(str(row["payload_json"]))
 
         if not isinstance(payload, dict):
-            raise ValueError(
-                f"Invalid stored brand payload for '{brand_id}'."
-            )
+            raise ValueError(f"Invalid stored brand payload for '{brand_id}'.")
 
         return payload
 
@@ -144,26 +151,64 @@ class BrandRepository:
 
         return row is not None
 
-    def list_ids(self) -> list[str]:
-        """Return all brand IDs."""
+    def tenant_id_for(self, brand_id: str) -> str:
+        """Return the tenant that owns a brand."""
+
+        with self.database.connection() as connection:
+            row = connection.execute(
+                """
+                SELECT tenant_id
+                FROM brands
+                WHERE brand_id = ?
+                """,
+                (brand_id,),
+            ).fetchone()
+
+        if row is None:
+            raise FileNotFoundError(f"No brand exists with ID '{brand_id}'.")
+
+        return str(row["tenant_id"])
+
+    def list_ids(
+        self,
+        tenant_id: str | None = None,
+    ) -> list[str]:
+        """Return brand IDs, optionally filtered by tenant."""
+
+        query = "SELECT brand_id FROM brands"
+        parameters: tuple[str, ...] = ()
+
+        if tenant_id is not None:
+            query += " WHERE tenant_id = ?"
+            parameters = (tenant_id,)
+
+        query += " ORDER BY brand_id"
 
         with self.database.connection() as connection:
             rows = connection.execute(
-                """
-                SELECT brand_id
-                FROM brands
-                ORDER BY brand_id
-                """
+                query,
+                parameters,
             ).fetchall()
 
         return [str(row["brand_id"]) for row in rows]
 
-    def count(self) -> int:
+    def count(
+        self,
+        tenant_id: str | None = None,
+    ) -> int:
         """Return the number of stored brands."""
+
+        query = "SELECT COUNT(*) AS total FROM brands"
+        parameters: tuple[str, ...] = ()
+
+        if tenant_id is not None:
+            query += " WHERE tenant_id = ?"
+            parameters = (tenant_id,)
 
         with self.database.connection() as connection:
             row = connection.execute(
-                "SELECT COUNT(*) AS total FROM brands"
+                query,
+                parameters,
             ).fetchone()
 
         return int(row["total"]) if row else 0
@@ -274,9 +319,7 @@ class BusinessIntelligenceRepository:
         payload = decode_json(str(row["payload_json"]))
 
         if not isinstance(payload, dict):
-            raise ValueError(
-                f"Invalid business intelligence data for '{brand_id}'."
-            )
+            raise ValueError(f"Invalid business intelligence data for '{brand_id}'.")
 
         return BusinessIntelligenceProfile.from_dict(payload)
 
@@ -300,13 +343,11 @@ class BusinessIntelligenceRepository:
         """Return IDs with Company Brain profiles."""
 
         with self.database.connection() as connection:
-            rows = connection.execute(
-                """
+            rows = connection.execute("""
                 SELECT brand_id
                 FROM business_intelligence_profiles
                 ORDER BY brand_id
-                """
-            ).fetchall()
+                """).fetchall()
 
         return [str(row["brand_id"]) for row in rows]
 
@@ -314,12 +355,10 @@ class BusinessIntelligenceRepository:
         """Return the number of Company Brain profiles."""
 
         with self.database.connection() as connection:
-            row = connection.execute(
-                """
+            row = connection.execute("""
                 SELECT COUNT(*) AS total
                 FROM business_intelligence_profiles
-                """
-            ).fetchone()
+                """).fetchone()
 
         return int(row["total"]) if row else 0
 
@@ -394,16 +433,12 @@ class MemoryRepository:
             ).fetchone()
 
         if row is None:
-            raise FileNotFoundError(
-                f"No memory event exists with ID '{memory_id}'."
-            )
+            raise FileNotFoundError(f"No memory event exists with ID '{memory_id}'.")
 
         payload = decode_json(str(row["payload_json"]))
 
         if not isinstance(payload, dict):
-            raise ValueError(
-                f"Invalid stored memory payload for '{memory_id}'."
-            )
+            raise ValueError(f"Invalid stored memory payload for '{memory_id}'.")
 
         return MemoryEvent.from_dict(payload)
 
@@ -447,10 +482,7 @@ class MemoryRepository:
             ).fetchall()
 
         return [
-            MemoryEvent.from_dict(
-                decode_json(str(row["payload_json"]))
-            )
-            for row in rows
+            MemoryEvent.from_dict(decode_json(str(row["payload_json"]))) for row in rows
         ]
 
     def search(
@@ -498,10 +530,7 @@ class MemoryRepository:
             ).fetchall()
 
         return [
-            MemoryEvent.from_dict(
-                decode_json(str(row["payload_json"]))
-            )
-            for row in rows
+            MemoryEvent.from_dict(decode_json(str(row["payload_json"]))) for row in rows
         ]
 
     def count(

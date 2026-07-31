@@ -7,7 +7,10 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
 
-from app.tenants.migration import apply_tenant_migration
+from app.tenants.migration import (
+    apply_brand_ownership_migration,
+    apply_tenant_migration,
+)
 
 
 class SQLiteDatabase:
@@ -185,6 +188,7 @@ class SQLiteDatabase:
                 """)
 
             apply_tenant_migration(connection)
+            apply_brand_ownership_migration(connection)
 
             connection.execute("""
                 INSERT OR IGNORE INTO schema_migrations (
