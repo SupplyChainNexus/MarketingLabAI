@@ -1,4 +1,4 @@
-"""Tests for MarketingLabAI SQLite persistence and migration."""
+﻿"""Tests for MarketingLabAI SQLite persistence and migration."""
 
 from __future__ import annotations
 
@@ -37,6 +37,7 @@ class SQLiteDatabaseTests(unittest.TestCase):
                 "data_migration_log",
                 "memory_events",
                 "schema_migrations",
+                "tenants",
             ],
         )
 

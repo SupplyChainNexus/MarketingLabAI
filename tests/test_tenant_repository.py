@@ -19,17 +19,6 @@ class TenantRepositoryTests(unittest.TestCase):
         )
         self.database.initialise()
 
-        with self.database.transaction() as connection:
-            connection.execute("""
-                CREATE TABLE tenants (
-                    tenant_id TEXT PRIMARY KEY,
-                    name TEXT NOT NULL,
-                    status TEXT NOT NULL DEFAULT 'active',
-                    created_at TEXT NOT NULL,
-                    updated_at TEXT NOT NULL
-                )
-                """)
-
         self.repository = TenantRepository(self.database)
 
     def tearDown(self) -> None:
@@ -65,7 +54,7 @@ class TenantRepositoryTests(unittest.TestCase):
 
         self.assertEqual(restored.name, "Updated Name")
         self.assertEqual(restored.status, "inactive")
-        self.assertEqual(self.repository.count(), 1)
+        self.assertEqual(self.repository.count(), 2)
 
     def test_repository_reports_tenant_existence(self) -> None:
         self.assertFalse(self.repository.exists("tenant-one"))
@@ -97,7 +86,7 @@ class TenantRepositoryTests(unittest.TestCase):
 
         self.assertEqual(
             [tenant.tenant_id for tenant in tenants],
-            ["tenant-one", "tenant-two"],
+            ["default", "tenant-one", "tenant-two"],
         )
 
     def test_repository_counts_tenants(self) -> None:
@@ -114,7 +103,7 @@ class TenantRepositoryTests(unittest.TestCase):
             )
         )
 
-        self.assertEqual(self.repository.count(), 2)
+        self.assertEqual(self.repository.count(), 3)
 
     def test_repository_raises_for_missing_tenant(self) -> None:
         with self.assertRaisesRegex(

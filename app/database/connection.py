@@ -1,4 +1,4 @@
-"""SQLite connection management for MarketingLabAI."""
+﻿"""SQLite connection management for MarketingLabAI."""
 
 from __future__ import annotations
 
@@ -6,6 +6,8 @@ import sqlite3
 from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
+
+from app.tenants.migration import apply_tenant_migration
 
 
 class SQLiteDatabase:
@@ -64,8 +66,7 @@ class SQLiteDatabase:
         """Create all current database tables and indexes."""
 
         with self.transaction() as connection:
-            connection.executescript(
-                """
+            connection.executescript("""
                 CREATE TABLE IF NOT EXISTS schema_migrations (
                     version INTEGER PRIMARY KEY,
                     description TEXT NOT NULL,
@@ -181,11 +182,11 @@ class SQLiteDatabase:
 
                 CREATE INDEX IF NOT EXISTS idx_data_migration_log_record
                     ON data_migration_log(source_type, record_id);
-                """
-            )
+                """)
 
-            connection.execute(
-                """
+            apply_tenant_migration(connection)
+
+            connection.execute("""
                 INSERT OR IGNORE INTO schema_migrations (
                     version,
                     description,
@@ -196,12 +197,9 @@ class SQLiteDatabase:
                     'Add versioned compliance rules',
                     strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
                 )
-                """
-            )
+                """)
 
-
-            connection.execute(
-                """
+            connection.execute("""
                 INSERT OR IGNORE INTO schema_migrations (
                     version,
                     description,
@@ -212,12 +210,9 @@ class SQLiteDatabase:
                     'Add institutional memory events',
                     strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
                 )
-                """
-            )
+                """)
 
-
-            connection.execute(
-                """
+            connection.execute("""
                 INSERT OR IGNORE INTO schema_migrations (
                     version,
                     description,
@@ -228,22 +223,19 @@ class SQLiteDatabase:
                     'Initial MarketingLabAI relational schema',
                     strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
                 )
-                """
-            )
+                """)
 
     def table_names(self) -> list[str]:
         """Return application table names."""
 
         with self.connection() as connection:
-            rows = connection.execute(
-                """
+            rows = connection.execute("""
                 SELECT name
                 FROM sqlite_master
                 WHERE type = 'table'
                   AND name NOT LIKE 'sqlite_%'
                 ORDER BY name
-                """
-            ).fetchall()
+                """).fetchall()
 
         return [str(row["name"]) for row in rows]
 
@@ -251,14 +243,10 @@ class SQLiteDatabase:
         """Run SQLite's built-in database integrity check."""
 
         with self.connection() as connection:
-            row = connection.execute(
-                "PRAGMA integrity_check"
-            ).fetchone()
+            row = connection.execute("PRAGMA integrity_check").fetchone()
 
         if row is None:
-            raise RuntimeError(
-                "SQLite did not return an integrity result."
-            )
+            raise RuntimeError("SQLite did not return an integrity result.")
 
         return str(row[0])
 
@@ -266,6 +254,4 @@ class SQLiteDatabase:
         """Checkpoint and truncate SQLite's write-ahead log."""
 
         with self.connection() as connection:
-            connection.execute(
-                "PRAGMA wal_checkpoint(TRUNCATE)"
-            ).fetchone()
+            connection.execute("PRAGMA wal_checkpoint(TRUNCATE)").fetchone()
