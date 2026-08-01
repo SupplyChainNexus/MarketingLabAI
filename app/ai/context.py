@@ -55,4 +55,4 @@ class CompanyBrainPromptBuilder:
         if len(lines) == 1:
             return ""
 
-        return "`n".join(lines)
+        return "\n".join(lines)

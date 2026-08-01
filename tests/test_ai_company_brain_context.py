@@ -63,6 +63,25 @@ class CompanyBrainPromptBuilderTests(unittest.TestCase):
             context,
         )
 
+    def test_builder_uses_real_newlines(self) -> None:
+        profile = BusinessIntelligenceProfile(
+            brand_id="brand-one",
+            revenue_model="Retail sales",
+            sales_channels=["Website", "Retail store"],
+        )
+
+        context = CompanyBrainPromptBuilder().build(profile)
+
+        self.assertEqual(
+            context,
+            (
+                "Company Context:\n"
+                "- Revenue model: Retail sales\n"
+                "- Sales channels: Website, Retail store"
+            ),
+        )
+        self.assertNotIn("`n", context)
+
     def test_builder_omits_empty_fields(self) -> None:
         profile = BusinessIntelligenceProfile(
             brand_id="brand-one",
