@@ -1,4 +1,4 @@
-﻿"""Tests for Company Brain AI prompt context."""
+"""Tests for Company Brain AI prompt context."""
 
 from __future__ import annotations
 
@@ -43,10 +43,6 @@ class CompanyBrainPromptBuilderTests(unittest.TestCase):
         context = CompanyBrainPromptBuilder().build(profile)
 
         self.assertIn(
-            "Company Context:",
-            context,
-        )
-        self.assertIn(
             "Revenue model: Retail sales",
             context,
         )
@@ -75,7 +71,6 @@ class CompanyBrainPromptBuilderTests(unittest.TestCase):
         self.assertEqual(
             context,
             (
-                "Company Context:\n"
                 "- Revenue model: Retail sales\n"
                 "- Sales channels: Website, Retail store"
             ),

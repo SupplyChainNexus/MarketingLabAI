@@ -37,7 +37,7 @@ class CompanyBrainPromptBuilder:
         ):
             raise TypeError("profile must be a " "BusinessIntelligenceProfile.")
 
-        lines = ["Company Context:"]
+        lines: list[str] = []
 
         for field_name, label in self._FIELD_LABELS:
             value = getattr(profile, field_name)
@@ -52,7 +52,7 @@ class CompanyBrainPromptBuilder:
 
             lines.append(f"- {label}: {rendered_value}")
 
-        if len(lines) == 1:
+        if not lines:
             return ""
 
         return "\n".join(lines)
