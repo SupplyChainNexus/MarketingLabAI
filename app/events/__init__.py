@@ -1,17 +1,11 @@
-"""Domain event infrastructure for MarketingLabAI."""
+"""Domain event infrastructure."""
 
-from app.events.bus import (
-    EventBus,
-    EventDispatchError,
-    EventDispatchFailure,
-)
-from app.events.memory import MemoryEventRecorder
+from app.events.brand_events import BrandCreatedEvent
+from app.events.bus import EventBus
 from app.events.models import DomainEvent
 
 __all__ = [
     "DomainEvent",
     "EventBus",
-    "EventDispatchError",
-    "EventDispatchFailure",
-    "MemoryEventRecorder",
+    "BrandCreatedEvent",
 ]
