@@ -1,4 +1,4 @@
-﻿"""SQLite connection management for MarketingLabAI."""
+"""SQLite connection management for MarketingLabAI."""
 
 from __future__ import annotations
 
@@ -134,6 +134,27 @@ class SQLiteDatabase:
                 );
 
 
+                CREATE TABLE IF NOT EXISTS prompt_packs (
+                    prompt_pack_id TEXT NOT NULL,
+                    version INTEGER NOT NULL,
+                    tenant_id TEXT NOT NULL,
+                    brand_id TEXT,
+                    name TEXT NOT NULL,
+                    task_type TEXT NOT NULL,
+                    channel TEXT NOT NULL DEFAULT '',
+                    enabled INTEGER NOT NULL DEFAULT 1,
+                    payload_json TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    PRIMARY KEY (prompt_pack_id, version),
+                    FOREIGN KEY (tenant_id)
+                        REFERENCES tenants(tenant_id)
+                        ON DELETE CASCADE,
+                    FOREIGN KEY (brand_id)
+                        REFERENCES brands(brand_id)
+                        ON DELETE CASCADE
+                );
+
                 CREATE TABLE IF NOT EXISTS memory_events (
                     memory_id TEXT PRIMARY KEY,
                     brand_id TEXT NOT NULL,
@@ -174,6 +195,21 @@ class SQLiteDatabase:
                     ON compliance_rules(brand_id, enabled);
 
 
+                CREATE INDEX IF NOT EXISTS idx_prompt_packs_tenant
+                    ON prompt_packs(tenant_id);
+
+                CREATE INDEX IF NOT EXISTS idx_prompt_packs_brand
+                    ON prompt_packs(brand_id);
+
+                CREATE INDEX IF NOT EXISTS idx_prompt_packs_task_type
+                    ON prompt_packs(tenant_id, task_type);
+
+                CREATE INDEX IF NOT EXISTS idx_prompt_packs_channel
+                    ON prompt_packs(tenant_id, channel);
+
+                CREATE INDEX IF NOT EXISTS idx_prompt_packs_enabled
+                    ON prompt_packs(tenant_id, enabled);
+
                 CREATE INDEX IF NOT EXISTS idx_memory_events_brand
                     ON memory_events(brand_id);
 
@@ -212,6 +248,19 @@ class SQLiteDatabase:
                 VALUES (
                     3,
                     'Add institutional memory events',
+                    strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+                )
+                """)
+
+            connection.execute("""
+                INSERT OR IGNORE INTO schema_migrations (
+                    version,
+                    description,
+                    applied_at
+                )
+                VALUES (
+                    6,
+                    'Add versioned prompt packs',
                     strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
                 )
                 """)
