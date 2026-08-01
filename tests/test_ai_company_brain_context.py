@@ -6,6 +6,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from app.ai.assembler import AIContextAssembler
 from app.ai.context import CompanyBrainPromptBuilder
 from app.ai.orchestrator import AIOrchestrator
 from app.ai.providers.mock import MockIntelligenceProvider
@@ -143,7 +144,9 @@ class AIOrchestratorCompanyBrainTests(unittest.TestCase):
 
         orchestrator = AIOrchestrator(
             self.registry,
-            intelligence_repository=self.intelligence,
+            context_assembler=AIContextAssembler(
+                intelligence_repository=self.intelligence,
+            ),
         )
 
         orchestrator.generate(
@@ -178,7 +181,9 @@ class AIOrchestratorCompanyBrainTests(unittest.TestCase):
     ) -> None:
         orchestrator = AIOrchestrator(
             self.registry,
-            intelligence_repository=self.intelligence,
+            context_assembler=AIContextAssembler(
+                intelligence_repository=self.intelligence,
+            ),
         )
 
         orchestrator.generate(

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from app.ai.context import CompanyBrainPromptBuilder
+from app.ai.assembler import AIContext, AIContextAssembler
 from app.ai.models import (
     IntelligenceRequest,
     IntelligenceResponse,
@@ -14,20 +14,16 @@ from app.ai.prompt import (
     PromptSection,
 )
 from app.ai.registry import IntelligenceProviderRegistry
-from app.database.repositories import (
-    BusinessIntelligenceRepository,
-)
 
 
 class AIOrchestrator:
-    """Coordinate application AI requests through the provider registry."""
+    """Coordinate application AI requests through assembled context."""
 
     def __init__(
         self,
         registry: IntelligenceProviderRegistry,
         *,
-        intelligence_repository: BusinessIntelligenceRepository | None = None,
-        company_brain_prompt_builder: CompanyBrainPromptBuilder | None = None,
+        context_assembler: AIContextAssembler | None = None,
     ) -> None:
         if not isinstance(
             registry,
@@ -35,27 +31,14 @@ class AIOrchestrator:
         ):
             raise TypeError("registry must be an " "IntelligenceProviderRegistry.")
 
-        if intelligence_repository is not None and not isinstance(
-            intelligence_repository,
-            BusinessIntelligenceRepository,
+        if context_assembler is not None and not isinstance(
+            context_assembler,
+            AIContextAssembler,
         ):
-            raise TypeError(
-                "intelligence_repository must be a " "BusinessIntelligenceRepository."
-            )
-
-        if company_brain_prompt_builder is not None and not isinstance(
-            company_brain_prompt_builder,
-            CompanyBrainPromptBuilder,
-        ):
-            raise TypeError(
-                "company_brain_prompt_builder must be a " "CompanyBrainPromptBuilder."
-            )
+            raise TypeError("context_assembler must be an " "AIContextAssembler.")
 
         self.registry = registry
-        self.intelligence_repository = intelligence_repository
-        self.company_brain_prompt_builder = (
-            company_brain_prompt_builder or CompanyBrainPromptBuilder()
-        )
+        self.context_assembler = context_assembler or AIContextAssembler()
 
     def generate(
         self,
@@ -101,12 +84,14 @@ class AIOrchestrator:
         ):
             raise TypeError("metadata must be a dictionary.")
 
-        company_context = self._load_company_context(brand_id)
+        context = self.context_assembler.build(
+            brand_id=brand_id,
+        )
 
         prompt = self._build_prompt(
+            context=context,
             task=task,
             instructions=instructions,
-            company_context=company_context,
         )
 
         request_metadata = dict(metadata or {})
@@ -115,7 +100,9 @@ class AIOrchestrator:
                 "tenant_id": tenant_id,
                 "brand_id": brand_id,
                 "task": task,
-                "company_brain_included": bool(company_context),
+                "company_brain_included": (context.company_brain_included),
+                "memory_included": (context.memory_included),
+                "memory_count": context.memory_count,
             }
         )
 
@@ -133,39 +120,30 @@ class AIOrchestrator:
             provider_name=provider_name,
         )
 
-    def _load_company_context(
-        self,
-        brand_id: str,
-    ) -> str:
-        """Load and format Company Brain context when available."""
-
-        repository = self.intelligence_repository
-
-        if repository is None:
-            return ""
-
-        if not repository.exists(brand_id):
-            return ""
-
-        profile = repository.get(brand_id)
-
-        return self.company_brain_prompt_builder.build(profile)
-
     @staticmethod
     def _build_prompt(
         *,
+        context: AIContext,
         task: str,
         instructions: str,
-        company_context: str = "",
     ) -> str:
-        """Build the orchestration prompt."""
+        """Build a prompt from assembled context."""
+
+        if not isinstance(context, AIContext):
+            raise TypeError("context must be an AIContext.")
 
         composer = PromptComposer()
 
         composer.add(
             PromptSection(
                 title="Company Context",
-                content=company_context,
+                content=context.company_context,
+            )
+        )
+        composer.add(
+            PromptSection(
+                title="Relevant Institutional Memory",
+                content=context.memory_context,
             )
         )
         composer.add(

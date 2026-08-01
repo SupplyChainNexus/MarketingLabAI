@@ -1,4 +1,4 @@
-﻿"""Tests for the provider-neutral AI orchestrator."""
+"""Tests for the provider-neutral AI orchestrator."""
 
 from __future__ import annotations
 
@@ -116,6 +116,8 @@ class AIOrchestratorTests(unittest.TestCase):
                 "brand_id": "brand-one",
                 "task": "Create a campaign",
                 "company_brain_included": False,
+                "memory_included": False,
+                "memory_count": 0,
             },
         )
 

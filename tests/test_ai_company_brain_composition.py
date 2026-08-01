@@ -1,4 +1,4 @@
-﻿"""Regression tests for composed Company Brain prompts."""
+"""Regression tests for composed Company Brain prompts."""
 
 from __future__ import annotations
 
@@ -6,6 +6,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from app.ai.assembler import AIContextAssembler
 from app.ai.orchestrator import AIOrchestrator
 from app.ai.providers.mock import MockIntelligenceProvider
 from app.ai.registry import IntelligenceProviderRegistry
@@ -58,7 +59,9 @@ class CompanyBrainCompositionTests(unittest.TestCase):
     ) -> None:
         orchestrator = AIOrchestrator(
             self.registry,
-            intelligence_repository=self.intelligence,
+            context_assembler=AIContextAssembler(
+                intelligence_repository=self.intelligence,
+            ),
         )
 
         orchestrator.generate(
