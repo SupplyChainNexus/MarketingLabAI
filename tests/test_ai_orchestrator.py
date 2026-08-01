@@ -115,6 +115,7 @@ class AIOrchestratorTests(unittest.TestCase):
                 "tenant_id": "tenant-one",
                 "brand_id": "brand-one",
                 "task": "Create a campaign",
+                "company_brain_included": False,
             },
         )
 

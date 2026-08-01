@@ -4,11 +4,15 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.ai.context import CompanyBrainPromptBuilder
 from app.ai.models import (
     IntelligenceRequest,
     IntelligenceResponse,
 )
 from app.ai.registry import IntelligenceProviderRegistry
+from app.database.repositories import (
+    BusinessIntelligenceRepository,
+)
 
 
 class AIOrchestrator:
@@ -17,6 +21,9 @@ class AIOrchestrator:
     def __init__(
         self,
         registry: IntelligenceProviderRegistry,
+        *,
+        intelligence_repository: BusinessIntelligenceRepository | None = None,
+        company_brain_prompt_builder: CompanyBrainPromptBuilder | None = None,
     ) -> None:
         if not isinstance(
             registry,
@@ -24,7 +31,27 @@ class AIOrchestrator:
         ):
             raise TypeError("registry must be an " "IntelligenceProviderRegistry.")
 
+        if intelligence_repository is not None and not isinstance(
+            intelligence_repository,
+            BusinessIntelligenceRepository,
+        ):
+            raise TypeError(
+                "intelligence_repository must be a " "BusinessIntelligenceRepository."
+            )
+
+        if company_brain_prompt_builder is not None and not isinstance(
+            company_brain_prompt_builder,
+            CompanyBrainPromptBuilder,
+        ):
+            raise TypeError(
+                "company_brain_prompt_builder must be a " "CompanyBrainPromptBuilder."
+            )
+
         self.registry = registry
+        self.intelligence_repository = intelligence_repository
+        self.company_brain_prompt_builder = (
+            company_brain_prompt_builder or CompanyBrainPromptBuilder()
+        )
 
     def generate(
         self,
@@ -70,9 +97,12 @@ class AIOrchestrator:
         ):
             raise TypeError("metadata must be a dictionary.")
 
+        company_context = self._load_company_context(brand_id)
+
         prompt = self._build_prompt(
             task=task,
             instructions=instructions,
+            company_context=company_context,
         )
 
         request_metadata = dict(metadata or {})
@@ -81,6 +111,7 @@ class AIOrchestrator:
                 "tenant_id": tenant_id,
                 "brand_id": brand_id,
                 "task": task,
+                "company_brain_included": bool(company_context),
             }
         )
 
@@ -98,15 +129,41 @@ class AIOrchestrator:
             provider_name=provider_name,
         )
 
+    def _load_company_context(
+        self,
+        brand_id: str,
+    ) -> str:
+        """Load and format Company Brain context when available."""
+
+        repository = self.intelligence_repository
+
+        if repository is None:
+            return ""
+
+        if not repository.exists(brand_id):
+            return ""
+
+        profile = repository.get(brand_id)
+
+        return self.company_brain_prompt_builder.build(profile)
+
     @staticmethod
     def _build_prompt(
         *,
         task: str,
         instructions: str,
+        company_context: str = "",
     ) -> str:
         """Build the initial orchestration prompt."""
 
-        if not instructions:
-            return task
+        sections: list[str] = []
 
-        return f"Task:\n{task}\n\n" f"Instructions:\n{instructions}"
+        if company_context:
+            sections.append(company_context)
+
+        sections.append(f"Task:\n{task}")
+
+        if instructions:
+            sections.append(f"Instructions:\n{instructions}")
+
+        return "\n\n".join(sections)
