@@ -1,0 +1,152 @@
+﻿"""AI context assembly for MarketingLabAI."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+
+from app.ai.context import CompanyBrainPromptBuilder
+from app.ai.memory import MemoryPromptBuilder
+from app.database.repositories import (
+    BusinessIntelligenceRepository,
+    MemoryRepository,
+)
+
+
+@dataclass(slots=True, frozen=True)
+class AIContext:
+    """Structured business context prepared for an AI request."""
+
+    company_context: str = ""
+    memory_context: str = ""
+    memory_count: int = 0
+
+    @property
+    def company_brain_included(self) -> bool:
+        """Return whether Company Brain context is available."""
+
+        return bool(self.company_context)
+
+    @property
+    def memory_included(self) -> bool:
+        """Return whether institutional memory is available."""
+
+        return bool(self.memory_context)
+
+
+class AIContextAssembler:
+    """Load and format context required by AI orchestration."""
+
+    def __init__(
+        self,
+        *,
+        intelligence_repository: BusinessIntelligenceRepository | None = None,
+        memory_repository: MemoryRepository | None = None,
+        company_brain_prompt_builder: CompanyBrainPromptBuilder | None = None,
+        memory_prompt_builder: MemoryPromptBuilder | None = None,
+        memory_limit: int = 10,
+    ) -> None:
+        if intelligence_repository is not None and not isinstance(
+            intelligence_repository,
+            BusinessIntelligenceRepository,
+        ):
+            raise TypeError(
+                "intelligence_repository must be a " "BusinessIntelligenceRepository."
+            )
+
+        if memory_repository is not None and not isinstance(
+            memory_repository,
+            MemoryRepository,
+        ):
+            raise TypeError("memory_repository must be a MemoryRepository.")
+
+        if company_brain_prompt_builder is not None and not isinstance(
+            company_brain_prompt_builder,
+            CompanyBrainPromptBuilder,
+        ):
+            raise TypeError(
+                "company_brain_prompt_builder must be a " "CompanyBrainPromptBuilder."
+            )
+
+        if memory_prompt_builder is not None and not isinstance(
+            memory_prompt_builder,
+            MemoryPromptBuilder,
+        ):
+            raise TypeError("memory_prompt_builder must be a MemoryPromptBuilder.")
+
+        if memory_limit < 1:
+            raise ValueError("memory_limit must be at least 1.")
+
+        self.intelligence_repository = intelligence_repository
+        self.memory_repository = memory_repository
+        self.company_brain_prompt_builder = (
+            company_brain_prompt_builder or CompanyBrainPromptBuilder()
+        )
+        self.memory_prompt_builder = memory_prompt_builder or MemoryPromptBuilder()
+        self.memory_limit = memory_limit
+
+    def build(
+        self,
+        *,
+        brand_id: str,
+    ) -> AIContext:
+        """Assemble available context for one brand."""
+
+        brand_id = brand_id.strip()
+
+        if not brand_id:
+            raise ValueError("brand_id is required.")
+
+        company_context = self._load_company_context(
+            brand_id,
+        )
+        memory_context = self._load_memory_context(
+            brand_id,
+        )
+        memory_count = len(memory_context.splitlines()) if memory_context else 0
+
+        return AIContext(
+            company_context=company_context,
+            memory_context=memory_context,
+            memory_count=memory_count,
+        )
+
+    def _load_company_context(
+        self,
+        brand_id: str,
+    ) -> str:
+        """Load Company Brain context when available."""
+
+        repository = self.intelligence_repository
+
+        if repository is None:
+            return ""
+
+        if not repository.exists(brand_id):
+            return ""
+
+        profile = repository.get(brand_id)
+
+        return self.company_brain_prompt_builder.build(
+            profile,
+        )
+
+    def _load_memory_context(
+        self,
+        brand_id: str,
+    ) -> str:
+        """Load recent institutional memory when available."""
+
+        repository = self.memory_repository
+
+        if repository is None:
+            return ""
+
+        events = repository.list(
+            brand_id,
+            limit=self.memory_limit,
+        )
+
+        return self.memory_prompt_builder.build(
+            events,
+            limit=self.memory_limit,
+        )
