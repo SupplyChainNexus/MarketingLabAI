@@ -40,7 +40,8 @@ class PromptPackSelector:
             "task_type",
             task_type,
         )
-        channel = self._optional_text(
+
+        channel_filter = self._optional_text(
             "channel",
             channel,
         )
@@ -56,7 +57,7 @@ class PromptPackSelector:
         candidates = self.repository.list_for_tenant(
             tenant_id,
             task_type=task_type,
-            channel=channel or None,
+            channel=channel_filter,
             enabled_only=True,
         )
 
@@ -79,7 +80,7 @@ class PromptPackSelector:
                 self._missing_message(
                     tenant_id=tenant_id,
                     task_type=task_type,
-                    channel=channel,
+                    channel=channel_filter,
                     brand_id=brand_id,
                     prompt_pack_id=prompt_pack_id,
                 )
