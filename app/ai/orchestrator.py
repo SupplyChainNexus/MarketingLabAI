@@ -9,6 +9,10 @@ from app.ai.models import (
     IntelligenceRequest,
     IntelligenceResponse,
 )
+from app.ai.prompt import (
+    PromptComposer,
+    PromptSection,
+)
 from app.ai.registry import IntelligenceProviderRegistry
 from app.database.repositories import (
     BusinessIntelligenceRepository,
@@ -154,16 +158,27 @@ class AIOrchestrator:
         instructions: str,
         company_context: str = "",
     ) -> str:
-        """Build the initial orchestration prompt."""
+        """Build the orchestration prompt."""
 
-        sections: list[str] = []
+        composer = PromptComposer()
 
-        if company_context:
-            sections.append(company_context)
+        composer.add(
+            PromptSection(
+                title="Company Context",
+                content=company_context,
+            )
+        )
+        composer.add(
+            PromptSection(
+                title="Task",
+                content=task,
+            )
+        )
+        composer.add(
+            PromptSection(
+                title="Instructions",
+                content=instructions,
+            )
+        )
 
-        sections.append(f"Task:\n{task}")
-
-        if instructions:
-            sections.append(f"Instructions:\n{instructions}")
-
-        return "\n\n".join(sections)
+        return composer.compose()
