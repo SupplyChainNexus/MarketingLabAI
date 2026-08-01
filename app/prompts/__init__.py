@@ -1,5 +1,6 @@
 ﻿"""Versioned marketing prompt knowledge."""
 
+from app.prompts.engine import PromptEngine
 from app.prompts.models import PromptPack
 from app.prompts.renderer import PromptPackRenderer
 from app.prompts.repository import PromptPackRepository
@@ -10,9 +11,10 @@ from app.prompts.service import (
 )
 
 __all__ = [
+    "PromptEngine",
     "PromptPack",
-    "PromptPackRepository",
     "PromptPackRenderer",
+    "PromptPackRepository",
     "PromptPackSelector",
     "PromptPackService",
     "RenderedPrompt",
