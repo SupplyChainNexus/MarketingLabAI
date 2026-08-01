@@ -7,6 +7,8 @@ from typing import Any
 
 from app.commands.base import Command
 from app.database.repositories import BrandRepository
+from app.events.brand_events import BrandCreatedEvent
+from app.events.publisher import EventPublisher
 from app.tenants.repository import TenantRepository
 
 
@@ -17,9 +19,10 @@ class CreateBrandCommand(Command[dict[str, Any]]):
     payload: dict[str, Any]
     tenant_repository: TenantRepository
     brand_repository: BrandRepository
+    event_publisher: EventPublisher | None = None
 
     def execute(self) -> dict[str, Any]:
-        """Create the brand."""
+        """Create the brand and publish its domain event."""
 
         payload = dict(self.payload)
 
@@ -32,4 +35,15 @@ class CreateBrandCommand(Command[dict[str, Any]]):
 
         self.brand_repository.save(payload)
 
-        return self.brand_repository.get(payload["brand_id"])
+        created_brand = self.brand_repository.get(payload["brand_id"])
+
+        publisher = self.event_publisher or EventPublisher()
+        publisher.publish(
+            BrandCreatedEvent(
+                tenant_id=tenant_id,
+                brand_id=str(created_brand["brand_id"]),
+                brand_name=str(created_brand["name"]),
+            )
+        )
+
+        return created_brand

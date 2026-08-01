@@ -9,6 +9,9 @@ from pathlib import Path
 from app.commands.brands import CreateBrandCommand
 from app.database.connection import SQLiteDatabase
 from app.database.repositories import BrandRepository
+from app.events.brand_events import BrandCreatedEvent
+from app.events.bus import EventBus
+from app.events.publisher import EventPublisher
 from app.tenants.models import Tenant
 from app.tenants.repository import TenantRepository
 
@@ -93,6 +96,45 @@ class CreateBrandCommandTests(unittest.TestCase):
                 tenant_repository=self.tenants,
                 brand_repository=self.brands,
             ).execute()
+
+    def test_command_publishes_brand_created_event(self) -> None:
+        received: list[BrandCreatedEvent] = []
+        event_bus = EventBus()
+
+        event_bus.subscribe(
+            "brand.created",
+            received.append,
+        )
+
+        command = CreateBrandCommand(
+            payload={
+                "brand_id": "brand-one",
+                "name": "Brand One",
+            },
+            tenant_repository=self.tenants,
+            brand_repository=self.brands,
+            event_publisher=EventPublisher(event_bus),
+        )
+
+        command.execute()
+
+        self.assertEqual(len(received), 1)
+        self.assertEqual(
+            received[0].event_type,
+            "brand.created",
+        )
+        self.assertEqual(
+            received[0].tenant_id,
+            "default",
+        )
+        self.assertEqual(
+            received[0].brand_id,
+            "brand-one",
+        )
+        self.assertEqual(
+            received[0].brand_name,
+            "Brand One",
+        )
 
 
 if __name__ == "__main__":
