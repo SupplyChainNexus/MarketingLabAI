@@ -1,6 +1,9 @@
-﻿"""Campaign content generation engine."""
+﻿"""Provider-neutral campaign content generation engine."""
 
-from app.ai.gemini_client import GeminiClient, get_gemini_client
+from __future__ import annotations
+
+from app.ai.bootstrap import gemini_provider_bootstrap
+from app.ai.orchestrator import AIOrchestrator
 from app.models import (
     BrandProfile,
     CampaignBrief,
@@ -14,9 +17,41 @@ class CampaignEngine:
 
     def __init__(
         self,
-        gemini_client: GeminiClient | None = None,
-    ):
-        self.gemini_client = gemini_client or get_gemini_client()
+        orchestrator: AIOrchestrator | None = None,
+        *,
+        tenant_id: str = "default",
+        provider_name: str | None = None,
+    ) -> None:
+        if orchestrator is not None and not isinstance(
+            orchestrator,
+            AIOrchestrator,
+        ):
+            raise TypeError("orchestrator must be an AIOrchestrator.")
+
+        if not isinstance(tenant_id, str):
+            raise TypeError("tenant_id must be a string.")
+
+        cleaned_tenant_id = tenant_id.strip()
+
+        if not cleaned_tenant_id:
+            raise ValueError("tenant_id is required.")
+
+        if provider_name is not None:
+            if not isinstance(provider_name, str):
+                raise TypeError("provider_name must be a string or None.")
+
+            provider_name = provider_name.strip()
+
+            if not provider_name:
+                raise ValueError("provider_name cannot be blank.")
+
+        self.orchestrator = (
+            orchestrator
+            if orchestrator is not None
+            else gemini_provider_bootstrap().build_orchestrator()
+        )
+        self.tenant_id = cleaned_tenant_id
+        self.provider_name = provider_name
 
     def build_campaign_prompt(
         self,
@@ -24,21 +59,28 @@ class CampaignEngine:
         voice: VoiceProfile,
         brief: CampaignBrief,
     ) -> str:
+        """Build campaign instructions from verified inputs."""
+
+        if not isinstance(brand, BrandProfile):
+            raise TypeError("brand must be a BrandProfile.")
+
+        if not isinstance(voice, VoiceProfile):
+            raise TypeError("voice must be a VoiceProfile.")
+
+        if not isinstance(brief, CampaignBrief):
+            raise TypeError("brief must be a CampaignBrief.")
+
         if brand.brand_id != voice.brand_id:
-            raise ValueError("The voice profile does not belong to this brand.")
+            raise ValueError("The voice profile does not belong " "to this brand.")
 
         if brand.brand_id != brief.brand_id:
-            raise ValueError("The campaign brief does not belong to this brand.")
+            raise ValueError("The campaign brief does not belong " "to this brand.")
 
         preferred_words = ", ".join(voice.preferred_words) or "None specified"
-
         avoided_words = ", ".join(voice.avoided_words) or "None specified"
-
         authenticity_rules = "\n".join(f"- {rule}" for rule in voice.authenticity_rules)
 
         return f"""
-You are the MarketingLabAI Campaign Engine.
-
 Create one finished marketing asset using only the verified brand information,
 campaign brief, and voice profile below.
 
@@ -81,7 +123,7 @@ Call to action: {brief.call_to_action}
 Additional context: {brief.additional_context or "None"}
 
 Return only the finished marketing content.
-Do not provide analysis, notes, headings about your process, or explanations.
+Do not provide analysis, process notes, or explanations.
 """.strip()
 
     def generate_campaign_content(
@@ -90,13 +132,35 @@ Do not provide analysis, notes, headings about your process, or explanations.
         voice: VoiceProfile,
         brief: CampaignBrief,
     ) -> GeneratedContent:
-        prompt = self.build_campaign_prompt(
+        """Generate campaign content through the AI platform."""
+
+        instructions = self.build_campaign_prompt(
             brand=brand,
             voice=voice,
             brief=brief,
         )
 
-        content = (self.gemini_client.generate_text(prompt)).strip()
+        response = self.orchestrator.generate(
+            tenant_id=self.tenant_id,
+            brand_id=brand.brand_id,
+            task=(f"Generate one {brief.content_type} " f"for {brief.platform}."),
+            instructions=instructions,
+            system_instruction=(
+                "You are the MarketingLabAI Campaign Engine. "
+                "Produce accurate, brand-aligned marketing "
+                "content using only supplied facts."
+            ),
+            provider_name=self.provider_name,
+            metadata={
+                "campaign_id": brief.campaign_id,
+                "voice_id": voice.voice_id,
+                "platform": brief.platform,
+                "content_type": brief.content_type,
+                "workflow": "campaign_generation",
+            },
+        )
+
+        content = response.content.strip()
 
         if not content:
             raise RuntimeError("The Campaign Engine returned empty content.")
@@ -106,5 +170,5 @@ Do not provide analysis, notes, headings about your process, or explanations.
             platform=brief.platform,
             content_type=brief.content_type,
             content=content,
-            model=self.gemini_client.settings.gemini_model,
+            model=response.model,
         )
