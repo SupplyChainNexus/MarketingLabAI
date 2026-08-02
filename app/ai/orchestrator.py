@@ -1,7 +1,8 @@
-﻿"""Provider-neutral AI orchestration."""
+"""Provider-neutral AI orchestration."""
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from typing import Any
 
 from app.ai.assembler import AIContext, AIContextAssembler
@@ -53,6 +54,7 @@ class AIOrchestrator:
         temperature: float | None = None,
         max_output_tokens: int | None = None,
         metadata: dict[str, Any] | None = None,
+        additional_sections: Sequence[PromptSection] = (),
     ) -> IntelligenceResponse:
         """Generate a provider-neutral intelligence response."""
 
@@ -84,6 +86,25 @@ class AIOrchestrator:
         ):
             raise TypeError("metadata must be a dictionary.")
 
+        if isinstance(
+            additional_sections,
+            (str, bytes),
+        ) or not isinstance(
+            additional_sections,
+            Sequence,
+        ):
+            raise TypeError("additional_sections must be a sequence.")
+
+        validated_sections: list[PromptSection] = []
+
+        for section in additional_sections:
+            if not isinstance(section, PromptSection):
+                raise TypeError(
+                    "additional_sections must contain " "PromptSection objects."
+                )
+
+            validated_sections.append(section)
+
         context = self.context_assembler.build(
             brand_id=brand_id,
         )
@@ -92,6 +113,7 @@ class AIOrchestrator:
             context=context,
             task=task,
             instructions=instructions,
+            additional_sections=validated_sections,
         )
 
         request_metadata = dict(metadata or {})
@@ -126,6 +148,7 @@ class AIOrchestrator:
         context: AIContext,
         task: str,
         instructions: str,
+        additional_sections: Sequence[PromptSection] = (),
     ) -> str:
         """Build a prompt from assembled context."""
 
@@ -152,6 +175,9 @@ class AIOrchestrator:
                 content=task,
             )
         )
+        for section in additional_sections:
+            composer.add(section)
+
         composer.add(
             PromptSection(
                 title="Instructions",

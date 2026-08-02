@@ -6,6 +6,7 @@ import unittest
 
 from app.ai.models import IntelligenceRequest
 from app.ai.orchestrator import AIOrchestrator
+from app.ai.prompt import PromptSection
 from app.ai.providers.mock import MockIntelligenceProvider
 from app.ai.registry import IntelligenceProviderRegistry
 
@@ -197,6 +198,127 @@ class AIOrchestratorTests(unittest.TestCase):
             self.provider.requests[0],
             IntelligenceRequest,
         )
+
+    def test_generate_adds_additional_prompt_sections(
+        self,
+    ) -> None:
+        self.orchestrator.generate(
+            tenant_id="tenant-one",
+            brand_id="brand-one",
+            task="Create a campaign.",
+            instructions="Return final content only.",
+            additional_sections=[
+                PromptSection(
+                    title="Compliance Requirements",
+                    content=(
+                        "- Include the phrase Terms apply.\n"
+                        "- Keep the content within 100 characters."
+                    ),
+                ),
+            ],
+        )
+
+        request = self.provider.requests[0]
+
+        self.assertIn(
+            "Compliance Requirements:",
+            request.prompt,
+        )
+        self.assertIn(
+            "Include the phrase Terms apply.",
+            request.prompt,
+        )
+        self.assertIn(
+            "Keep the content within 100 characters.",
+            request.prompt,
+        )
+
+    def test_additional_sections_have_deterministic_order(
+        self,
+    ) -> None:
+        self.orchestrator.generate(
+            tenant_id="tenant-one",
+            brand_id="brand-one",
+            task="Create a campaign.",
+            instructions="Return final content only.",
+            additional_sections=[
+                PromptSection(
+                    title="First Extension",
+                    content="First content.",
+                ),
+                PromptSection(
+                    title="Second Extension",
+                    content="Second content.",
+                ),
+            ],
+        )
+
+        prompt = self.provider.requests[0].prompt
+
+        self.assertLess(
+            prompt.index("Task:"),
+            prompt.index("First Extension:"),
+        )
+        self.assertLess(
+            prompt.index("First Extension:"),
+            prompt.index("Second Extension:"),
+        )
+        self.assertLess(
+            prompt.index("Second Extension:"),
+            prompt.index("Instructions:"),
+        )
+
+    def test_generate_omits_empty_additional_section(
+        self,
+    ) -> None:
+        self.orchestrator.generate(
+            tenant_id="tenant-one",
+            brand_id="brand-one",
+            task="Create a campaign.",
+            additional_sections=[
+                PromptSection(
+                    title="Optional Context",
+                    content=" ",
+                ),
+            ],
+        )
+
+        request = self.provider.requests[0]
+
+        self.assertNotIn(
+            "Optional Context:",
+            request.prompt,
+        )
+
+    def test_generate_rejects_invalid_section_collection(
+        self,
+    ) -> None:
+        with self.assertRaisesRegex(
+            TypeError,
+            "sequence",
+        ):
+            self.orchestrator.generate(
+                tenant_id="tenant-one",
+                brand_id="brand-one",
+                task="Create a campaign.",
+                additional_sections=("invalid"),  # type: ignore[arg-type]
+            )
+
+    def test_generate_rejects_invalid_section_entry(
+        self,
+    ) -> None:
+        with self.assertRaisesRegex(
+            TypeError,
+            "PromptSection",
+        ):
+            self.orchestrator.generate(
+                tenant_id="tenant-one",
+                brand_id="brand-one",
+                task="Create a campaign.",
+                additional_sections=[
+                    object(),  # type: ignore[list-item]
+                ],
+            )
 
 
 if __name__ == "__main__":
