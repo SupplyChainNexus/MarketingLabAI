@@ -1,4 +1,4 @@
-"""Compliance evaluation package for MarketingLabAI."""
+﻿"""Compliance evaluation package for MarketingLabAI."""
 
 from app.compliance.models import (
     BrandRule,
@@ -9,11 +9,19 @@ from app.compliance.models import (
     ReviewSubjectType,
     RuleSeverity,
 )
+from app.compliance.requirements import (
+    ComplianceRequirement,
+)
+from app.compliance.translator import (
+    ComplianceRequirementTranslator,
+)
 
 __all__ = [
     "BrandRule",
     "ComplianceFinding",
     "ComplianceReport",
+    "ComplianceRequirement",
+    "ComplianceRequirementTranslator",
     "ComplianceStatus",
     "EvaluationMethod",
     "ReviewSubjectType",
