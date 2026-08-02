@@ -8,6 +8,7 @@ import unittest
 from pathlib import Path
 from uuid import uuid4
 
+from app.ai.prompt import PromptSection
 from app.campaigns.campaign_service import CampaignService
 from app.campaigns.review_pipeline import CampaignReviewPipeline
 from app.compliance.models import (
@@ -15,6 +16,7 @@ from app.compliance.models import (
     ComplianceStatus,
     ReviewSubjectType,
 )
+from app.compliance.rule_packs import RulePackLoader
 from app.config import Settings
 from app.models import (
     BrandProfile,
@@ -27,13 +29,18 @@ from app.models import (
 class FakeCampaignEngine:
     """Deterministic campaign engine used by pipeline tests."""
 
+    def __init__(self) -> None:
+        self.additional_sections: list[PromptSection] = []
+
     def generate_campaign_content(
         self,
         *,
         brand: BrandProfile,
         voice: VoiceProfile,
         brief: CampaignBrief,
+        additional_sections: tuple[PromptSection, ...] | list[PromptSection] = (),
     ) -> GeneratedContent:
+        self.additional_sections = list(additional_sections)
         return GeneratedContent(
             campaign_id=brief.campaign_id,
             platform=brief.platform,
@@ -201,6 +208,120 @@ class CampaignReviewPipelineTests(unittest.TestCase):
             records = service.list_campaign_records()
 
             self.assertTrue(any("compliance" in record for record in records))
+
+    def test_pipeline_builds_pre_generation_compliance_section(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            campaign_engine = FakeCampaignEngine()
+
+            rule_pack = RulePackLoader().load_dict(
+                {
+                    "pack_id": "campaign-rules",
+                    "name": "Campaign rules",
+                    "description": ("Rules for campaign generation."),
+                    "version": 1,
+                    "rules": [
+                        {
+                            "rule": {
+                                "rule_id": ("required-disclaimer"),
+                                "name": ("Required disclaimer"),
+                                "description": ("Require approved wording."),
+                                "severity": "error",
+                                "evaluation_method": ("deterministic"),
+                                "subject_types": ["text"],
+                                "category": "disclosure",
+                            },
+                            "evaluator_type": ("required_phrase"),
+                            "evaluator_config": {
+                                "required_phrase": ("Terms apply."),
+                            },
+                        },
+                    ],
+                },
+                brand_id=self.brand.brand_id,
+            )
+
+            pipeline = CampaignReviewPipeline(
+                campaign_engine=campaign_engine,
+                campaign_service=CampaignService(self.create_settings(root)),
+                compliance_engine=FakeComplianceEngine(),
+            )
+
+            pipeline.generate_review_and_save(
+                brand=self.brand,
+                voice=self.voice,
+                brief=self.brief,
+                rule_pack=rule_pack,
+            )
+
+            self.assertEqual(
+                len(campaign_engine.additional_sections),
+                1,
+            )
+
+            section = campaign_engine.additional_sections[0]
+
+            self.assertEqual(
+                section.title,
+                "Compliance Requirements",
+            )
+            self.assertIn(
+                "Terms apply.",
+                section.content,
+            )
+            self.assertNotIn(
+                "required-disclaimer",
+                section.content,
+            )
+
+    def test_pipeline_uses_no_additional_sections_without_pack(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            campaign_engine = FakeCampaignEngine()
+
+            pipeline = CampaignReviewPipeline(
+                campaign_engine=campaign_engine,
+                campaign_service=CampaignService(self.create_settings(root)),
+                compliance_engine=FakeComplianceEngine(),
+            )
+
+            pipeline.generate_review_and_save(
+                brand=self.brand,
+                voice=self.voice,
+                brief=self.brief,
+            )
+
+            self.assertEqual(
+                campaign_engine.additional_sections,
+                [],
+            )
+
+    def test_pipeline_rejects_invalid_rule_pack(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+
+            pipeline = CampaignReviewPipeline(
+                campaign_engine=FakeCampaignEngine(),
+                campaign_service=CampaignService(self.create_settings(root)),
+                compliance_engine=FakeComplianceEngine(),
+            )
+
+            with self.assertRaisesRegex(
+                TypeError,
+                "RulePack",
+            ):
+                pipeline.generate_review_and_save(
+                    brand=self.brand,
+                    voice=self.voice,
+                    brief=self.brief,
+                    rule_pack=object(),  # type: ignore[arg-type]
+                )
 
 
 if __name__ == "__main__":

@@ -7,6 +7,7 @@ from typing import cast
 
 from app.ai.capabilities import ProviderCapabilities
 from app.ai.orchestrator import AIOrchestrator
+from app.ai.prompt import PromptSection
 from app.ai.providers.mock import MockIntelligenceProvider
 from app.ai.registry import IntelligenceProviderRegistry
 from app.campaigns.campaign_engine import CampaignEngine
@@ -355,6 +356,43 @@ class CampaignEngineTests(unittest.TestCase):
                 self.orchestrator,
                 provider_name=" ",
             )
+
+    def test_generate_forwards_additional_prompt_sections(
+        self,
+    ) -> None:
+        self.engine.generate_campaign_content(
+            brand=self.brand,
+            voice=self.voice,
+            brief=self.brief,
+            additional_sections=[
+                PromptSection(
+                    title="Compliance Requirements",
+                    content=(
+                        "Mandatory Requirements\n\n"
+                        "- Include the exact phrase Terms apply."
+                    ),
+                ),
+            ],
+        )
+
+        request = self.provider.requests[0]
+
+        self.assertIn(
+            "Compliance Requirements:",
+            request.prompt,
+        )
+        self.assertIn(
+            "Include the exact phrase Terms apply.",
+            request.prompt,
+        )
+        self.assertLess(
+            request.prompt.index("Task:"),
+            request.prompt.index("Compliance Requirements:"),
+        )
+        self.assertLess(
+            request.prompt.index("Compliance Requirements:"),
+            request.prompt.index("Instructions:"),
+        )
 
 
 if __name__ == "__main__":

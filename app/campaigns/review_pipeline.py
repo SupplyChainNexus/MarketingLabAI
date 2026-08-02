@@ -1,4 +1,4 @@
-﻿"""Campaign generation and compliance-review orchestration."""
+"""Campaign generation and compliance-review orchestration."""
 
 from __future__ import annotations
 
@@ -9,6 +9,9 @@ from app.campaigns.campaign_engine import CampaignEngine
 from app.campaigns.campaign_service import CampaignService
 from app.compliance.engine import ComplianceEngine
 from app.compliance.models import ComplianceReport, ReviewSubjectType
+from app.compliance.prompt_builder import CompliancePromptBuilder
+from app.compliance.rule_packs import RulePack
+from app.compliance.translator import ComplianceRequirementTranslator
 from app.models import (
     BrandProfile,
     CampaignBrief,
@@ -40,6 +43,8 @@ class CampaignReviewPipeline:
         self.campaign_engine = campaign_engine
         self.campaign_service = campaign_service
         self.compliance_engine = compliance_engine
+        self.requirement_translator = ComplianceRequirementTranslator()
+        self.prompt_builder = CompliancePromptBuilder()
 
     def generate_review_and_save(
         self,
@@ -47,13 +52,24 @@ class CampaignReviewPipeline:
         brand: BrandProfile,
         voice: VoiceProfile,
         brief: CampaignBrief,
+        rule_pack: RulePack | None = None,
     ) -> CampaignReviewResult:
         """Generate content, run compliance checks, and persist both."""
+
+        additional_sections = []
+
+        if rule_pack is not None:
+            if not isinstance(rule_pack, RulePack):
+                raise TypeError("rule_pack must be a RulePack or None.")
+
+            requirements = self.requirement_translator.translate_many(rule_pack.rules)
+            additional_sections = self.prompt_builder.build_sections(requirements)
 
         generated = self.campaign_engine.generate_campaign_content(
             brand=brand,
             voice=voice,
             brief=brief,
+            additional_sections=additional_sections,
         )
 
         report = self.compliance_engine.evaluate(

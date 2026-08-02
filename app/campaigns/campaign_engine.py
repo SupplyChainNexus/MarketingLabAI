@@ -1,9 +1,12 @@
-﻿"""Provider-neutral campaign content generation engine."""
+"""Provider-neutral campaign content generation engine."""
 
 from __future__ import annotations
 
+from collections.abc import Sequence
+
 from app.ai.bootstrap import gemini_provider_bootstrap
 from app.ai.orchestrator import AIOrchestrator
+from app.ai.prompt import PromptSection
 from app.models import (
     BrandProfile,
     CampaignBrief,
@@ -131,6 +134,8 @@ Do not provide analysis, process notes, or explanations.
         brand: BrandProfile,
         voice: VoiceProfile,
         brief: CampaignBrief,
+        *,
+        additional_sections: Sequence[PromptSection] = (),
     ) -> GeneratedContent:
         """Generate campaign content through the AI platform."""
 
@@ -158,6 +163,7 @@ Do not provide analysis, process notes, or explanations.
                 "content_type": brief.content_type,
                 "workflow": "campaign_generation",
             },
+            additional_sections=additional_sections,
         )
 
         content = response.content.strip()
