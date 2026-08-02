@@ -17,6 +17,7 @@ from app.ai.prompt import (
     PromptSection,
 )
 from app.ai.provider import IntelligenceProvider
+from app.ai.providers.gemini import GeminiIntelligenceProvider
 from app.ai.providers.mock import MockIntelligenceProvider
 from app.ai.registry import IntelligenceProviderRegistry
 from app.ai.requirements import ProviderRequirements
@@ -27,6 +28,7 @@ __all__ = [
     "AIContextAssembler",
     "AIOrchestrator",
     "CompanyBrainPromptBuilder",
+    "GeminiIntelligenceProvider",
     "IntelligenceProvider",
     "IntelligenceProviderRegistry",
     "IntelligenceRequest",
