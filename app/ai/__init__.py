@@ -19,6 +19,8 @@ from app.ai.prompt import (
 from app.ai.provider import IntelligenceProvider
 from app.ai.providers.mock import MockIntelligenceProvider
 from app.ai.registry import IntelligenceProviderRegistry
+from app.ai.requirements import ProviderRequirements
+from app.ai.selection import ProviderSelectionStrategy
 
 __all__ = [
     "AIContext",
@@ -34,4 +36,6 @@ __all__ = [
     "PromptComposer",
     "PromptSection",
     "ProviderCapabilities",
+    "ProviderRequirements",
+    "ProviderSelectionStrategy",
 ]
