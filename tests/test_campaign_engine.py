@@ -1,4 +1,4 @@
-﻿"""Tests for provider-neutral Campaign Engine generation."""
+"""Tests for provider-neutral Campaign Engine generation."""
 
 from __future__ import annotations
 
@@ -177,6 +177,28 @@ class CampaignEngineTests(unittest.TestCase):
         self.assertEqual(
             generated.model,
             "campaign-test-model",
+        )
+        self.assertEqual(
+            generated.provider,
+            "mock",
+        )
+        self.assertEqual(
+            generated.input_tokens,
+            0,
+        )
+        self.assertEqual(
+            generated.output_tokens,
+            0,
+        )
+        self.assertEqual(
+            generated.finish_reason,
+            "stop",
+        )
+        self.assertEqual(
+            generated.metadata,
+            {
+                "mock": True,
+            },
         )
         self.assertEqual(
             len(self.provider.requests),

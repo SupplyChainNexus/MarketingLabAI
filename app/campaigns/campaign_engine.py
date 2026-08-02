@@ -170,5 +170,10 @@ Do not provide analysis, process notes, or explanations.
             platform=brief.platform,
             content_type=brief.content_type,
             content=content,
+            provider=response.provider,
             model=response.model,
+            input_tokens=response.input_tokens,
+            output_tokens=response.output_tokens,
+            finish_reason=response.finish_reason,
+            metadata=dict(response.metadata),
         )
