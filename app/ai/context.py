@@ -2,34 +2,63 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
+
+from app.intelligence.builders import (
+    CommercialIntelligenceBuilder,
+    CompetitiveIntelligenceBuilder,
+    GrowthIntelligenceBuilder,
+    IntelligenceSectionBuilder,
+    MarketIntelligenceBuilder,
+    OperationalIntelligenceBuilder,
+    StrategicObjectiveBuilder,
+)
 from app.intelligence.models import BusinessIntelligenceProfile
 
 
 class CompanyBrainPromptBuilder:
-    """Convert Company Brain data into concise AI prompt context."""
+    """Compose structured Company Brain intelligence context."""
 
-    _FIELD_LABELS = (
-        ("revenue_model", "Revenue model"),
-        ("average_order_value", "Average order value"),
-        ("gross_margin_percent", "Gross margin percent"),
-        ("customer_lifetime_value", "Customer lifetime value"),
-        ("customer_acquisition_cost", "Customer acquisition cost"),
-        ("sales_cycle_days", "Sales cycle days"),
-        ("monthly_marketing_budget", "Monthly marketing budget"),
-        ("team_size", "Team size"),
-        ("sales_channels", "Sales channels"),
-        ("geographic_markets", "Geographic markets"),
-        ("capacity_constraints", "Capacity constraints"),
-        ("seasonality", "Seasonality"),
-        ("competitors", "Competitors"),
-        ("business_goals", "Business goals"),
-    )
+    def __init__(
+        self,
+        builders: Sequence[IntelligenceSectionBuilder] | None = None,
+    ) -> None:
+        selected_builders = (
+            list(builders) if builders is not None else self._default_builders()
+        )
+
+        for builder in selected_builders:
+            if not isinstance(
+                builder,
+                IntelligenceSectionBuilder,
+            ):
+                raise TypeError(
+                    "builders must contain " "IntelligenceSectionBuilder objects."
+                )
+
+            if not builder.title.strip():
+                raise ValueError("intelligence builder title is required.")
+
+        self.builders = tuple(selected_builders)
+
+    @staticmethod
+    def _default_builders() -> list[IntelligenceSectionBuilder]:
+        """Return builders in deterministic composition order."""
+
+        return [
+            CommercialIntelligenceBuilder(),
+            GrowthIntelligenceBuilder(),
+            MarketIntelligenceBuilder(),
+            OperationalIntelligenceBuilder(),
+            CompetitiveIntelligenceBuilder(),
+            StrategicObjectiveBuilder(),
+        ]
 
     def build(
         self,
         profile: BusinessIntelligenceProfile,
     ) -> str:
-        """Return a structured Company Brain prompt section."""
+        """Return structured Company Brain prompt context."""
 
         if not isinstance(
             profile,
@@ -37,22 +66,21 @@ class CompanyBrainPromptBuilder:
         ):
             raise TypeError("profile must be a " "BusinessIntelligenceProfile.")
 
-        lines: list[str] = []
+        sections: list[str] = []
 
-        for field_name, label in self._FIELD_LABELS:
-            value = getattr(profile, field_name)
+        for builder in self.builders:
+            lines = builder.build(profile)
 
-            if value in (None, "", []):
+            if not lines:
                 continue
 
-            if isinstance(value, list):
-                rendered_value = ", ".join(value)
-            else:
-                rendered_value = str(value)
+            sections.append(
+                "\n".join(
+                    [
+                        f"{builder.title}:",
+                        *lines,
+                    ]
+                )
+            )
 
-            lines.append(f"- {label}: {rendered_value}")
-
-        if not lines:
-            return ""
-
-        return "\n".join(lines)
+        return "\n\n".join(sections)

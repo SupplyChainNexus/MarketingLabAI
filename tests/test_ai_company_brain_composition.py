@@ -80,6 +80,7 @@ class CompanyBrainCompositionTests(unittest.TestCase):
             prompt,
             (
                 "Company Context:\n"
+                "Commercial Intelligence:\n"
                 "- Revenue model: Retail sales\n\n"
                 "Task:\n"
                 "Create a campaign"

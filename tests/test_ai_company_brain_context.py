@@ -72,7 +72,9 @@ class CompanyBrainPromptBuilderTests(unittest.TestCase):
         self.assertEqual(
             context,
             (
-                "- Revenue model: Retail sales\n"
+                "Commercial Intelligence:\n"
+                "- Revenue model: Retail sales\n\n"
+                "Market Intelligence:\n"
                 "- Sales channels: Website, Retail store"
             ),
         )
