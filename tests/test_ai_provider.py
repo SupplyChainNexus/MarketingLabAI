@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import unittest
+from typing import cast
 
+from app.ai.capabilities import ProviderCapabilities
 from app.ai.models import (
     IntelligenceRequest,
     IntelligenceResponse,
@@ -20,18 +22,29 @@ class IntelligenceRequestTests(unittest.TestCase):
             model=" gemini-test ",
         )
 
-        self.assertEqual(request.prompt, "Create a campaign")
+        self.assertEqual(
+            request.prompt,
+            "Create a campaign",
+        )
         self.assertEqual(
             request.system_instruction,
             "Follow the brand voice",
         )
-        self.assertEqual(request.model, "gemini-test")
+        self.assertEqual(
+            request.model,
+            "gemini-test",
+        )
 
     def test_request_rejects_blank_prompt(self) -> None:
-        with self.assertRaisesRegex(ValueError, "prompt"):
+        with self.assertRaisesRegex(
+            ValueError,
+            "prompt",
+        ):
             IntelligenceRequest(prompt=" ")
 
-    def test_request_rejects_invalid_temperature(self) -> None:
+    def test_request_rejects_invalid_temperature(
+        self,
+    ) -> None:
         with self.assertRaisesRegex(
             ValueError,
             "temperature",
@@ -41,7 +54,9 @@ class IntelligenceRequestTests(unittest.TestCase):
                 temperature=2.1,
             )
 
-    def test_request_rejects_invalid_token_limit(self) -> None:
+    def test_request_rejects_invalid_token_limit(
+        self,
+    ) -> None:
         with self.assertRaisesRegex(
             ValueError,
             "max_output_tokens",
@@ -58,12 +73,17 @@ class IntelligenceRequestTests(unittest.TestCase):
             model="model-one",
             temperature=0.5,
             max_output_tokens=500,
-            metadata={"brand_id": "brand-one"},
+            metadata={
+                "brand_id": "brand-one",
+            },
         )
 
         restored = IntelligenceRequest.from_dict(request.to_dict())
 
-        self.assertEqual(restored, request)
+        self.assertEqual(
+            restored,
+            request,
+        )
 
 
 class IntelligenceResponseTests(unittest.TestCase):
@@ -75,14 +95,21 @@ class IntelligenceResponseTests(unittest.TestCase):
             input_tokens=10,
             output_tokens=20,
             finish_reason="stop",
-            metadata={"request_id": "request-one"},
+            metadata={
+                "request_id": "request-one",
+            },
         )
 
         restored = IntelligenceResponse.from_dict(response.to_dict())
 
-        self.assertEqual(restored, response)
+        self.assertEqual(
+            restored,
+            response,
+        )
 
-    def test_response_rejects_negative_tokens(self) -> None:
+    def test_response_rejects_negative_tokens(
+        self,
+    ) -> None:
         with self.assertRaisesRegex(
             ValueError,
             "input_tokens",
@@ -96,11 +123,69 @@ class IntelligenceResponseTests(unittest.TestCase):
 
 
 class IntelligenceProviderTests(unittest.TestCase):
-    def test_provider_interface_is_abstract(self) -> None:
+    def test_provider_interface_is_abstract(
+        self,
+    ) -> None:
         with self.assertRaises(TypeError):
             IntelligenceProvider()
 
-    def test_mock_provider_records_requests(self) -> None:
+    def test_mock_provider_exposes_default_capabilities(
+        self,
+    ) -> None:
+        provider = MockIntelligenceProvider(model="mock-model")
+
+        self.assertIsInstance(
+            provider.capabilities,
+            ProviderCapabilities,
+        )
+        self.assertTrue(provider.capabilities.supports_model("mock-model"))
+        self.assertFalse(provider.capabilities.supports_streaming)
+        self.assertFalse(provider.capabilities.supports_tools)
+
+    def test_mock_provider_accepts_custom_capabilities(
+        self,
+    ) -> None:
+        capabilities = ProviderCapabilities(
+            supports_structured_output=True,
+            supports_streaming=True,
+            supports_tools=True,
+            maximum_context_tokens=32_000,
+            available_models=[
+                "mock-model",
+                "mock-tools-model",
+            ],
+        )
+
+        provider = MockIntelligenceProvider(capabilities=capabilities)
+
+        self.assertIs(
+            provider.capabilities,
+            capabilities,
+        )
+        self.assertTrue(provider.capabilities.supports_streaming)
+        self.assertTrue(provider.capabilities.supports_tools)
+        self.assertEqual(
+            provider.capabilities.maximum_context_tokens,
+            32_000,
+        )
+
+    def test_mock_provider_rejects_invalid_capabilities(
+        self,
+    ) -> None:
+        invalid_capabilities = cast(
+            ProviderCapabilities,
+            object(),
+        )
+
+        with self.assertRaisesRegex(
+            TypeError,
+            "ProviderCapabilities",
+        ):
+            MockIntelligenceProvider(capabilities=invalid_capabilities)
+
+    def test_mock_provider_records_requests(
+        self,
+    ) -> None:
         provider = MockIntelligenceProvider(response_content="Generated copy")
         request = IntelligenceRequest(
             prompt="Create campaign",
@@ -109,12 +194,26 @@ class IntelligenceProviderTests(unittest.TestCase):
 
         response = provider.generate(request)
 
-        self.assertEqual(provider.requests, [request])
-        self.assertEqual(response.content, "Generated copy")
-        self.assertEqual(response.provider, "mock")
-        self.assertEqual(response.model, "requested-model")
+        self.assertEqual(
+            provider.requests,
+            [request],
+        )
+        self.assertEqual(
+            response.content,
+            "Generated copy",
+        )
+        self.assertEqual(
+            response.provider,
+            "mock",
+        )
+        self.assertEqual(
+            response.model,
+            "requested-model",
+        )
 
-    def test_mock_provider_uses_response_factory(self) -> None:
+    def test_mock_provider_uses_response_factory(
+        self,
+    ) -> None:
         def factory(
             request: IntelligenceRequest,
         ) -> IntelligenceResponse:
@@ -136,9 +235,14 @@ class IntelligenceProviderTests(unittest.TestCase):
             response.content,
             "Echo: Create campaign",
         )
-        self.assertEqual(response.provider, "custom-mock")
+        self.assertEqual(
+            response.provider,
+            "custom-mock",
+        )
 
-    def test_mock_provider_rejects_invalid_request(self) -> None:
+    def test_mock_provider_rejects_invalid_request(
+        self,
+    ) -> None:
         provider = MockIntelligenceProvider()
 
         with self.assertRaisesRegex(

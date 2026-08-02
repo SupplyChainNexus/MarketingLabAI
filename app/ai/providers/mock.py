@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
+from app.ai.capabilities import ProviderCapabilities
 from app.ai.models import (
     IntelligenceRequest,
     IntelligenceResponse,
@@ -25,20 +26,46 @@ class MockIntelligenceProvider(IntelligenceProvider):
         *,
         model: str = "mock-model",
         response_factory: ResponseFactory | None = None,
+        capabilities: ProviderCapabilities | None = None,
     ) -> None:
+        if capabilities is not None and not isinstance(
+            capabilities,
+            ProviderCapabilities,
+        ):
+            raise TypeError("capabilities must be a ProviderCapabilities.")
+
         self.response_content = response_content
         self.model = model
         self.response_factory = response_factory
+        self._capabilities = (
+            capabilities
+            if capabilities is not None
+            else ProviderCapabilities(
+                available_models=[
+                    model,
+                ]
+            )
+        )
         self.requests: list[IntelligenceRequest] = []
 
     @property
     def provider_name(self) -> str:
+        """Return the mock provider identifier."""
+
         return "mock"
+
+    @property
+    def capabilities(self) -> ProviderCapabilities:
+        """Return the mock provider capabilities."""
+
+        return self._capabilities
 
     def generate(
         self,
         request: IntelligenceRequest,
     ) -> IntelligenceResponse:
+        """Generate a deterministic response."""
+
         if not isinstance(request, IntelligenceRequest):
             raise TypeError("request must be an IntelligenceRequest.")
 
