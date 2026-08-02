@@ -1,9 +1,10 @@
-﻿"""Provider-neutral AI infrastructure."""
+"""Provider-neutral AI infrastructure."""
 
 from app.ai.assembler import (
     AIContext,
     AIContextAssembler,
 )
+from app.ai.capabilities import ProviderCapabilities
 from app.ai.context import CompanyBrainPromptBuilder
 from app.ai.memory import MemoryPromptBuilder
 from app.ai.models import (
@@ -32,4 +33,5 @@ __all__ = [
     "MockIntelligenceProvider",
     "PromptComposer",
     "PromptSection",
+    "ProviderCapabilities",
 ]
