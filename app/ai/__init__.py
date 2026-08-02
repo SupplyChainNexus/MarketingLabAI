@@ -4,6 +4,10 @@ from app.ai.assembler import (
     AIContext,
     AIContextAssembler,
 )
+from app.ai.bootstrap import (
+    ProviderBootstrap,
+    gemini_provider_bootstrap,
+)
 from app.ai.capabilities import ProviderCapabilities
 from app.ai.context import CompanyBrainPromptBuilder
 from app.ai.memory import MemoryPromptBuilder
@@ -38,6 +42,8 @@ __all__ = [
     "PromptComposer",
     "PromptSection",
     "ProviderCapabilities",
+    "ProviderBootstrap",
+    "gemini_provider_bootstrap",
     "ProviderRequirements",
     "ProviderSelectionStrategy",
 ]
