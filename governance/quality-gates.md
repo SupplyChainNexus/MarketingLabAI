@@ -11,3 +11,52 @@ Every production increment must pass:
 7. Git scope review
 
 A failed gate must be investigated before committing.
+
+## Intelligence Quality Gates
+
+### Domain Integrity
+
+- Business rules must live in the responsible domain.
+- Prompt builders must remain presentation adapters.
+- Verified values must not be replaced with AI-generated assumptions.
+- Derived metrics must identify and test their source calculations.
+- Intelligence builders must omit unsupported conclusions.
+
+### Context and Generation
+
+- Available verified Company Brain context must be used by applicable
+  generation workflows.
+- Missing context must not be silently fabricated.
+- Generation workflows must record material missing context where it affects
+  output quality.
+- AI-provider output must remain independently validated where deterministic
+  validation exists.
+- Compliance prompt guidance must not replace post-generation compliance
+  evaluation.
+
+### Architecture
+
+- New domains must use existing generic extension points where suitable.
+- Core orchestration must not import avoidable domain-specific models.
+- Parallel Company Brain, prompt-composition, or workflow systems require an
+  ADR.
+- New abstractions require demonstrated lifecycle, querying, ownership, or
+  integration needs.
+- Tenant and brand boundaries must be tested.
+
+### Testing
+
+- New intelligence logic requires focused automated tests.
+- Deterministic calculations require boundary and missing-input tests.
+- Prompt rendering requires ordering and empty-section tests.
+- Repository changes require persistence and isolation tests.
+- Workflow changes require end-to-end integration tests.
+- Affected regression suites must pass before commit.
+
+### Documentation and Audit
+
+- Material architecture changes require an ADR.
+- Capability maturity must be reviewed after a major increment.
+- AI-generated assets must preserve provider and model audit data.
+- Technical debt and accepted risks must be recorded.
+

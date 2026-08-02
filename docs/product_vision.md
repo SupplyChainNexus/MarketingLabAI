@@ -253,3 +253,20 @@ The immediate priority is the Company Brain.
 The first Company Brain component is the Business Intelligence Profile, which
 stores the commercial and operational context required for responsible
 marketing decisions.
+
+
+## Marketing Intelligence Operating System
+
+MarketingLabAI is evolving beyond campaign generation.
+
+Its long-term objective is to become a governed Marketing Intelligence
+Operating System capable of understanding organisations, customers,
+products, positioning, marketing strategy, campaign execution,
+learning from outcomes, and executive decision support.
+
+Every intelligence capability should make the platform
+more explainable,
+more reliable,
+more commercially valuable,
+and more difficult to replicate.
+

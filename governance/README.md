@@ -34,3 +34,24 @@ This directory contains:
 
 Documentation is part of the product.
 Architecture decisions are permanent engineering assets.
+
+
+## Product Governance
+
+MarketingLabAI is developed as a Marketing Intelligence Operating System.
+
+Engineering decisions should:
+
+- strengthen an intelligence layer;
+- improve customer value;
+- preserve governance and auditability;
+- increase enterprise readiness;
+- avoid unnecessary architectural complexity.
+
+Major architectural decisions must be recorded using ADRs.
+
+The Product Constitution,
+Product Capability Map,
+and Intelligence Roadmap
+collectively define long-term product direction.
+
