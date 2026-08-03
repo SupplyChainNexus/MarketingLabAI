@@ -36,6 +36,7 @@ class SQLiteDatabaseTests(unittest.TestCase):
                 "compliance_rules",
                 "customer_intelligence_profiles",
                 "data_migration_log",
+                "marketing_briefs",
                 "memory_events",
                 "prompt_packs",
                 "schema_migrations",

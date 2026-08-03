@@ -2,72 +2,58 @@
 
 ## Status
 
-In Progress
+Complete
 
 ## Objective
 
 Introduce the provider-neutral Marketing Brief domain that records structured
-marketing decisions before prompt rendering, then integrate it with the
-existing Prompt Pack, PromptComposer, AIContextAssembler, and AIOrchestrator
-architecture.
+marketing decisions before prompt rendering and integrate it with existing
+Prompt Pack, campaign, and compliance infrastructure.
 
 ## Architecture Decision
 
-The existing Prompt Pack system will be extended, not replaced.
-
-Marketing reasoning belongs in the Marketing Brief domain. Prompt builders
-remain presentation adapters.
+The existing Prompt Pack system is extended, not replaced. Marketing reasoning
+belongs in the Marketing Brief domain. Prompt builders remain presentation
+adapters.
 
 See:
 
 - `governance/adrs/ADR-0005-marketing-brief-boundary.md`
+- `docs/marketing-brief.md`
 
 ## Delivery Plan
 
 ### MLAI-024.1 — Marketing Brief Domain Foundation
 
-- [x] Marketing Brief lifecycle.
-- [x] Evidence model.
-- [x] Core validation and normalisation.
-- [x] Progressive draft support.
-- [x] Readiness validation.
-- [x] Round-trip serialisation.
-- [x] Focused tests.
-- [x] Architecture decision record.
+- [x] Lifecycle, evidence model, validation, serialisation, tests, and ADR.
 
 ### MLAI-024.2 — Brief Prompt Adapter
 
-- [x] Convert a Marketing Brief into deterministic `PromptSection` objects.
-- [x] Preserve evidence and assumption boundaries.
-- [x] Omit empty optional sections.
-- [x] Add ordering tests.
+- [x] Deterministic `PromptSection` adaptation and ordering tests.
 
 ### MLAI-024.3 — Prompt Pack Integration
 
-- [x] Map Marketing Brief values into declared Prompt Pack variables.
-- [x] Preserve Prompt Pack selection and versioning.
-- [x] Return Prompt Pack and Marketing Brief audit metadata.
-- [x] Add integration tests.
+- [x] Declared-variable mapping, selection, versioning, and audit metadata.
 
 ### MLAI-024.4 — Workflow Integration
 
-- [x] Integrate approved Marketing Briefs with campaign generation.
-- [x] Preserve existing campaign callers.
-- [x] Preserve pre- and post-generation compliance.
-- [x] Add affected regression tests.
+- [x] Approved-brief campaign generation with pre- and post-compliance support.
 
 ### MLAI-024.5 — Persistence and Completion
 
-- [ ] Add versioned Marketing Brief persistence.
-- [ ] Add tenant and brand ownership checks.
-- [ ] Complete documentation and engineering review.
-- [ ] Run the complete validation suite.
-- [ ] Commit and release.
+- [x] Versioned Marketing Brief persistence.
+- [x] Tenant and brand ownership checks.
+- [x] Documentation and engineering review.
+- [x] Complete validation suite.
+- [x] MLAI-024 completion.
 
 ## Acceptance Criteria
 
-- Business reasoning is not hidden inside prompt formatting.
-- Marketing Briefs remain provider-neutral.
-- Evidence and assumptions remain distinguishable.
-- Existing Prompt Pack infrastructure is reused.
-- Existing prompt, campaign, compliance, and intelligence tests remain green.
+- [x] Business reasoning is not hidden inside prompt formatting.
+- [x] Marketing Briefs remain provider-neutral.
+- [x] Evidence and assumptions remain distinguishable.
+- [x] Existing Prompt Pack infrastructure is reused.
+- [x] Existing campaign callers remain compatible.
+- [x] Pre- and post-generation compliance remain active.
+- [x] Brief history is immutable and tenant-owned.
+- [x] Existing regression tests remain green.

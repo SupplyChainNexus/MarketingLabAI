@@ -1,4 +1,4 @@
-"""Structured Marketing Brief domain."""
+"Structured Marketing Brief domain."
 
 from app.marketing_brief.campaign_workflow import (
     MarketingBriefCampaignResult,
@@ -17,6 +17,12 @@ from app.marketing_brief.prompt_pack import (
     MarketingBriefPromptValuesMapper,
     RenderedMarketingBriefPrompt,
 )
+from app.marketing_brief.repository import (
+    MarketingBriefRepository,
+)
+from app.marketing_brief.service import (
+    MarketingBriefService,
+)
 
 __all__ = [
     "BriefStatus",
@@ -27,5 +33,7 @@ __all__ = [
     "MarketingBriefPromptBuilder",
     "MarketingBriefPromptPackService",
     "MarketingBriefPromptValuesMapper",
+    "MarketingBriefRepository",
+    "MarketingBriefService",
     "RenderedMarketingBriefPrompt",
 ]

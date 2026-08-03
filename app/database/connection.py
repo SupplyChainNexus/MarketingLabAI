@@ -214,6 +214,33 @@ class SQLiteDatabase:
                     ON compliance_rules(brand_id, enabled);
 
 
+                CREATE TABLE IF NOT EXISTS marketing_briefs (
+                    brief_id TEXT NOT NULL,
+                    version INTEGER NOT NULL,
+                    tenant_id TEXT NOT NULL,
+                    brand_id TEXT NOT NULL,
+                    name TEXT NOT NULL,
+                    status TEXT NOT NULL,
+                    payload_json TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    PRIMARY KEY (brief_id, version),
+                    FOREIGN KEY (tenant_id)
+                        REFERENCES tenants(tenant_id),
+                    FOREIGN KEY (brand_id)
+                        REFERENCES brands(brand_id)
+                        ON DELETE CASCADE
+                );
+
+                CREATE INDEX IF NOT EXISTS idx_marketing_briefs_tenant
+                    ON marketing_briefs(tenant_id);
+
+                CREATE INDEX IF NOT EXISTS idx_marketing_briefs_brand
+                    ON marketing_briefs(tenant_id, brand_id);
+
+                CREATE INDEX IF NOT EXISTS idx_marketing_briefs_status
+                    ON marketing_briefs(tenant_id, status);
+
                 CREATE INDEX IF NOT EXISTS idx_prompt_packs_tenant
                     ON prompt_packs(tenant_id);
 
@@ -309,6 +336,21 @@ class SQLiteDatabase:
                     strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
                 )
                 """)
+
+            connection.execute(
+                """
+                INSERT OR IGNORE INTO schema_migrations (
+                    version,
+                    description,
+                    applied_at
+                )
+                VALUES (
+                    8,
+                    'Add versioned marketing briefs',
+                    strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+                )
+                """
+            )
 
     def table_names(self) -> list[str]:
         """Return application table names."""
