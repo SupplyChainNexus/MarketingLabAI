@@ -37,10 +37,10 @@ See:
 
 ### MLAI-024.2 — Brief Prompt Adapter
 
-- [ ] Convert a Marketing Brief into deterministic `PromptSection` objects.
-- [ ] Preserve evidence and assumption boundaries.
-- [ ] Omit empty optional sections.
-- [ ] Add ordering tests.
+- [x] Convert a Marketing Brief into deterministic `PromptSection` objects.
+- [x] Preserve evidence and assumption boundaries.
+- [x] Omit empty optional sections.
+- [x] Add ordering tests.
 
 ### MLAI-024.3 — Prompt Pack Integration
 

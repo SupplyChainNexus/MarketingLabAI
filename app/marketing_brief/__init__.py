@@ -5,9 +5,13 @@ from app.marketing_brief.models import (
     MarketingBrief,
     MarketingBriefEvidence,
 )
+from app.marketing_brief.prompt_builder import (
+    MarketingBriefPromptBuilder,
+)
 
 __all__ = [
     "BriefStatus",
     "MarketingBrief",
     "MarketingBriefEvidence",
+    "MarketingBriefPromptBuilder",
 ]
