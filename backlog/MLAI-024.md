@@ -44,10 +44,10 @@ See:
 
 ### MLAI-024.3 — Prompt Pack Integration
 
-- [ ] Map Marketing Brief values into Prompt Pack variables.
-- [ ] Preserve Prompt Pack selection and versioning.
-- [ ] Return Prompt Pack audit metadata.
-- [ ] Add integration tests.
+- [x] Map Marketing Brief values into declared Prompt Pack variables.
+- [x] Preserve Prompt Pack selection and versioning.
+- [x] Return Prompt Pack and Marketing Brief audit metadata.
+- [x] Add integration tests.
 
 ### MLAI-024.4 — Workflow Integration
 
