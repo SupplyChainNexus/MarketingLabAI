@@ -1,4 +1,4 @@
-﻿"""Relational repositories for MarketingLabAI data."""
+"""Relational repositories for MarketingLabAI data."""
 
 from __future__ import annotations
 
@@ -6,6 +6,7 @@ import json
 from datetime import UTC, datetime
 from typing import Any
 
+from app.customer_intelligence.models import CustomerIntelligenceProfile
 from app.database.connection import SQLiteDatabase
 from app.intelligence.models import BusinessIntelligenceProfile
 from app.memory.models import MemoryEvent
@@ -359,6 +360,142 @@ class BusinessIntelligenceRepository:
                 SELECT COUNT(*) AS total
                 FROM business_intelligence_profiles
                 """).fetchone()
+
+        return int(row["total"]) if row else 0
+
+
+class CustomerIntelligenceRepository:
+    """Store and retrieve Customer Intelligence profiles in SQLite."""
+
+    def __init__(self, database: SQLiteDatabase | None = None) -> None:
+        self.database = database or SQLiteDatabase()
+        self.database.initialise()
+
+    def save(self, profile: CustomerIntelligenceProfile) -> None:
+        """Insert or update a Customer Intelligence profile."""
+
+        if not isinstance(profile, CustomerIntelligenceProfile):
+            raise TypeError("profile must be a CustomerIntelligenceProfile.")
+
+        timestamp = current_utc_timestamp()
+        profile.updated_at = timestamp
+        payload = profile.to_dict()
+        payload["updated_at"] = timestamp
+
+        with self.database.transaction() as connection:
+            connection.execute(
+                """
+                INSERT INTO customer_intelligence_profiles (
+                    brand_id,
+                    summary,
+                    primary_segment_id,
+                    segments_json,
+                    ideal_customer_profiles_json,
+                    personas_json,
+                    payload_json,
+                    created_at,
+                    updated_at
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(brand_id) DO UPDATE SET
+                    summary = excluded.summary,
+                    primary_segment_id = excluded.primary_segment_id,
+                    segments_json = excluded.segments_json,
+                    ideal_customer_profiles_json =
+                        excluded.ideal_customer_profiles_json,
+                    personas_json = excluded.personas_json,
+                    payload_json = excluded.payload_json,
+                    updated_at = excluded.updated_at
+                """,
+                (
+                    profile.brand_id,
+                    profile.summary,
+                    profile.primary_segment_id,
+                    encode_json(
+                        [segment.to_dict() for segment in profile.segments]
+                    ),
+                    encode_json(
+                        [
+                            item.to_dict()
+                            for item in profile.ideal_customer_profiles
+                        ]
+                    ),
+                    encode_json(
+                        [persona.to_dict() for persona in profile.personas]
+                    ),
+                    encode_json(payload),
+                    timestamp,
+                    timestamp,
+                ),
+            )
+
+    def get(self, brand_id: str) -> CustomerIntelligenceProfile:
+        """Return the Customer Intelligence profile for a brand."""
+
+        with self.database.connection() as connection:
+            row = connection.execute(
+                """
+                SELECT payload_json
+                FROM customer_intelligence_profiles
+                WHERE brand_id = ?
+                """,
+                (brand_id,),
+            ).fetchone()
+
+        if row is None:
+            raise FileNotFoundError(
+                f"No customer intelligence profile exists for {brand_id!r}."
+            )
+
+        payload = decode_json(str(row["payload_json"]))
+
+        if not isinstance(payload, dict):
+            raise ValueError(
+                f"Invalid customer intelligence data for {brand_id!r}."
+            )
+
+        return CustomerIntelligenceProfile.from_dict(payload)
+
+    def exists(self, brand_id: str) -> bool:
+        """Return whether a Customer Intelligence profile exists."""
+
+        with self.database.connection() as connection:
+            row = connection.execute(
+                """
+                SELECT 1
+                FROM customer_intelligence_profiles
+                WHERE brand_id = ?
+                LIMIT 1
+                """,
+                (brand_id,),
+            ).fetchone()
+
+        return row is not None
+
+    def list_brand_ids(self) -> list[str]:
+        """Return brand IDs with Customer Intelligence profiles."""
+
+        with self.database.connection() as connection:
+            rows = connection.execute(
+                """
+                SELECT brand_id
+                FROM customer_intelligence_profiles
+                ORDER BY brand_id
+                """
+            ).fetchall()
+
+        return [str(row["brand_id"]) for row in rows]
+
+    def count(self) -> int:
+        """Return the number of Customer Intelligence profiles."""
+
+        with self.database.connection() as connection:
+            row = connection.execute(
+                """
+                SELECT COUNT(*) AS total
+                FROM customer_intelligence_profiles
+                """
+            ).fetchone()
 
         return int(row["total"]) if row else 0
 

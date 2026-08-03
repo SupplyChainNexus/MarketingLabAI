@@ -81,3 +81,19 @@ database/*.db
 database/*.db-shm
 database/*.db-wal
 database/backups/
+
+# ============================================================
+# MarketingLabAI Engineering Artifacts
+# ============================================================
+
+# Generated engineering context
+docs/build_context/
+
+# Generated engineering review reports
+docs/engineering_reviews/
+
+# Release packaging
+_build/
+
+# Distribution archives
+*.zip

@@ -1,4 +1,4 @@
-﻿"""AI context assembly for MarketingLabAI."""
+"""AI context assembly for MarketingLabAI."""
 
 from __future__ import annotations
 
@@ -6,6 +6,7 @@ from dataclasses import dataclass
 
 from app.ai.context import CompanyBrainPromptBuilder
 from app.ai.memory import MemoryPromptBuilder
+from app.customer_intelligence.provider import CustomerContextProvider
 from app.database.repositories import (
     BusinessIntelligenceRepository,
     MemoryRepository,
@@ -19,12 +20,19 @@ class AIContext:
     company_context: str = ""
     memory_context: str = ""
     memory_count: int = 0
+    customer_context: str = ""
 
     @property
     def company_brain_included(self) -> bool:
         """Return whether Company Brain context is available."""
 
         return bool(self.company_context)
+
+    @property
+    def customer_intelligence_included(self) -> bool:
+        """Return whether Customer Intelligence context is available."""
+
+        return bool(self.customer_context)
 
     @property
     def memory_included(self) -> bool:
@@ -41,6 +49,7 @@ class AIContextAssembler:
         *,
         intelligence_repository: BusinessIntelligenceRepository | None = None,
         memory_repository: MemoryRepository | None = None,
+        customer_context_provider: CustomerContextProvider | None = None,
         company_brain_prompt_builder: CompanyBrainPromptBuilder | None = None,
         memory_prompt_builder: MemoryPromptBuilder | None = None,
         memory_limit: int = 10,
@@ -58,6 +67,14 @@ class AIContextAssembler:
             MemoryRepository,
         ):
             raise TypeError("memory_repository must be a MemoryRepository.")
+
+        if customer_context_provider is not None and not isinstance(
+            customer_context_provider,
+            CustomerContextProvider,
+        ):
+            raise TypeError(
+                "customer_context_provider must be a " "CustomerContextProvider."
+            )
 
         if company_brain_prompt_builder is not None and not isinstance(
             company_brain_prompt_builder,
@@ -78,6 +95,7 @@ class AIContextAssembler:
 
         self.intelligence_repository = intelligence_repository
         self.memory_repository = memory_repository
+        self.customer_context_provider = customer_context_provider
         self.company_brain_prompt_builder = (
             company_brain_prompt_builder or CompanyBrainPromptBuilder()
         )
@@ -91,23 +109,24 @@ class AIContextAssembler:
     ) -> AIContext:
         """Assemble available context for one brand."""
 
+        if not isinstance(brand_id, str):
+            raise TypeError("brand_id must be a string.")
+
         brand_id = brand_id.strip()
 
         if not brand_id:
             raise ValueError("brand_id is required.")
 
-        company_context = self._load_company_context(
-            brand_id,
-        )
-        memory_context = self._load_memory_context(
-            brand_id,
-        )
+        company_context = self._load_company_context(brand_id)
+        customer_context = self._load_customer_context(brand_id)
+        memory_context = self._load_memory_context(brand_id)
         memory_count = len(memory_context.splitlines()) if memory_context else 0
 
         return AIContext(
             company_context=company_context,
             memory_context=memory_context,
             memory_count=memory_count,
+            customer_context=customer_context,
         )
 
     def _load_company_context(
@@ -126,9 +145,20 @@ class AIContextAssembler:
 
         profile = repository.get(brand_id)
 
-        return self.company_brain_prompt_builder.build(
-            profile,
-        )
+        return self.company_brain_prompt_builder.build(profile)
+
+    def _load_customer_context(
+        self,
+        brand_id: str,
+    ) -> str:
+        """Load Customer Intelligence context when available."""
+
+        provider = self.customer_context_provider
+
+        if provider is None:
+            return ""
+
+        return provider.build(brand_id)
 
     def _load_memory_context(
         self,

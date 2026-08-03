@@ -8,6 +8,7 @@ from app.database.connection import SQLiteDatabase
 from app.database.repositories import (
     BrandRepository,
     BusinessIntelligenceRepository,
+    CustomerIntelligenceRepository,
 )
 
 __all__ = [
@@ -15,6 +16,7 @@ __all__ = [
     "JsonToSQLiteMigrator",
     "BrandRepository",
     "BusinessIntelligenceRepository",
+    "CustomerIntelligenceRepository",
 ]
 
 

@@ -114,6 +114,21 @@ class SQLiteDatabase:
                         ON DELETE CASCADE
                 );
 
+                CREATE TABLE IF NOT EXISTS customer_intelligence_profiles (
+                    brand_id TEXT PRIMARY KEY,
+                    summary TEXT NOT NULL DEFAULT '',
+                    primary_segment_id TEXT NOT NULL DEFAULT '',
+                    segments_json TEXT NOT NULL DEFAULT '[]',
+                    ideal_customer_profiles_json TEXT NOT NULL DEFAULT '[]',
+                    personas_json TEXT NOT NULL DEFAULT '[]',
+                    payload_json TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    FOREIGN KEY (brand_id)
+                        REFERENCES brands(brand_id)
+                        ON DELETE CASCADE
+                );
+
                 CREATE TABLE IF NOT EXISTS compliance_rules (
                     rule_id TEXT NOT NULL,
                     version INTEGER NOT NULL,
@@ -188,6 +203,10 @@ class SQLiteDatabase:
                     idx_business_intelligence_revenue_model
                     ON business_intelligence_profiles(revenue_model);
 
+                CREATE INDEX IF NOT EXISTS
+                    idx_customer_intelligence_primary_segment
+                    ON customer_intelligence_profiles(primary_segment_id);
+
                 CREATE INDEX IF NOT EXISTS idx_compliance_rules_brand
                     ON compliance_rules(brand_id);
 
@@ -261,6 +280,19 @@ class SQLiteDatabase:
                 VALUES (
                     6,
                     'Add versioned prompt packs',
+                    strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+                )
+                """)
+
+            connection.execute("""
+                INSERT OR IGNORE INTO schema_migrations (
+                    version,
+                    description,
+                    applied_at
+                )
+                VALUES (
+                    7,
+                    'Add Customer Intelligence profiles',
                     strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
                 )
                 """)
