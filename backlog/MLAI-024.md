@@ -51,10 +51,10 @@ See:
 
 ### MLAI-024.4 — Workflow Integration
 
-- [ ] Integrate approved Marketing Briefs with campaign generation.
-- [ ] Preserve existing campaign callers.
-- [ ] Preserve pre- and post-generation compliance.
-- [ ] Add affected regression tests.
+- [x] Integrate approved Marketing Briefs with campaign generation.
+- [x] Preserve existing campaign callers.
+- [x] Preserve pre- and post-generation compliance.
+- [x] Add affected regression tests.
 
 ### MLAI-024.5 — Persistence and Completion
 

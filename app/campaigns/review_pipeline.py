@@ -2,16 +2,23 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
+from app.ai.prompt import PromptSection
 from app.campaigns.campaign_engine import CampaignEngine
 from app.campaigns.campaign_service import CampaignService
 from app.compliance.engine import ComplianceEngine
-from app.compliance.models import ComplianceReport, ReviewSubjectType
+from app.compliance.models import (
+    ComplianceReport,
+    ReviewSubjectType,
+)
 from app.compliance.prompt_builder import CompliancePromptBuilder
 from app.compliance.rule_packs import RulePack
-from app.compliance.translator import ComplianceRequirementTranslator
+from app.compliance.translator import (
+    ComplianceRequirementTranslator,
+)
 from app.models import (
     BrandProfile,
     CampaignBrief,
@@ -53,23 +60,28 @@ class CampaignReviewPipeline:
         voice: VoiceProfile,
         brief: CampaignBrief,
         rule_pack: RulePack | None = None,
+        additional_sections: Sequence[PromptSection] = (),
     ) -> CampaignReviewResult:
         """Generate content, run compliance checks, and persist both."""
 
-        additional_sections = []
+        workflow_sections = self._validate_sections(additional_sections)
+        compliance_sections: list[PromptSection] = []
 
         if rule_pack is not None:
             if not isinstance(rule_pack, RulePack):
                 raise TypeError("rule_pack must be a RulePack or None.")
 
             requirements = self.requirement_translator.translate_many(rule_pack.rules)
-            additional_sections = self.prompt_builder.build_sections(requirements)
+            compliance_sections = self.prompt_builder.build_sections(requirements)
 
         generated = self.campaign_engine.generate_campaign_content(
             brand=brand,
             voice=voice,
             brief=brief,
-            additional_sections=additional_sections,
+            additional_sections=(
+                *workflow_sections,
+                *compliance_sections,
+            ),
         )
 
         report = self.compliance_engine.evaluate(
@@ -88,3 +100,30 @@ class CampaignReviewPipeline:
             content_path=content_path,
             compliance_report_path=compliance_report_path,
         )
+
+    @staticmethod
+    def _validate_sections(
+        sections: Sequence[PromptSection],
+    ) -> list[PromptSection]:
+        if isinstance(sections, (str, bytes)):
+            raise TypeError(
+                "additional_sections must be a sequence " "of PromptSection objects."
+            )
+
+        if not isinstance(sections, Sequence):
+            raise TypeError(
+                "additional_sections must be a sequence " "of PromptSection objects."
+            )
+
+        validated_sections: list[PromptSection] = []
+
+        for section in sections:
+            if not isinstance(section, PromptSection):
+                raise TypeError(
+                    "additional_sections must contain " "PromptSection objects."
+                )
+
+            if section.render():
+                validated_sections.append(section)
+
+        return validated_sections
