@@ -10,6 +10,7 @@ $RequiredFiles = @(
     "governance\decision-change-control.md",
     "governance\pdrs\README.md",
     "governance\pdrs\PDR-TEMPLATE.md",
+    "governance\pdrs\PDR-0001-product-direction-ratification.md",
     "docs\engineering\continuity.md",
     "docs\handover\CURRENT_HANDOVER.md",
     "scripts\build_handover.ps1"
@@ -46,6 +47,18 @@ $TrackedGovernanceText = @(
 
 if (($TrackedGovernanceText -join "`n") -notmatch "Marketing Intelligence Operating System") {
     throw "Canonical product identity is missing from continuity governance."
+}
+
+$RatificationText = Get-Content -LiteralPath (
+    Join-Path $ProjectRoot "governance\pdrs\PDR-0001-product-direction-ratification.md"
+) -Raw
+
+if ($RatificationText -notmatch '(?m)^Accepted\r?$') {
+    throw "PDR-0001 is not recorded as accepted."
+}
+
+if ($RatificationText -notmatch "Launch Readiness and Vertical-Slice Review") {
+    throw "PDR-0001 does not preserve the required next-epic review."
 }
 
 Write-Host "MARKETINGLABAI HANDOVER REGRESSION TESTS PASSED" -ForegroundColor Green
