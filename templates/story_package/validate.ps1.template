@@ -1,0 +1,61 @@
+$ErrorActionPreference = "Stop"
+$ProjectRoot = '{{PROJECT_ROOT}}'
+
+function Invoke-PythonLogged {
+    param([Parameter(Mandatory = $true)][string[]]$Arguments)
+    $Output = @(& python @Arguments 2>&1)
+    $ExitCode = $LASTEXITCODE
+    $Output | ForEach-Object { Write-Host $_ }
+    return $ExitCode
+}
+
+Set-Location $ProjectRoot
+Write-Host ""
+Write-Host "===================================================="
+Write-Host "Validating {{STORY_ID}} - {{STORY_TITLE}}"
+Write-Host "===================================================="
+
+$ExpectedStatus = @(
+{{EXPECTED_STATUS}}
+)
+$CurrentStatus = @(git status --short)
+$CurrentStatus | ForEach-Object { Write-Host $_ }
+if ($CurrentStatus.Count -ne $ExpectedStatus.Count) { throw "Unexpected Git status entry count." }
+foreach ($ExpectedLine in $ExpectedStatus) {
+    if ($ExpectedLine -notin $CurrentStatus) { throw "Expected Git status entry not found: $ExpectedLine" }
+}
+
+Write-Host "`n[1/4] Running focused tests..."
+$PythonExitCode = Invoke-PythonLogged -Arguments @(
+{{FOCUSED_TEST_ARGUMENTS}}
+)
+if ($PythonExitCode -ne 0) { throw "Focused tests failed." }
+
+$HasImportValidation = {{HAS_IMPORT}}
+Write-Host "`n[2/4] Verifying imports..."
+if ($HasImportValidation) {
+    $PythonExitCode = Invoke-PythonLogged -Arguments @(
+{{IMPORT_ARGUMENTS}}
+    )
+    if ($PythonExitCode -ne 0) { throw "Import validation failed." }
+} else { Write-Host "SKIPPED: No import validation configured." }
+
+Write-Host "`n[3/4] Running complete test suite..."
+$PythonExitCode = Invoke-PythonLogged -Arguments @(
+    '-m',
+    'unittest',
+    'discover',
+    '-s',
+    'tests',
+    '-p',
+    'test_*.py',
+    '-v'
+)
+if ($PythonExitCode -ne 0) { throw "Complete test suite failed." }
+
+Write-Host "`n[4/4] Checking whitespace..."
+git diff --check
+if ($LASTEXITCODE -ne 0) { throw "Git whitespace validation failed." }
+git status --short
+git diff --stat
+Write-Host "`n{{STORY_ID}} VALIDATION PASSED"

@@ -1,0 +1,51 @@
+{
+  "storyId": "MLAI-025.3",
+  "title": "Campaign Asset Planning",
+  "slug": "campaign_asset_planning",
+  "projectRoot": "C:\\Ai Projects\\MarketingLabAI",
+  "sourceRoot": "C:\\Ai Projects\\MarketingLabAI",
+  "installFiles": [
+    "app\\campaign_planner\\__init__.py",
+    "app\\campaign_planner\\assets.py",
+    "app\\campaign_planner\\dependencies.py",
+    "app\\campaign_planner\\service.py",
+    "backlog\\MLAI-025.md",
+    "tests\\test_campaign_assets.py",
+    "tests\\test_campaign_dependencies.py",
+    "tests\\test_campaign_asset_service.py"
+  ],
+  "newFiles": [
+    "app\\campaign_planner\\assets.py",
+    "app\\campaign_planner\\dependencies.py",
+    "tests\\test_campaign_assets.py",
+    "tests\\test_campaign_dependencies.py",
+    "tests\\test_campaign_asset_service.py"
+  ],
+  "compileFiles": [
+    "app\\campaign_planner\\assets.py",
+    "app\\campaign_planner\\dependencies.py",
+    "app\\campaign_planner\\service.py",
+    "tests\\test_campaign_assets.py",
+    "tests\\test_campaign_dependencies.py",
+    "tests\\test_campaign_asset_service.py"
+  ],
+  "focusedTestModules": [
+    "tests.test_campaign_planner",
+    "tests.test_campaign_planner_service",
+    "tests.test_campaign_planner_validation",
+    "tests.test_campaign_assets",
+    "tests.test_campaign_dependencies",
+    "tests.test_campaign_asset_service"
+  ],
+  "importCommand": "from app.campaign_planner import CampaignAsset, CampaignDependencyPlanner, CampaignPriority, DefinitionOfDoneItem; print('Campaign Asset Planning imports OK')",
+  "expectedStatus": [
+    " M app/campaign_planner/__init__.py",
+    " M app/campaign_planner/service.py",
+    " M backlog/MLAI-025.md",
+    "?? app/campaign_planner/assets.py",
+    "?? app/campaign_planner/dependencies.py",
+    "?? tests/test_campaign_asset_service.py",
+    "?? tests/test_campaign_assets.py",
+    "?? tests/test_campaign_dependencies.py"
+  ]
+}

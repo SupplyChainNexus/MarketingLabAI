@@ -1,0 +1,70 @@
+$ErrorActionPreference = "Stop"
+$ProjectRoot = '{{PROJECT_ROOT}}'
+$PayloadRoot = Join-Path $PSScriptRoot "payload"
+
+function Invoke-PythonLogged {
+    param([Parameter(Mandatory = $true)][string[]]$Arguments)
+    $Output = @(& python @Arguments 2>&1)
+    $ExitCode = $LASTEXITCODE
+    $Output | ForEach-Object { Write-Host $_ }
+    return $ExitCode
+}
+
+Set-Location $ProjectRoot
+Write-Host ""
+Write-Host "===================================================="
+Write-Host "Installing {{STORY_ID}} - {{STORY_TITLE}}"
+Write-Host "===================================================="
+Write-Host ""
+
+if (-not (Test-Path ".\.git")) { throw "MarketingLabAI Git repository was not found." }
+$Status = @(git status --short)
+if ($Status.Count -gt 0) {
+    $Status | ForEach-Object { Write-Host $_ }
+    throw "The working tree must be clean before installation."
+}
+
+$NewFiles = @(
+{{NEW_FILES}}
+)
+foreach ($RelativePath in $NewFiles) {
+    if (Test-Path (Join-Path $ProjectRoot $RelativePath)) {
+        throw "Destination already exists: $RelativePath"
+    }
+}
+
+$InstallFiles = @(
+{{INSTALL_FILES}}
+)
+Write-Host "[1/5] Installing story files..."
+foreach ($RelativePath in $InstallFiles) {
+    $Source = Join-Path $PayloadRoot $RelativePath
+    $Destination = Join-Path $ProjectRoot $RelativePath
+    if (-not (Test-Path $Source -PathType Leaf)) { throw "Package payload is incomplete: $RelativePath" }
+    New-Item -ItemType Directory -Path (Split-Path $Destination -Parent) -Force | Out-Null
+    Copy-Item $Source $Destination -Force
+    Write-Host "INSTALLED: $RelativePath"
+}
+
+Write-Host "`n[2/5] Formatting..."
+& ".\scripts\format.ps1"
+if ($LASTEXITCODE -ne 0) { throw "Formatting failed." }
+
+Write-Host "`n[3/5] Compiling..."
+$PythonExitCode = Invoke-PythonLogged -Arguments @(
+{{COMPILE_ARGUMENTS}}
+)
+if ($PythonExitCode -ne 0) { throw "Compilation failed." }
+
+Write-Host "`n[4/5] Running focused tests..."
+$PythonExitCode = Invoke-PythonLogged -Arguments @(
+{{FOCUSED_TEST_ARGUMENTS}}
+)
+if ($PythonExitCode -ne 0) { throw "Focused tests failed." }
+
+Write-Host "`n[5/5] Checking whitespace and status..."
+git diff --check
+if ($LASTEXITCODE -ne 0) { throw "Git whitespace validation failed." }
+git status --short
+Write-Host "`n{{STORY_ID}} INSTALLED"
+Write-Host "Run the generated validator next."
