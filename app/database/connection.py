@@ -241,6 +241,33 @@ class SQLiteDatabase:
                 CREATE INDEX IF NOT EXISTS idx_marketing_briefs_status
                     ON marketing_briefs(tenant_id, status);
 
+                CREATE TABLE IF NOT EXISTS campaign_plans (
+                    campaign_id TEXT NOT NULL,
+                    version INTEGER NOT NULL,
+                    tenant_id TEXT NOT NULL,
+                    brand_id TEXT NOT NULL,
+                    name TEXT NOT NULL,
+                    status TEXT NOT NULL,
+                    payload_json TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    PRIMARY KEY (campaign_id, version),
+                    FOREIGN KEY (tenant_id)
+                        REFERENCES tenants(tenant_id),
+                    FOREIGN KEY (brand_id)
+                        REFERENCES brands(brand_id)
+                        ON DELETE CASCADE
+                );
+
+                CREATE INDEX IF NOT EXISTS idx_campaign_plans_tenant
+                    ON campaign_plans(tenant_id);
+
+                CREATE INDEX IF NOT EXISTS idx_campaign_plans_brand
+                    ON campaign_plans(tenant_id, brand_id);
+
+                CREATE INDEX IF NOT EXISTS idx_campaign_plans_status
+                    ON campaign_plans(tenant_id, status);
+
                 CREATE INDEX IF NOT EXISTS idx_prompt_packs_tenant
                     ON prompt_packs(tenant_id);
 
@@ -347,6 +374,21 @@ class SQLiteDatabase:
                 VALUES (
                     8,
                     'Add versioned marketing briefs',
+                    strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+                )
+                """
+            )
+
+            connection.execute(
+                """
+                INSERT OR IGNORE INTO schema_migrations (
+                    version,
+                    description,
+                    applied_at
+                )
+                VALUES (
+                    9,
+                    'Add versioned campaign plans',
                     strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
                 )
                 """

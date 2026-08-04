@@ -239,6 +239,7 @@ class CampaignPlan:
     success_metrics: tuple[CampaignMetric, ...]
     owner: str
     campaign_id: str = field(default_factory=lambda: str(uuid4()))
+    version: int = 1
     status: CampaignStatus = CampaignStatus.DRAFT
     notes: str = ""
     created_at: datetime = field(default_factory=_utc_now)
@@ -251,6 +252,11 @@ class CampaignPlan:
         self.owner = _required_text("owner", self.owner)
         self.campaign_id = _required_text("campaign_id", self.campaign_id)
         self.notes = _optional_text("notes", self.notes)
+
+        if isinstance(self.version, bool) or not isinstance(self.version, int):
+            raise TypeError("version must be an integer.")
+        if self.version < 1:
+            raise ValueError("version must be at least 1.")
 
         if not isinstance(self.objective, CampaignObjective):
             raise TypeError("objective must be a CampaignObjective.")
@@ -320,6 +326,7 @@ class CampaignPlan:
 
         return {
             "campaign_id": self.campaign_id,
+            "version": self.version,
             "tenant_id": self.tenant_id,
             "brand_id": self.brand_id,
             "name": self.name,
@@ -341,6 +348,7 @@ class CampaignPlan:
 
         return cls(
             campaign_id=data["campaign_id"],
+            version=data.get("version", 1),
             tenant_id=data["tenant_id"],
             brand_id=data["brand_id"],
             name=data["name"],

@@ -25,6 +25,7 @@ from app.campaign_planner.models import (
     CampaignTimeline,
 )
 from app.campaign_planner.service import CampaignPlanningService
+from app.campaign_planner.repository import CampaignPlanRepository
 from app.campaign_planner.validation import (
     CampaignPlanValidator,
     CampaignValidationIssue,
@@ -43,6 +44,7 @@ __all__ = [
     "CampaignMetric",
     "CampaignObjective",
     "CampaignPlan",
+    "CampaignPlanRepository",
     "CampaignPlanAuditMetadata",
     "CampaignPlanValidator",
     "CampaignPlanningService",

@@ -129,6 +129,13 @@ class CampaignPlannerFoundationTests(unittest.TestCase):
         self.assertIsNot(restored.channels, original.channels)
         self.assertIsNot(restored.success_metrics, original.success_metrics)
 
+    def test_plan_version_defaults_to_one_and_must_be_positive(self) -> None:
+        self.assertEqual(self.make_plan().version, 1)
+        with self.assertRaisesRegex(ValueError, "at least 1"):
+            self.make_plan(version=0)
+        with self.assertRaisesRegex(TypeError, "integer"):
+            self.make_plan(version=True)
+
     def test_serialised_collections_are_detached(self) -> None:
         plan = self.make_plan()
         payload = plan.to_dict()

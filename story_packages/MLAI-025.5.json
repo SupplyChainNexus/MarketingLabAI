@@ -1,0 +1,21 @@
+{
+  "story_id": "MLAI-025.5",
+  "slug": "campaign_plan_persistence_completion",
+  "title": "Campaign Plan Persistence and Completion",
+  "focused_tests": [
+    "tests.test_campaign_planner",
+    "tests.test_campaign_planner_service",
+    "tests.test_campaign_planner_validation",
+    "tests.test_campaign_plan_migration",
+    "tests.test_campaign_plan_repository",
+    "tests.test_marketing_brief_migration",
+    "tests.test_marketing_brief_repository",
+    "tests.test_sqlite_database"
+  ],
+  "import_modules": [
+    "app.campaign_planner",
+    "app.campaign_planner.repository",
+    "app.database.connection"
+  ],
+  "commit_message": "feat(campaign-planner): add versioned plan persistence"
+}

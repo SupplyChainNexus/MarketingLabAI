@@ -66,6 +66,14 @@ class CampaignPlanningServiceTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Unsupported"):
             self.service.revise_plan(self.make_plan(), unsupported="value")
 
+    def test_create_next_version_preserves_identity_and_history(self):
+        original = self.make_plan()
+        successor = self.service.create_next_version(original, name="Updated Campaign")
+        self.assertEqual(successor.campaign_id, original.campaign_id)
+        self.assertEqual(successor.version, original.version + 1)
+        self.assertEqual(original.version, 1)
+        self.assertEqual(successor.name, "Updated Campaign")
+
     def test_revise_plan_rejects_approved_plan(self):
         with self.assertRaisesRegex(ValueError, "draft or planned"):
             self.service.revise_plan(

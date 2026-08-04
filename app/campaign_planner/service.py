@@ -70,6 +70,26 @@ class CampaignPlanningService:
         self._raise_for_invalid(self.validator.validate_for_planning(revised))
         return revised
 
+    def create_next_version(
+        self,
+        plan: CampaignPlan,
+        **changes: Any,
+    ) -> CampaignPlan:
+        """Create a detached successor while preserving stored plan history."""
+
+        self._require_plan(plan)
+        unknown_fields = set(changes) - self._UPDATABLE_FIELDS
+        if unknown_fields:
+            names = ", ".join(sorted(unknown_fields))
+            raise ValueError(f"Unsupported campaign update fields: {names}.")
+        source = plan.to_dict()
+        source.update(changes)
+        source["version"] = plan.version + 1
+        source["updated_at"] = datetime.now(plan.updated_at.tzinfo).isoformat()
+        successor = CampaignPlan.from_dict(source)
+        self._raise_for_invalid(self.validator.validate_for_planning(successor))
+        return successor
+
     def evaluate_readiness(self, plan: CampaignPlan) -> CampaignValidationResult:
         self._require_plan(plan)
         return self.validator.validate_for_approval(plan)

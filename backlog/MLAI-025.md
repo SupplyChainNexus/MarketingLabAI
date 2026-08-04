@@ -1,8 +1,8 @@
-# MLAI-025 â€” Campaign Planning Platform
+# MLAI-025 Ã¢â‚¬â€ Campaign Planning Platform
 
 ## Status
 
-In Progress
+Completed
 
 ## Architectural Authority
 
@@ -20,7 +20,7 @@ benefit every subscription tier.
 
 ## Delivery Plan
 
-### MLAI-025.1 â€” Campaign Planner Foundation
+### MLAI-025.1 Ã¢â‚¬â€ Campaign Planner Foundation
 
 - [x] Define Campaign Plan identity and lifecycle.
 - [x] Define objective, audience, channel, timeline, and metric value objects.
@@ -30,7 +30,7 @@ benefit every subscription tier.
 - [x] Add focused unit tests.
 - [x] Commit and release the completed increment.
 
-### MLAI-025.2 â€” Campaign Planning Service
+### MLAI-025.2 Ã¢â‚¬â€ Campaign Planning Service
 
 - [x] Add deterministic plan creation and revision services.
 - [x] Add planning-readiness evaluation.
@@ -39,7 +39,7 @@ benefit every subscription tier.
 - [x] Add focused service tests.
 - [x] Commit and release the completed increment.
 
-### MLAI-025.3 â€” Campaign Structure and Asset Planning
+### MLAI-025.3 Ã¢â‚¬â€ Campaign Structure and Asset Planning
 
 - [x] Define provider-neutral campaign deliverables.
 - [x] Define asset priority and lifecycle.
@@ -50,7 +50,7 @@ benefit every subscription tier.
 - [x] Add focused asset, dependency, and service tests.
 - [x] Commit and release the completed increment.
 
-### MLAI-025.4 â€” Marketing Brief and Workflow Integration
+### MLAI-025.4 Ã¢â‚¬â€ Marketing Brief and Workflow Integration
 
 - [x] Associate one or more Marketing Briefs with a Campaign Plan.
 - [x] Preserve separate campaign, asset, and brief lifecycles.
@@ -58,11 +58,11 @@ benefit every subscription tier.
 - [x] Preserve existing Marketing Brief campaign callers.
 - [x] Return campaign-plan audit metadata.
 
-### MLAI-025.5 â€” Persistence and Completion
+### MLAI-025.5 Ã¢â‚¬â€ Persistence and Completion
 
-- [ ] Add immutable, versioned Campaign Plan persistence.
-- [ ] Add tenant and brand ownership validation.
-- [ ] Add latest-version and history retrieval.
-- [ ] Complete Campaign Planner documentation.
-- [ ] Run complete regression and engineering review.
-- [ ] Commit and release the completed epic.
+- [x] Add immutable, versioned Campaign Plan persistence.
+- [x] Add tenant and brand ownership validation.
+- [x] Add latest-version and history retrieval.
+- [x] Complete Campaign Planner documentation.
+- [x] Run complete regression and engineering review.
+- [x] Commit and release the completed epic.

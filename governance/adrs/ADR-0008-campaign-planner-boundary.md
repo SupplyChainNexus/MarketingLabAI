@@ -37,7 +37,8 @@ metrics, notes, lifecycle state, validation, and serialisation.
 
 It does not own Marketing Brief lifecycle, Prompt Pack selection, prompt
 construction, content generation, compliance evaluation, publishing,
-performance ingestion, persistence, or calendar synchronisation.
+performance ingestion, or calendar synchronisation. Campaign Plan persistence
+is implemented behind a repository boundary and does not enter the domain model.
 
 MLAI-025.1 establishes only the domain foundation.
 
@@ -88,6 +89,14 @@ supplied, governed generation requires an approved or active plan, matching
 tenant and brand ownership, and a channel included in both the brief and plan.
 The workflow returns immutable campaign-plan and brief-version audit metadata.
 
+### MLAI-025.5 Persistence Contract
+
+Campaign Plans are stored as immutable `(campaign_id, version)` rows. Repository
+reads are tenant-scoped, saves verify tenant existence and brand ownership, and
+history is preserved when a detached successor version is created. The domain
+remains independent from SQLite; persistence depends on the domain, not the
+reverse.
+
 ## Alternatives Considered
 
 ### Continue using the legacy CampaignBrief as the plan
@@ -105,7 +114,7 @@ lifecycles. One campaign may eventually require multiple briefs.
 Rejected because campaign planning is reviewable business logic that must
 remain deterministic and provider-neutral.
 
-### Implement persistence immediately
+### Implement persistence in the foundation story
 
 Rejected because domain semantics should stabilise before database design.
 
@@ -124,7 +133,7 @@ Rejected because domain semantics should stabilise before database design.
 
 - Later stories must integrate plans with briefs and campaign workflows.
 - Callers must respect lifecycle transitions.
-- Persistence is intentionally deferred.
+- Immutable history increases storage use and requires explicit successor versions.
 
 ## Success Criteria
 
