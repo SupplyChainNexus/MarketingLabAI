@@ -6,6 +6,7 @@ from datetime import datetime
 from typing import Any, Iterable
 
 from app.campaign_planner.assets import CampaignAsset
+from app.campaign_planner.briefs import CampaignBriefReference
 from app.campaign_planner.dependencies import CampaignDependencyPlanner
 from app.campaign_planner.models import CampaignPlan, CampaignStatus
 from app.campaign_planner.validation import (
@@ -169,6 +170,29 @@ class CampaignPlanningService:
     ) -> tuple[CampaignAsset, ...]:
         return self.dependency_planner.blocked_assets(assets)
 
+    def associate_brief(
+        self,
+        references: Iterable[CampaignBriefReference],
+        reference: CampaignBriefReference,
+        *,
+        plan: CampaignPlan,
+    ) -> tuple[CampaignBriefReference, ...]:
+        """Associate one immutable brief version without changing either lifecycle."""
+
+        self._require_plan(plan)
+        current = self._brief_reference_tuple(references)
+        if not isinstance(reference, CampaignBriefReference):
+            raise TypeError("reference must be a CampaignBriefReference.")
+        if reference.campaign_id != plan.campaign_id:
+            raise ValueError("Marketing Brief reference belongs to another campaign.")
+        if reference.tenant_id != plan.tenant_id:
+            raise ValueError("Marketing Brief reference belongs to another tenant.")
+        if reference.brand_id != plan.brand_id:
+            raise ValueError("Marketing Brief reference belongs to another brand.")
+        if reference in current:
+            raise ValueError("Marketing Brief version is already associated.")
+        return current + (reference,)
+
     @staticmethod
     def _asset_tuple(assets: Iterable[CampaignAsset]) -> tuple[CampaignAsset, ...]:
         if isinstance(assets, (str, bytes)):
@@ -176,6 +200,20 @@ class CampaignPlanningService:
         values = tuple(assets)
         if not all(isinstance(asset, CampaignAsset) for asset in values):
             raise TypeError("assets must contain CampaignAsset values.")
+        return values
+
+    @staticmethod
+    def _brief_reference_tuple(
+        references: Iterable[CampaignBriefReference],
+    ) -> tuple[CampaignBriefReference, ...]:
+        try:
+            values = tuple(references)
+        except TypeError as error:
+            raise TypeError(
+                "references must be an iterable of CampaignBriefReference values."
+            ) from error
+        if not all(isinstance(value, CampaignBriefReference) for value in values):
+            raise TypeError("references must contain CampaignBriefReference values.")
         return values
 
     @staticmethod

@@ -4,9 +4,19 @@ from __future__ import annotations
 
 import tempfile
 import unittest
+from datetime import date
 from pathlib import Path
 
 from app.ai.prompt import PromptSection
+from app.campaign_planner import (
+    CampaignAudience,
+    CampaignChannel,
+    CampaignMetric,
+    CampaignObjective,
+    CampaignPlan,
+    CampaignStatus,
+    CampaignTimeline,
+)
 from app.campaigns.review_pipeline import (
     CampaignReviewPipeline,
 )
@@ -206,6 +216,32 @@ class MarketingBriefCampaignWorkflowTests(unittest.TestCase):
         values.update(overrides)
 
         return MarketingBrief(**values)
+
+    @staticmethod
+    def make_plan(**overrides: object) -> CampaignPlan:
+        values: dict[str, object] = {
+            "campaign_id": "campaign-plan-one",
+            "tenant_id": "default",
+            "brand_id": "brand-one",
+            "name": "Workshop Acquisition Plan",
+            "objective": CampaignObjective(
+                "Increase qualified enquiries",
+                "Grow recurring workshop revenue.",
+            ),
+            "audience": CampaignAudience(
+                "Independent repair workshops",
+                "Repair workshops in the Western Cape.",
+            ),
+            "timeline": CampaignTimeline(date(2026, 9, 1), date(2026, 9, 30)),
+            "channels": (CampaignChannel("facebook"),),
+            "success_metrics": (
+                CampaignMetric("Qualified enquiries", "25", "CRM source"),
+            ),
+            "owner": "Campaign Manager",
+            "status": CampaignStatus.APPROVED,
+        }
+        values.update(overrides)
+        return CampaignPlan(**values)
 
     def test_workflow_rejects_non_approved_brief(self) -> None:
         brief = self.make_brief(status=BriefStatus.DRAFT)
@@ -425,6 +461,78 @@ class MarketingBriefCampaignWorkflowTests(unittest.TestCase):
                 voice=self.voice,
                 brief=legacy_brief,
                 additional_sections=[object()],  # type: ignore[list-item]
+            )
+
+    def test_existing_workflow_caller_has_no_campaign_audit(self) -> None:
+        result = self.workflow.generate_review_and_save(
+            brand=self.brand,
+            voice=self.voice,
+            brief=self.make_brief(),
+            content_type="social post",
+        )
+        self.assertIsNone(result.campaign_plan_audit)
+        self.assertEqual(
+            result.campaign_review.generated_content.campaign_id, "brief-one"
+        )
+
+    def test_plan_aware_workflow_returns_campaign_audit_metadata(self) -> None:
+        plan = self.make_plan()
+        result = self.workflow.generate_review_and_save(
+            brand=self.brand,
+            voice=self.voice,
+            brief=self.make_brief(version=2),
+            content_type="social post",
+            campaign_plan=plan,
+        )
+        audit = result.campaign_plan_audit
+        self.assertIsNotNone(audit)
+        self.assertEqual(audit.campaign_id, plan.campaign_id)
+        self.assertEqual(audit.campaign_status, CampaignStatus.APPROVED)
+        self.assertEqual(audit.brief_id, "brief-one")
+        self.assertEqual(audit.brief_version, 2)
+        self.assertEqual(
+            result.campaign_review.generated_content.campaign_id,
+            plan.campaign_id,
+        )
+
+    def test_plan_aware_workflow_requires_approved_planning(self) -> None:
+        with self.assertRaisesRegex(ValueError, "approved or active"):
+            self.workflow.generate_review_and_save(
+                brand=self.brand,
+                voice=self.voice,
+                brief=self.make_brief(),
+                content_type="social post",
+                campaign_plan=self.make_plan(status=CampaignStatus.PLANNED),
+            )
+
+    def test_plan_aware_workflow_enforces_tenant_and_brand(self) -> None:
+        with self.assertRaisesRegex(ValueError, "tenants differ"):
+            self.workflow.generate_review_and_save(
+                brand=self.brand,
+                voice=self.voice,
+                brief=self.make_brief(),
+                content_type="social post",
+                campaign_plan=self.make_plan(tenant_id="another-tenant"),
+            )
+        with self.assertRaisesRegex(ValueError, "brands differ"):
+            self.workflow.generate_review_and_save(
+                brand=self.brand,
+                voice=self.voice,
+                brief=self.make_brief(),
+                content_type="social post",
+                campaign_plan=self.make_plan(brand_id="another-brand"),
+            )
+
+    def test_plan_aware_workflow_enforces_plan_channel(self) -> None:
+        with self.assertRaisesRegex(ValueError, "Campaign Plan"):
+            self.workflow.generate_review_and_save(
+                brand=self.brand,
+                voice=self.voice,
+                brief=self.make_brief(),
+                content_type="social post",
+                campaign_plan=self.make_plan(
+                    channels=(CampaignChannel("email"),),
+                ),
             )
 
 

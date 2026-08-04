@@ -5,6 +5,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from app.ai.prompt import PromptSection
+from app.campaign_planner import (
+    CampaignBriefReference,
+    CampaignPlan,
+    CampaignPlanAuditMetadata,
+    CampaignStatus,
+)
 from app.campaigns.review_pipeline import (
     CampaignReviewPipeline,
     CampaignReviewResult,
@@ -31,6 +37,7 @@ class MarketingBriefCampaignResult:
 
     campaign_review: CampaignReviewResult
     rendered_prompt: RenderedMarketingBriefPrompt
+    campaign_plan_audit: CampaignPlanAuditMetadata | None = None
 
     def __post_init__(self) -> None:
         """Validate the workflow result."""
@@ -47,6 +54,13 @@ class MarketingBriefCampaignResult:
         ):
             raise TypeError(
                 "rendered_prompt must be a " "RenderedMarketingBriefPrompt."
+            )
+        if self.campaign_plan_audit is not None and not isinstance(
+            self.campaign_plan_audit,
+            CampaignPlanAuditMetadata,
+        ):
+            raise TypeError(
+                "campaign_plan_audit must be CampaignPlanAuditMetadata or None."
             )
 
 
@@ -89,6 +103,7 @@ class MarketingBriefCampaignWorkflow:
         task_type: str = "campaign_content",
         prompt_pack_id: str | None = None,
         rule_pack: RulePack | None = None,
+        campaign_plan: CampaignPlan | None = None,
     ) -> MarketingBriefCampaignResult:
         """Run an approved Marketing Brief through the campaign workflow."""
 
@@ -113,6 +128,11 @@ class MarketingBriefCampaignWorkflow:
             brief,
             channel,
         )
+        campaign_plan_audit = self._campaign_plan_audit(
+            campaign_plan,
+            brief,
+            effective_channel,
+        )
         cleaned_content_type = self._required_text(
             "content_type",
             content_type,
@@ -130,7 +150,11 @@ class MarketingBriefCampaignWorkflow:
         )
 
         campaign_brief = CampaignBrief(
-            campaign_id=brief.brief_id,
+            campaign_id=(
+                campaign_plan.campaign_id
+                if campaign_plan is not None
+                else brief.brief_id
+            ),
             brand_id=brief.brand_id,
             objective=brief.objective,
             audience=brief.audience,
@@ -153,6 +177,45 @@ class MarketingBriefCampaignWorkflow:
         return MarketingBriefCampaignResult(
             campaign_review=campaign_review,
             rendered_prompt=rendered_prompt,
+            campaign_plan_audit=campaign_plan_audit,
+        )
+
+    @staticmethod
+    def _campaign_plan_audit(
+        campaign_plan: CampaignPlan | None,
+        brief: MarketingBrief,
+        channel: str,
+    ) -> CampaignPlanAuditMetadata | None:
+        if campaign_plan is None:
+            return None
+        if not isinstance(campaign_plan, CampaignPlan):
+            raise TypeError("campaign_plan must be a CampaignPlan or None.")
+        if campaign_plan.status not in {
+            CampaignStatus.APPROVED,
+            CampaignStatus.ACTIVE,
+        }:
+            raise ValueError(
+                "Only approved or active Campaign Plans may govern generation."
+            )
+        if campaign_plan.tenant_id != brief.tenant_id:
+            raise ValueError("The Marketing Brief and Campaign Plan tenants differ.")
+        if campaign_plan.brand_id != brief.brand_id:
+            raise ValueError("The Marketing Brief and Campaign Plan brands differ.")
+        plan_channels = {item.name.casefold() for item in campaign_plan.channels}
+        if channel.casefold() not in plan_channels:
+            raise ValueError(
+                "The selected channel is not included in the Campaign Plan."
+            )
+        reference = CampaignBriefReference(
+            campaign_id=campaign_plan.campaign_id,
+            brief_id=brief.brief_id,
+            brief_version=brief.version,
+            tenant_id=brief.tenant_id,
+            brand_id=brief.brand_id,
+        )
+        return CampaignPlanAuditMetadata.from_plan_and_reference(
+            campaign_plan,
+            reference,
         )
 
     @classmethod

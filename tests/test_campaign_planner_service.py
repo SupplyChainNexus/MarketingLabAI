@@ -5,6 +5,7 @@ from datetime import date, datetime, timezone
 
 from app.campaign_planner import (
     CampaignAudience,
+    CampaignBriefReference,
     CampaignChannel,
     CampaignMetric,
     CampaignObjective,
@@ -109,6 +110,50 @@ class CampaignPlanningServiceTests(unittest.TestCase):
     def test_service_rejects_invalid_plan_type(self):
         with self.assertRaisesRegex(TypeError, "CampaignPlan"):
             self.service.evaluate_readiness(object())
+
+    def test_associate_brief_supports_multiple_briefs(self):
+        plan = self.make_plan(status=CampaignStatus.APPROVED)
+        first = CampaignBriefReference(
+            campaign_id=plan.campaign_id,
+            brief_id="brief-one",
+            brief_version=1,
+            tenant_id=plan.tenant_id,
+            brand_id=plan.brand_id,
+        )
+        second = CampaignBriefReference(
+            campaign_id=plan.campaign_id,
+            brief_id="brief-two",
+            brief_version=3,
+            tenant_id=plan.tenant_id,
+            brand_id=plan.brand_id,
+        )
+        references = self.service.associate_brief((), first, plan=plan)
+        references = self.service.associate_brief(references, second, plan=plan)
+        self.assertEqual(references, (first, second))
+
+    def test_associate_brief_rejects_duplicate_version(self):
+        plan = self.make_plan()
+        reference = CampaignBriefReference(
+            campaign_id=plan.campaign_id,
+            brief_id="brief-one",
+            brief_version=1,
+            tenant_id=plan.tenant_id,
+            brand_id=plan.brand_id,
+        )
+        with self.assertRaisesRegex(ValueError, "already associated"):
+            self.service.associate_brief((reference,), reference, plan=plan)
+
+    def test_associate_brief_enforces_plan_ownership(self):
+        plan = self.make_plan()
+        reference = CampaignBriefReference(
+            campaign_id=plan.campaign_id,
+            brief_id="brief-one",
+            brief_version=1,
+            tenant_id="another-tenant",
+            brand_id=plan.brand_id,
+        )
+        with self.assertRaisesRegex(ValueError, "tenant"):
+            self.service.associate_brief((), reference, plan=plan)
 
 
 if __name__ == "__main__":

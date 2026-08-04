@@ -7,6 +7,10 @@ from app.campaign_planner.assets import (
     CampaignPriority,
     DefinitionOfDoneItem,
 )
+from app.campaign_planner.briefs import (
+    CampaignBriefReference,
+    CampaignPlanAuditMetadata,
+)
 from app.campaign_planner.dependencies import (
     CampaignDependencyIssue,
     CampaignDependencyPlanner,
@@ -31,6 +35,7 @@ __all__ = [
     "CampaignAsset",
     "CampaignAssetStatus",
     "CampaignAssetType",
+    "CampaignBriefReference",
     "CampaignAudience",
     "CampaignChannel",
     "CampaignDependencyIssue",
@@ -38,6 +43,7 @@ __all__ = [
     "CampaignMetric",
     "CampaignObjective",
     "CampaignPlan",
+    "CampaignPlanAuditMetadata",
     "CampaignPlanValidator",
     "CampaignPlanningService",
     "CampaignPriority",

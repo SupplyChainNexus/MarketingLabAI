@@ -1,5 +1,6 @@
 "Structured Marketing Brief domain."
 
+from app.campaign_planner import CampaignPlanAuditMetadata
 from app.marketing_brief.campaign_workflow import (
     MarketingBriefCampaignResult,
     MarketingBriefCampaignWorkflow,
@@ -29,6 +30,7 @@ __all__ = [
     "MarketingBrief",
     "MarketingBriefCampaignResult",
     "MarketingBriefCampaignWorkflow",
+    "CampaignPlanAuditMetadata",
     "MarketingBriefEvidence",
     "MarketingBriefPromptBuilder",
     "MarketingBriefPromptPackService",

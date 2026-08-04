@@ -1,0 +1,56 @@
+{
+  "storyId": "MLAI-025.4",
+  "title": "Marketing Brief and Workflow Integration",
+  "slug": "marketing_brief_workflow_integration",
+  "projectRoot": "C:\\Ai Projects\\MarketingLabAI",
+  "sourceRoot": "C:\\Ai Projects\\MarketingLabAI",
+  "installFiles": [
+    "app\\campaign_planner\\__init__.py",
+    "app\\campaign_planner\\briefs.py",
+    "app\\campaign_planner\\service.py",
+    "app\\marketing_brief\\__init__.py",
+    "app\\marketing_brief\\campaign_workflow.py",
+    "backlog\\MLAI-025.md",
+    "governance\\adrs\\ADR-0008-campaign-planner-boundary.md",
+    "story_packages\\MLAI-025.4.json",
+    "tests\\test_campaign_planner_service.py",
+    "tests\\test_marketing_brief_campaign_workflow.py"
+  ],
+  "newFiles": [
+    "app\\campaign_planner\\briefs.py",
+    "story_packages\\MLAI-025.4.json"
+  ],
+  "compileFiles": [
+    "app\\campaign_planner\\__init__.py",
+    "app\\campaign_planner\\briefs.py",
+    "app\\campaign_planner\\service.py",
+    "app\\marketing_brief\\__init__.py",
+    "app\\marketing_brief\\campaign_workflow.py",
+    "tests\\test_campaign_planner_service.py",
+    "tests\\test_marketing_brief_campaign_workflow.py"
+  ],
+  "focusedTestModules": [
+    "tests.test_campaign_planner",
+    "tests.test_campaign_planner_service",
+    "tests.test_campaign_planner_validation",
+    "tests.test_campaign_assets",
+    "tests.test_campaign_dependencies",
+    "tests.test_campaign_asset_service",
+    "tests.test_marketing_brief",
+    "tests.test_marketing_brief_campaign_workflow",
+    "tests.test_marketing_brief_prompt_builder"
+  ],
+  "importCommand": "from app.campaign_planner import CampaignBriefReference, CampaignPlanAuditMetadata; from app.marketing_brief import MarketingBriefCampaignWorkflow; print('Campaign Brief Integration imports OK')",
+  "expectedStatus": [
+    " M app/campaign_planner/__init__.py",
+    " M app/campaign_planner/service.py",
+    " M app/marketing_brief/__init__.py",
+    " M app/marketing_brief/campaign_workflow.py",
+    " M backlog/MLAI-025.md",
+    " M governance/adrs/ADR-0008-campaign-planner-boundary.md",
+    " M tests/test_campaign_planner_service.py",
+    " M tests/test_marketing_brief_campaign_workflow.py",
+    "?? app/campaign_planner/briefs.py",
+    "?? story_packages/MLAI-025.4.json"
+  ]
+}

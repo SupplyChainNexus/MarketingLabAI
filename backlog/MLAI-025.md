@@ -52,11 +52,11 @@ benefit every subscription tier.
 
 ### MLAI-025.4 â€” Marketing Brief and Workflow Integration
 
-- [ ] Associate one or more Marketing Briefs with a Campaign Plan.
-- [ ] Preserve separate campaign, asset, and brief lifecycles.
-- [ ] Require approved planning before governed generation where applicable.
-- [ ] Preserve existing Marketing Brief campaign callers.
-- [ ] Return campaign-plan audit metadata.
+- [x] Associate one or more Marketing Briefs with a Campaign Plan.
+- [x] Preserve separate campaign, asset, and brief lifecycles.
+- [x] Require approved planning before governed generation where applicable.
+- [x] Preserve existing Marketing Brief campaign callers.
+- [x] Return campaign-plan audit metadata.
 
 ### MLAI-025.5 â€” Persistence and Completion
 

@@ -76,6 +76,18 @@ approved execution decisions for a campaign or deliverable. Future integration
 may associate one or more briefs with a plan, but MLAI-025.1 does not embed
 Marketing Brief objects.
 
+### MLAI-025.4 Integration Contract
+
+Campaign Plans associate Marketing Briefs through immutable, version-aware
+references containing campaign, brief, tenant, and brand identifiers. Neither
+domain embeds or controls the lifecycle of the other.
+
+The existing Marketing Brief campaign workflow accepts an optional Campaign
+Plan. Calls without a plan retain their established behaviour. When a plan is
+supplied, governed generation requires an approved or active plan, matching
+tenant and brand ownership, and a channel included in both the brief and plan.
+The workflow returns immutable campaign-plan and brief-version audit metadata.
+
 ## Alternatives Considered
 
 ### Continue using the legacy CampaignBrief as the plan
