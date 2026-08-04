@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any
+from typing import Any, Iterable
 
+from app.campaign_planner.assets import CampaignAsset
+from app.campaign_planner.dependencies import CampaignDependencyPlanner
 from app.campaign_planner.models import CampaignPlan, CampaignStatus
 from app.campaign_planner.validation import (
     CampaignPlanValidator,
@@ -13,6 +15,8 @@ from app.campaign_planner.validation import (
 
 
 class CampaignPlanningService:
+    """Create, revise and advance Campaign Plans deterministically."""
+
     _UPDATABLE_FIELDS = frozenset(
         {
             "name",
@@ -26,10 +30,23 @@ class CampaignPlanningService:
         }
     )
 
-    def __init__(self, validator: CampaignPlanValidator | None = None) -> None:
-        if validator is not None and not isinstance(validator, CampaignPlanValidator):
+    def __init__(
+        self,
+        validator: CampaignPlanValidator | None = None,
+        dependency_planner: CampaignDependencyPlanner | None = None,
+    ) -> None:
+        if validator is not None and not isinstance(
+            validator,
+            CampaignPlanValidator,
+        ):
             raise TypeError("validator must be a CampaignPlanValidator.")
+        if dependency_planner is not None and not isinstance(
+            dependency_planner,
+            CampaignDependencyPlanner,
+        ):
+            raise TypeError("dependency_planner must be a CampaignDependencyPlanner.")
         self.validator = validator or CampaignPlanValidator()
+        self.dependency_planner = dependency_planner or CampaignDependencyPlanner()
 
     def create_plan(self, **values: Any) -> CampaignPlan:
         plan = CampaignPlan(**values)
@@ -40,13 +57,10 @@ class CampaignPlanningService:
         self._require_plan(plan)
         if plan.status not in {CampaignStatus.DRAFT, CampaignStatus.PLANNED}:
             raise ValueError("Only draft or planned Campaign Plans may be revised.")
-        unknown = set(changes) - self._UPDATABLE_FIELDS
-        if unknown:
-            raise ValueError(
-                "Unsupported campaign update fields: "
-                + ", ".join(sorted(unknown))
-                + "."
-            )
+        unknown_fields = set(changes) - self._UPDATABLE_FIELDS
+        if unknown_fields:
+            names = ", ".join(sorted(unknown_fields))
+            raise ValueError(f"Unsupported campaign update fields: {names}.")
         source = plan.to_dict()
         source.update(changes)
         source["status"] = CampaignStatus.DRAFT.value
@@ -98,6 +112,72 @@ class CampaignPlanningService:
         plan.transition_to(CampaignStatus.ARCHIVED, changed_at=changed_at)
         return plan
 
+    def add_asset(
+        self,
+        assets: Iterable[CampaignAsset],
+        asset: CampaignAsset,
+        *,
+        campaign_id: str,
+    ) -> tuple[CampaignAsset, ...]:
+        current = self._asset_tuple(assets)
+        if not isinstance(asset, CampaignAsset):
+            raise TypeError("asset must be a CampaignAsset.")
+        if asset.campaign_id != campaign_id:
+            raise ValueError("Campaign asset belongs to a different campaign.")
+        if any(existing.asset_id == asset.asset_id for existing in current):
+            raise ValueError(f"Duplicate campaign asset id: {asset.asset_id}.")
+        if any(existing.duplicate_key == asset.duplicate_key for existing in current):
+            raise ValueError("A matching campaign asset already exists.")
+        updated = current + (asset,)
+        issues = self.dependency_planner.validate(updated)
+        missing_only = [issue for issue in issues if issue.code == "dependency_cycle"]
+        if missing_only:
+            raise ValueError(missing_only[0].message)
+        return updated
+
+    def remove_asset(
+        self,
+        assets: Iterable[CampaignAsset],
+        asset_id: str,
+    ) -> tuple[CampaignAsset, ...]:
+        current = self._asset_tuple(assets)
+        cleaned_id = asset_id.strip() if isinstance(asset_id, str) else ""
+        if not cleaned_id:
+            raise ValueError("asset_id is required.")
+        if not any(asset.asset_id == cleaned_id for asset in current):
+            raise ValueError("Campaign asset was not found.")
+        dependants = [
+            asset.name for asset in current if cleaned_id in asset.dependency_ids
+        ]
+        if dependants:
+            raise ValueError(
+                "Campaign asset cannot be removed while dependants exist: "
+                + ", ".join(sorted(dependants))
+                + "."
+            )
+        return tuple(asset for asset in current if asset.asset_id != cleaned_id)
+
+    def execution_order(
+        self,
+        assets: Iterable[CampaignAsset],
+    ) -> tuple[CampaignAsset, ...]:
+        return self.dependency_planner.execution_order(assets)
+
+    def blocked_assets(
+        self,
+        assets: Iterable[CampaignAsset],
+    ) -> tuple[CampaignAsset, ...]:
+        return self.dependency_planner.blocked_assets(assets)
+
+    @staticmethod
+    def _asset_tuple(assets: Iterable[CampaignAsset]) -> tuple[CampaignAsset, ...]:
+        if isinstance(assets, (str, bytes)):
+            raise TypeError("assets must be an iterable of CampaignAsset values.")
+        values = tuple(assets)
+        if not all(isinstance(asset, CampaignAsset) for asset in values):
+            raise TypeError("assets must contain CampaignAsset values.")
+        return values
+
     @staticmethod
     def _require_plan(plan: object) -> None:
         if not isinstance(plan, CampaignPlan):
@@ -105,5 +185,6 @@ class CampaignPlanningService:
 
     @staticmethod
     def _raise_for_invalid(result: CampaignValidationResult) -> None:
-        if not result.is_valid:
-            raise ValueError("; ".join(i.message for i in result.issues))
+        if result.is_valid:
+            return
+        raise ValueError("; ".join(issue.message for issue in result.issues))
