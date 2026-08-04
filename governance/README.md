@@ -1,6 +1,15 @@
-﻿# MarketingLabAI Governance
+# MarketingLabAI Governance
 
 This directory contains the engineering governance framework for MarketingLabAI.
+
+## Authority and continuity
+
+- `authority-hierarchy.md` defines which evidence controls when sources conflict.
+- `locked-decision-register.md` preserves approved and recovered product direction.
+- `reconciliation-register.md` keeps unresolved founder decisions visible.
+- `decision-change-control.md` prevents silent product and architectural drift.
+- `pdrs/` records durable product decisions and explicit supersession.
+- `../AGENTS.md` is the mandatory takeover contract for human and AI engineers.
 
 ## Existing Authoritative Documents
 
@@ -54,4 +63,3 @@ The Product Constitution,
 Product Capability Map,
 and Intelligence Roadmap
 collectively define long-term product direction.
-

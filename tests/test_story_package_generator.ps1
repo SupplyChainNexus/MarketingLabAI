@@ -31,4 +31,4 @@ foreach ($Template in $Templates) {
         throw "Python result incorrectly checks LASTEXITCODE: $($Template.Name)"
     }
 }
-Write-Host "NEXUS FORGE GENERATOR REGRESSION TESTS PASSED"
+Write-Host "MARKETINGLABAI STORY PACKAGE GENERATOR REGRESSION TESTS PASSED"

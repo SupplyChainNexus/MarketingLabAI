@@ -1,4 +1,4 @@
-# Nexus Forge Story Package Generator
+# MarketingLabAI Story Package Generator
 
 This toolkit addition generates consistent MarketingLabAI installer and validator
 scripts from a JSON manifest. Python output is captured and replayed through a

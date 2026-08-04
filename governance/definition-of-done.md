@@ -1,4 +1,4 @@
-﻿# Definition of Done
+# Definition of Done
 
 A feature is complete only when:
 
@@ -12,6 +12,19 @@ A feature is complete only when:
 - Git scope contains only intended files.
 - Documentation reflects the implementation.
 - Risks and technical debt have been considered.
+
+## Continuity gate
+
+An epic or material product increment is not complete until:
+
+- authority documents affected by the change are updated;
+- ADRs or PDRs record material durable decisions;
+- `docs/handover/CURRENT_HANDOVER.md` reflects the new checkpoint;
+- known risks, debt, and deferred decisions are current;
+- focused and complete validation evidence is recorded;
+- the handover regression test passes;
+- a new handover bundle can be generated outside the repository; and
+- the committed branch is clean, pushed, and synchronized.
 
 ## Intelligence Capability Checklist
 

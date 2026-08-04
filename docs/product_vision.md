@@ -2,8 +2,9 @@
 
 ## Product category
 
-MarketingLabAI is an AI Chief Marketing Officer platform for small and
-medium-sized businesses, agencies, marketing teams, and entrepreneurs.
+MarketingLabAI is a Marketing Intelligence Operating System and the AI Marketing
+Department for growing businesses. Its primary customers are small and
+medium-sized businesses, entrepreneurs, marketing managers, and agencies.
 
 It is not positioned as a basic AI writing application.
 
@@ -169,11 +170,11 @@ number of isolated generation tools it offers.
 The defensible product advantage is:
 
 Business context
-→ market evidence
-→ explainable recommendation
-→ approved execution
-→ measured outcome
-→ permanent learning
+â†’ market evidence
+â†’ explainable recommendation
+â†’ approved execution
+â†’ measured outcome
+â†’ permanent learning
 
 ## Initial customer focus
 
@@ -246,13 +247,13 @@ businesses that:
 - Team collaboration
 - Multi-business support
 
-## Current build priority
+## Current build position
 
-The immediate priority is the Company Brain.
-
-The first Company Brain component is the Business Intelligence Profile, which
-stores the commercial and operational context required for responsible
-marketing decisions.
+The Company Brain foundation and the strategic intelligence sequence have
+advanced through a completed Campaign Planning Platform at MLAI-025. The next
+implementation increment must be selected through launch-priority review.
+MLAI-026 International Marketing Calendar Intelligence is architecturally
+defined but remains deferred until explicitly activated.
 
 
 ## Marketing Intelligence Operating System
@@ -269,4 +270,3 @@ more explainable,
 more reliable,
 more commercially valuable,
 and more difficult to replicate.
-

@@ -1,4 +1,4 @@
-﻿# MarketingLabAI Product Capability Map
+# MarketingLabAI Product Capability Map
 
 ## Purpose
 
@@ -59,16 +59,12 @@ priority.
 
 ## Immediate Delivery Sequence
 
-### Sprint 8 — Customer Intelligence
+### Current checkpoint — Campaign Planning complete
 
-- Ideal Customer Profiles
-- Customer Personas
-- Pain Points
-- Motivations
-- Buying Triggers
-- Objections
-- Preferred Channels
-- Journey Stages
+MLAI-025 completed deterministic Campaign Planning, asset and dependency
+planning, Marketing Brief integration, and immutable versioned persistence.
+Capability maturity values must be refreshed from tested implementation before
+selecting the next story.
 
 ### Following Capability Sequence
 
