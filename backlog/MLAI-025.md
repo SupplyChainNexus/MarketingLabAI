@@ -4,70 +4,42 @@
 
 In Progress
 
-## Architectural Authority
+## Delivery Plan
 
-- `governance/adrs/ADR-0007-international-marketing-calendar-architecture.md`
-- `governance/adrs/ADR-0008-campaign-planner-boundary.md`
+### MLAI-025.1 — Campaign Planner Foundation
 
-## Objective
+- [x] Complete and released.
 
-Create a provider-neutral Campaign Planning capability that coordinates
-objectives, audiences, timelines, channels, success measures, Marketing
-Briefs, execution workflows, and versioned persistence.
+### MLAI-025.2 — Campaign Planning Service
 
-The Campaign Planner is part of the core product and benefits every tier.
-
-## MLAI-025.1 — Campaign Planner Foundation
-
-- [x] Define Campaign Plan identity and lifecycle.
-- [x] Define objective, audience, channel, timeline, and metric value objects.
-- [x] Enforce deterministic validation.
-- [x] Add serialisation and reconstruction.
-- [x] Establish the boundary in ADR-0008.
-- [x] Add focused unit tests.
+- [x] Add deterministic plan creation and revision services.
+- [x] Add planning-readiness evaluation.
+- [x] Add controlled status operations.
+- [x] Add structured validation results.
+- [x] Add focused service tests.
 - [ ] Commit and release the completed increment.
 
-## MLAI-025.2 — Campaign Planning Service
+### MLAI-025.3 — Campaign Structure and Asset Planning
 
-- [ ] Add deterministic plan creation and revision services.
-- [ ] Add planning-readiness evaluation.
-- [ ] Add controlled lifecycle operations.
-- [ ] Add structured validation results.
-- [ ] Add focused service tests.
-
-## MLAI-025.3 — Campaign Structure and Asset Planning
-
-- [ ] Define planned assets and dependencies.
-- [ ] Define channel-specific deliverables.
+- [ ] Define planned campaign assets and dependencies.
+- [ ] Define channel-specific deliverable requirements.
 - [ ] Add prioritisation and sequencing.
-- [ ] Add deterministic scheduling.
-- [ ] Detect duplicates and circular dependencies.
+- [ ] Add deterministic scheduling within a campaign timeline.
+- [ ] Detect duplicate assets and circular dependencies.
 
-## MLAI-025.4 — Marketing Brief and Workflow Integration
+### MLAI-025.4 — Marketing Brief and Workflow Integration
 
-- [ ] Associate one or more briefs with a Campaign Plan.
-- [ ] Preserve separate lifecycles.
-- [ ] Require approved planning where applicable.
-- [ ] Preserve existing callers.
-- [ ] Return plan audit metadata.
+- [ ] Associate one or more Marketing Briefs with a Campaign Plan.
+- [ ] Preserve separate campaign and brief lifecycles.
+- [ ] Require approved planning before governed generation where applicable.
+- [ ] Preserve existing Marketing Brief campaign callers.
+- [ ] Return campaign-plan audit metadata.
 
-## MLAI-025.5 — Persistence and Completion
+### MLAI-025.5 — Persistence and Completion
 
-- [ ] Add immutable, versioned persistence.
+- [ ] Add immutable, versioned Campaign Plan persistence.
 - [ ] Add tenant and brand ownership validation.
 - [ ] Add latest-version and history retrieval.
-- [ ] Complete documentation.
-- [ ] Run complete engineering review.
+- [ ] Complete Campaign Planner documentation.
+- [ ] Run complete regression and engineering review.
 - [ ] Commit and release the completed epic.
-
-## Acceptance Criteria
-
-- [ ] Campaign Plans are provider-neutral.
-- [ ] Campaign and Marketing Brief lifecycles remain separate.
-- [ ] Planning quality is complete on every subscription tier.
-- [ ] Tiers differ by capacity, collaboration, automation, and strategic depth.
-- [ ] Plans are reviewable before content generation.
-- [ ] Persistence preserves version history.
-- [ ] Existing campaign, brief, compliance, and intelligence workflows remain
-      compatible.
-- [ ] MLAI-026 Marketing Calendar work remains deferred.
