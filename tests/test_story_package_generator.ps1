@@ -18,6 +18,12 @@ foreach ($Template in $Templates) {
     if ($Text -notmatch '\$ErrorActionPreference\s*=\s*\$PreviousErrorActionPreference') {
         throw "Python helper does not restore ErrorActionPreference: $($Template.Name)"
     }
+    if ($Text -notmatch '\$_\s+-is\s+\[System\.Management\.Automation\.ErrorRecord\]') {
+        throw "Python helper does not unwrap PowerShell 5.1 native stderr records: $($Template.Name)"
+    }
+    if ($Text -notmatch '\$Message\s*=\s*\$_\.Exception\.Message') {
+        throw "Python helper can leak RemoteException type names: $($Template.Name)"
+    }
     if ($Text -match '(?m)^\s*(?:&\s+)?python(?:\.exe)?\s+-m\s+(?:unittest|py_compile)') {
         throw "Direct Python command found: $($Template.Name)"
     }

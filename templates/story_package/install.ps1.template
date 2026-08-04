@@ -13,7 +13,15 @@ function Invoke-PythonLogged {
     finally {
         $ErrorActionPreference = $PreviousErrorActionPreference
     }
-    $Output | ForEach-Object { Write-Host $_ }
+    $Output | ForEach-Object {
+        if ($_ -is [System.Management.Automation.ErrorRecord]) {
+            $Message = $_.Exception.Message
+            if ($Message) { Write-Host $Message } else { Write-Host "" }
+        }
+        else {
+            Write-Host ([string]$_)
+        }
+    }
     return $ExitCode
 }
 
