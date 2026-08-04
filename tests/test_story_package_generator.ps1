@@ -9,6 +9,15 @@ if ($GeneratorText -match '(?i)-Encoding\s+utf8NoBOM') {
 foreach ($Template in $Templates) {
     $Text = Get-Content -Raw $Template.FullName
     if ($Text -notmatch 'function Invoke-PythonLogged') { throw "Missing Python helper: $($Template.Name)" }
+    if ($Text -notmatch '\$PreviousErrorActionPreference\s*=\s*\$ErrorActionPreference') {
+        throw "Python helper does not preserve ErrorActionPreference: $($Template.Name)"
+    }
+    if ($Text -notmatch '\$ErrorActionPreference\s*=\s*"Continue"') {
+        throw "Python helper cannot safely capture native stderr on PowerShell 5.1: $($Template.Name)"
+    }
+    if ($Text -notmatch '\$ErrorActionPreference\s*=\s*\$PreviousErrorActionPreference') {
+        throw "Python helper does not restore ErrorActionPreference: $($Template.Name)"
+    }
     if ($Text -match '(?m)^\s*(?:&\s+)?python(?:\.exe)?\s+-m\s+(?:unittest|py_compile)') {
         throw "Direct Python command found: $($Template.Name)"
     }

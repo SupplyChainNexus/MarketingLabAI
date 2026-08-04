@@ -5,11 +5,6 @@ scripts from a JSON manifest. Python output is captured and replayed through a
 single PowerShell 5.1-compatible helper, preventing test output from appearing
 before its stage heading.
 
-## Install
-
-Copy `scripts`, `templates`, and `tests` into the MarketingLabAI repository,
-preserving their paths.
-
 ## Generate a package
 
 ```powershell

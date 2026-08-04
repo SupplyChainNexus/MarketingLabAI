@@ -3,8 +3,15 @@ $ProjectRoot = '{{PROJECT_ROOT}}'
 
 function Invoke-PythonLogged {
     param([Parameter(Mandatory = $true)][string[]]$Arguments)
-    $Output = @(& python @Arguments 2>&1)
-    $ExitCode = $LASTEXITCODE
+    $PreviousErrorActionPreference = $ErrorActionPreference
+    try {
+        $ErrorActionPreference = "Continue"
+        $Output = @(& python @Arguments 2>&1)
+        $ExitCode = $LASTEXITCODE
+    }
+    finally {
+        $ErrorActionPreference = $PreviousErrorActionPreference
+    }
     $Output | ForEach-Object { Write-Host $_ }
     return $ExitCode
 }
