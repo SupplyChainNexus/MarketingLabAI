@@ -31,6 +31,7 @@ class SQLiteDatabaseTests(unittest.TestCase):
         self.assertEqual(
             self.database.table_names(),
             [
+                "api_idempotency_records",
                 "authorization_audit_events",
                 "brands",
                 "business_intelligence_profiles",

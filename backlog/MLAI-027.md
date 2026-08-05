@@ -2,7 +2,7 @@
 
 ## Status
 
-In progress - MLAI-027.3 implemented
+In progress - MLAI-027.4 implemented
 
 ## Product authority
 
@@ -53,10 +53,10 @@ limitations, and export the result with a complete audit trail.
 
 ### MLAI-027.4 - Pilot API and Workflow Contract
 
-- [ ] Expose only vertical-slice operations.
-- [ ] Keep persistence and AI-provider models outside public contracts.
-- [ ] Add lifecycle conflict and idempotency handling.
-- [ ] Add synthetic end-to-end API tests.
+- [x] Expose only vertical-slice operations.
+- [x] Keep persistence and AI-provider models outside public contracts.
+- [x] Add lifecycle conflict and idempotency handling.
+- [x] Add synthetic end-to-end API tests.
 
 ### MLAI-027.5 - Thin Pilot Workspace
 
@@ -80,8 +80,8 @@ limitations, and export the result with a complete audit trail.
 - [ ] The pilot uses one canonical application and persistence path.
 - [x] Tenant authorization is derived from trusted identity.
 - [x] Cross-tenant access is denied and tested.
-- [ ] Missing context remains explicit.
-- [ ] Only approved plans and briefs govern generation.
+- [x] Missing context remains explicit.
+- [x] Only approved plans and briefs govern generation.
 - [ ] Compliance evaluation remains independent from prompt guidance.
 - [ ] Provider, model, approval, and export audit metadata are preserved.
 - [ ] Real customer data is prohibited until all private-pilot gates pass.

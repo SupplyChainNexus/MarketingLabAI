@@ -1,0 +1,20 @@
+{
+  "story_id": "MLAI-027.4",
+  "slug": "pilot_api_workflow_contract",
+  "title": "Pilot API and Workflow Contract",
+  "focused_tests": [
+    "tests.test_pilot_api",
+    "tests.test_authorized_application",
+    "tests.test_application_composition",
+    "tests.test_sqlite_database"
+  ],
+  "import_modules": [
+    "app.pilot_api",
+    "app.pilot_api.contracts",
+    "app.pilot_api.idempotency",
+    "app.pilot_api.service",
+    "app.pilot_api.wsgi",
+    "app.application.authorized"
+  ],
+  "commit_message": "feat(api): add secure pilot workflow contract"
+}

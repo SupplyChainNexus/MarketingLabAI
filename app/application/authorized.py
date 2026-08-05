@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any
 
 from app.ai.models import IntelligenceResponse
 from app.ai.registry import IntelligenceProviderRegistry
+from app.campaign_planner.models import CampaignStatus
 from app.campaign_planner.service import CampaignPlanningService
 from app.identity import (
     AuthenticatedPrincipal,
@@ -15,6 +16,11 @@ from app.identity import (
     TenantMembership,
 )
 from app.marketing_brief.models import BriefStatus, MarketingBrief
+
+
+class LifecycleConflictError(RuntimeError):
+    """Raised when an expected resource version is no longer current."""
+
 
 if TYPE_CHECKING:
     from app.application.composition import CanonicalApplication
@@ -58,7 +64,59 @@ class AuthorizedTenantApplication:
             **options,
         )
 
-    def approve_campaign_plan(self, campaign_id: str):
+    def generate_approved(
+        self,
+        registry: IntelligenceProviderRegistry,
+        *,
+        brand_id: str,
+        campaign_id: str,
+        campaign_version: int,
+        brief_id: str,
+        brief_version: int,
+        task: str,
+        instructions: str = "",
+        **options: Any,
+    ) -> IntelligenceResponse:
+        """Generate only from approved, tenant-bound campaign governance."""
+
+        self._authorize_brand(Permission.GENERATE, brand_id)
+        plan = self.application.campaign_plans.get(
+            campaign_id,
+            tenant_id=self.tenant_id,
+            version=campaign_version,
+        )
+        brief = self.application.marketing_briefs.get(
+            brief_id,
+            tenant_id=self.tenant_id,
+            version=brief_version,
+        )
+        if plan.brand_id != brand_id or brief.brand_id != brand_id:
+            raise LifecycleConflictError(
+                "Campaign Plan and Marketing Brief must belong to the requested brand."
+            )
+        if plan.status is not CampaignStatus.APPROVED:
+            raise LifecycleConflictError("Campaign Plan version is not approved.")
+        if brief.status is not BriefStatus.APPROVED:
+            raise LifecycleConflictError("Marketing Brief version is not approved.")
+        return self.application.build_ai_orchestrator(registry).generate(
+            tenant_id=self.tenant_id,
+            brand_id=brand_id,
+            task=task,
+            instructions=instructions,
+            metadata={
+                "authenticated_subject_id": self.principal.subject_id,
+                "identity_provider": self.principal.provider,
+                "approved_campaign_id": plan.campaign_id,
+                "approved_campaign_version": plan.version,
+                "approved_brief_id": brief.brief_id,
+                "approved_brief_version": brief.version,
+            },
+            **options,
+        )
+
+    def approve_campaign_plan(
+        self, campaign_id: str, *, expected_version: int | None = None
+    ):
         owner = self._resource_tenant("campaign_plans", "campaign_id", campaign_id)
         self._authorize(
             Permission.APPROVE,
@@ -69,12 +127,15 @@ class AuthorizedTenantApplication:
         current = self.application.campaign_plans.get(
             campaign_id, tenant_id=self.tenant_id
         )
+        self._require_expected_version(current.version, expected_version)
         successor = CampaignPlanningService().create_next_version(current)
         CampaignPlanningService().approve(successor)
         self.application.campaign_plans.save(successor)
         return successor
 
-    def approve_marketing_brief(self, brief_id: str) -> MarketingBrief:
+    def approve_marketing_brief(
+        self, brief_id: str, *, expected_version: int | None = None
+    ) -> MarketingBrief:
         owner = self._resource_tenant("marketing_briefs", "brief_id", brief_id)
         self._authorize(
             Permission.APPROVE,
@@ -85,9 +146,21 @@ class AuthorizedTenantApplication:
         current = self.application.marketing_briefs.get(
             brief_id, tenant_id=self.tenant_id
         )
+        self._require_expected_version(current.version, expected_version)
         return self.application.build_marketing_brief_service().save_next_version(
             current, status=BriefStatus.APPROVED
         )
+
+    @staticmethod
+    def _require_expected_version(current: int, expected: int | None) -> None:
+        if expected is None:
+            return
+        if isinstance(expected, bool) or not isinstance(expected, int):
+            raise TypeError("expected_version must be an integer.")
+        if expected != current:
+            raise LifecycleConflictError(
+                f"Expected version {expected}, but current version is {current}."
+            )
 
     def authorize_export(self, *, resource_type: str, resource_id: str) -> None:
         """Authorize and audit export; byte serialization remains MLAI-027.4."""

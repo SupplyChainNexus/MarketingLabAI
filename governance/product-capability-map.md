@@ -38,7 +38,8 @@ secure deployed customer workflow.
 | Compliance | Preventative guidance and independent evaluation | Reduces brand and policy risk | 3 | Expose in pilot |
 | Memory | Provider, model, workflow, and event audit context | Preserves traceability | 2 | Extend in pilot |
 | Identity | External identity boundary and tenant authorization | Protects customer data and actions | 3 | Connect live provider in MLAI-027.4/027.6 |
-| Interface | Pilot API and guided workspace | Makes capability usable without an engineer | 0 | MLAI-027.4/027.5 |
+| Interface | Authenticated pilot API contract | Gives the workspace one governed, retry-safe boundary | 3 | Maintain through MLAI-027.5/027.6 |
+| Interface | Guided pilot workspace | Makes capability usable without an engineer | 0 | MLAI-027.5 |
 | Operations | Deployment, monitoring, backup, restore, and incident process | Makes private pilot safe and supportable | 0 | MLAI-027.6 |
 | Calendar | International Marketing Calendar | Coordinates time-based activity | 0 | Deferred MLAI-026 |
 | Publishing | Connector-controlled execution | Reduces manual channel work | 0 | Post-pilot |

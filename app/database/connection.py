@@ -172,6 +172,25 @@ class SQLiteDatabase:
                 CREATE INDEX IF NOT EXISTS idx_authorization_audit_tenant
                     ON authorization_audit_events(tenant_id, occurred_at);
 
+                CREATE TABLE IF NOT EXISTS api_idempotency_records (
+                    tenant_id TEXT NOT NULL,
+                    provider TEXT NOT NULL,
+                    subject_id TEXT NOT NULL,
+                    operation TEXT NOT NULL,
+                    idempotency_key TEXT NOT NULL,
+                    request_hash TEXT NOT NULL,
+                    response_status INTEGER NOT NULL,
+                    response_json TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    PRIMARY KEY (
+                        tenant_id, provider, subject_id,
+                        operation, idempotency_key
+                    ),
+                    FOREIGN KEY (tenant_id)
+                        REFERENCES tenants(tenant_id)
+                        ON DELETE CASCADE
+                );
+
                 CREATE TABLE IF NOT EXISTS compliance_rules (
                     rule_id TEXT NOT NULL,
                     version INTEGER NOT NULL,
@@ -426,6 +445,16 @@ class SQLiteDatabase:
                 ) VALUES (
                     11,
                     'Add identity memberships and authorization audit',
+                    strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+                )
+                """)
+
+            connection.execute("""
+                INSERT OR IGNORE INTO schema_migrations (
+                    version, description, applied_at
+                ) VALUES (
+                    12,
+                    'Add pilot API idempotency records',
                     strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
                 )
                 """)

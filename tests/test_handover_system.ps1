@@ -83,12 +83,12 @@ $CurrentHandoverText = Get-Content -LiteralPath (
     Join-Path $ProjectRoot "docs\handover\CURRENT_HANDOVER.md"
 ) -Raw
 
-if ($CurrentHandoverText -notmatch "MLAI-027.1 is complete") {
-    throw "Current handover does not record MLAI-027.1 completion."
+if ($CurrentHandoverText -notmatch "MLAI-027.1 through MLAI-027.4") {
+    throw "Current handover does not record MLAI-027.4 completion."
 }
 
-if ($CurrentHandoverText -notmatch "Start with \*\*MLAI-027.2") {
-    throw "Current handover does not identify MLAI-027.2 as the next story."
+if ($CurrentHandoverText -notmatch "Start with \*\*MLAI-027.5") {
+    throw "Current handover does not identify MLAI-027.5 as the next story."
 }
 
 $CompositionDecisionText = Get-Content -LiteralPath (
@@ -101,6 +101,21 @@ if ($CompositionDecisionText -notmatch '(?m)^Accepted\r?$') {
 
 if ($CompositionDecisionText -notmatch "CanonicalApplication") {
     throw "ADR-0009 does not preserve the canonical application boundary."
+}
+
+$ApiDecisionText = Get-Content -LiteralPath (
+    Join-Path $ProjectRoot "governance\adrs\ADR-0012-pilot-api-workflow-contract.md"
+) -Raw
+
+if ($ApiDecisionText -notmatch '(?m)^Accepted\r?$') {
+    throw "ADR-0012 is not recorded as accepted."
+}
+
+if (
+    ($ApiDecisionText -notmatch "AuthorizedTenantApplication") -or
+    ($ApiDecisionText -notmatch "idempotency")
+) {
+    throw "ADR-0012 does not preserve the authorized retry-safe API boundary."
 }
 
 Write-Host "MARKETINGLABAI HANDOVER REGRESSION TESTS PASSED" -ForegroundColor Green
