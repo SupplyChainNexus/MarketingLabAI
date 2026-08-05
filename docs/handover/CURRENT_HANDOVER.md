@@ -3,11 +3,11 @@
 ## Checkpoint
 
 - Branch: `feature/tenant-architecture`
-- Installation baseline: `c9b63f3`
+- Installation baseline: `3fc25dc`
 - Remote state before this story: synchronized
 - Last completed epic: MLAI-029 Marketing Strategy Intelligence
-- Active epic: none; next epic requires founder sequencing
-- Completed story: MLAI-029.6 Client-Facing Strategy Workspace and Design-Partner Readiness
+- Active epic: MLAI-030 Founder Design Partner Onboarding
+- Active story: MLAI-030.1 Founder Design Partner Signup and Tenant Provisioning
 
 ## Product direction
 
@@ -55,6 +55,11 @@ deterministic Founder Design Partner assessment. Strand Auto Parts is the
 proposed first partner with full feature access and billing disabled, but the
 assessment never authorizes real customer data.
 
+MLAI-030.1 replaces manual account creation with authenticated, invitation-
+controlled signup for Strand Auto Parts and Velani Wholesale. Each claim creates
+an isolated tenant and admin owner atomically. Signup remains synthetic-only;
+the external identity deployment and browser flow remain MLAI-030.2 blockers.
+
 The Repository Integrity Protocol is now locked for every future story:
 baseline and scope verification, tracked/untracked/staged reporting, failure
 classification, complete applicable quality gates, no remaining intended paths,
@@ -80,7 +85,6 @@ and accepted data boundaries.
 
 ## Next engineer action
 
-Validate and commit MLAI-029.6. Then present the readiness evidence and blockers
-for a separate founder activation decision; retain the freeze until that
-decision is explicitly approved. Sequence the next epic without inventing
-market learning before real outcomes exist.
+Validate and commit MLAI-030.1. Then select and deploy the external identity
+provider in MLAI-030.2 before sending invitations. Retain the real-data freeze
+until a separate founder activation decision.

@@ -22,6 +22,7 @@ from app.campaign_planner import (
     CampaignTimeline,
 )
 from app.database.connection import SQLiteDatabase
+from app.design_partner import FounderDesignPartnerSignupService
 from app.identity import AuthenticatedPrincipal, TenantMembership, TenantRole
 from app.identity.provider import IdentityProviderAdapter
 from app.marketing_brief import BriefStatus, MarketingBrief, MarketingBriefEvidence
@@ -82,7 +83,17 @@ class PilotApiTests(unittest.TestCase):
         registry = IntelligenceProviderRegistry()
         registry.register(self.provider)
         self.service = PilotApiService(
-            self.application, SyntheticIdentityProvider(), registry
+            self.application,
+            SyntheticIdentityProvider(),
+            registry,
+            founder_invitation_hashes={
+                "strand-auto-parts-pilot": FounderDesignPartnerSignupService.hash_invitation(
+                    "strand-invitation"
+                ),
+                "velani-wholesale-pilot": FounderDesignPartnerSignupService.hash_invitation(
+                    "velani-invitation"
+                ),
+            },
         )
         self.wsgi = PilotWsgiApplication(self.service)
 
@@ -218,6 +229,27 @@ class PilotApiTests(unittest.TestCase):
 
         response_body = b"".join(self.wsgi(environ, start_response))
         return captured["status"], json.loads(response_body)
+
+    def test_founder_signup_creates_owner_without_a_tenant_header(self) -> None:
+        status, payload = self.request(
+            "/v1/pilot/design-partner/signup",
+            {
+                "partner_name": "Velani Wholesale",
+                "invitation_code": "velani-invitation",
+                "privacy_notice_accepted": True,
+                "synthetic_data_boundary_accepted": True,
+            },
+            tenant_id="",
+        )
+        self.assertEqual(status, 201)
+        self.assertEqual(payload["data"]["tenant_id"], "velani-wholesale-pilot")
+        membership = self.application.identities.get_membership(
+            provider="synthetic-idp",
+            subject_id="pilot-user",
+            tenant_id="velani-wholesale-pilot",
+        )
+        self.assertEqual(membership.role, TenantRole.ADMIN)
+        self.assertFalse(payload["data"]["real_data_activation_authorized"])
 
     def test_generation_contract_requires_approved_governance_versions(self) -> None:
         request = GenerationRequest(**self.generation_body())

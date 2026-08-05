@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
+from app.design_partner.registry import FounderDesignPartnerRegistry
+
 
 class DesignPartnerReadinessEvaluator:
     """Assess evidence without activating a real-data pilot."""
-
-    APPROVED_CANDIDATE = "Strand Auto Parts"
 
     REQUIRED_GATES = (
         "founder_approval",
@@ -20,8 +20,7 @@ class DesignPartnerReadinessEvaluator:
     def evaluate(self, *, partner_name: str, evidence: dict[str, bool]) -> dict:
         if not isinstance(partner_name, str) or not partner_name.strip():
             raise ValueError("partner_name is required.")
-        if partner_name.strip().casefold() != self.APPROVED_CANDIDATE.casefold():
-            raise ValueError("The Founder Design Partner candidate is not approved.")
+        partner = FounderDesignPartnerRegistry().get_by_name(partner_name)
         if not isinstance(evidence, dict):
             raise TypeError("evidence must be an object.")
         unsupported = set(evidence) - set(self.REQUIRED_GATES)
@@ -39,12 +38,13 @@ class DesignPartnerReadinessEvaluator:
             checks.append({"name": name, "passed": value})
         ready_for_activation_decision = all(item["passed"] for item in checks)
         return {
-            "partner_name": self.APPROVED_CANDIDATE,
+            "partner_name": partner.partner_name,
+            "tenant_id": partner.tenant_id,
             "partner_kind": "founder_design_partner",
             "account_entitlement": {
-                "full_feature_access": True,
-                "billing_enabled": False,
-                "commercial_tier": "founder_design_partner_free",
+                "full_feature_access": partner.full_feature_access,
+                "billing_enabled": partner.billing_enabled,
+                "commercial_tier": partner.commercial_tier,
             },
             "checks": checks,
             "blockers": [item["name"] for item in checks if not item["passed"]],

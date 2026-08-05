@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 from dataclasses import dataclass
 from pathlib import Path
@@ -29,6 +30,7 @@ class PilotConfiguration:
     identity_adapter_factory: str
     provider_registry_factory: str
     session_secret: str
+    founder_invitation_hashes: dict[str, str]
     allow_real_customer_data: bool = False
 
     @classmethod
@@ -71,6 +73,21 @@ class PilotConfiguration:
                 "Real customer data remains founder-frozen; keep "
                 "MLAI_ALLOW_REAL_CUSTOMER_DATA=false."
             )
+        try:
+            invitation_hashes = json.loads(
+                str(env.get("MLAI_FOUNDER_INVITATION_HASHES_JSON", "{}"))
+            )
+        except json.JSONDecodeError as error:
+            raise ValueError(
+                "MLAI_FOUNDER_INVITATION_HASHES_JSON must be valid JSON."
+            ) from error
+        if not isinstance(invitation_hashes, dict) or any(
+            not isinstance(key, str) or not isinstance(value, str) or len(value) != 64
+            for key, value in invitation_hashes.items()
+        ):
+            raise ValueError(
+                "Founder invitation hashes must map tenant IDs to SHA-256 hashes."
+            )
         return cls(
             environment=required("MLAI_ENVIRONMENT"),
             database_path=Path(required("MLAI_DATABASE_PATH")),
@@ -84,6 +101,7 @@ class PilotConfiguration:
             identity_adapter_factory=required("MLAI_IDENTITY_ADAPTER_FACTORY"),
             provider_registry_factory=required("MLAI_PROVIDER_REGISTRY_FACTORY"),
             session_secret=secret,
+            founder_invitation_hashes=dict(invitation_hashes),
             allow_real_customer_data=False,
         )
 
@@ -98,4 +116,5 @@ class PilotConfiguration:
             "rate_limit_requests": self.rate_limit_requests,
             "rate_limit_window_seconds": self.rate_limit_window_seconds,
             "real_customer_data_allowed": False,
+            "founder_invitations_configured": len(self.founder_invitation_hashes),
         }

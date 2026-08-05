@@ -1,0 +1,19 @@
+{
+  "story_id": "MLAI-030.1",
+  "slug": "founder_design_partner_signup",
+  "title": "Founder Design Partner Signup and Tenant Provisioning",
+  "baseline": "3fc25dc",
+  "focused_tests": [
+    "tests.test_design_partner_registry",
+    "tests.test_design_partner_signup",
+    "tests.test_pilot_api",
+    "tests.test_pilot_operations"
+  ],
+  "import_modules": [
+    "app.design_partner.registry",
+    "app.design_partner.signup",
+    "app.pilot_api.service",
+    "app.operations.runtime"
+  ],
+  "commit_message": "feat(onboarding): add founder design-partner signup"
+}

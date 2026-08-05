@@ -62,6 +62,14 @@ class PilotReleaseGate:
                 "configured external identity adapter",
             ),
             GateCheck(
+                "founder_invitations",
+                {
+                    "strand-auto-parts-pilot",
+                    "velani-wholesale-pilot",
+                }.issubset(self.config.founder_invitation_hashes),
+                "both approved invitation hashes configured",
+            ),
+            GateCheck(
                 "secrets",
                 len(self.config.session_secret) >= 32,
                 "environment-managed session secret",

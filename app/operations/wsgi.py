@@ -49,7 +49,10 @@ class OperationalPilotApplication:
                 return self._create_session(environ, start_response)
             if path == "/v1/pilot/session" and method == "GET":
                 return self._session_status(environ, start_response)
-            if path.startswith("/v1/pilot/"):
+            if (
+                path.startswith("/v1/pilot/")
+                and path != "/v1/pilot/design-partner/signup"
+            ):
                 self._bind_session(environ)
             response = self.application(environ, start_response)
             self.logger.emit(

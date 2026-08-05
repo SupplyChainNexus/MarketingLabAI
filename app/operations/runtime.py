@@ -39,6 +39,12 @@ def create_application() -> OperationalPilotApplication:
         config.session_secret,
         ttl_seconds=config.session_ttl_seconds,
     )
-    service = PilotApiService(canonical, sessions, registry)
+    service = PilotApiService(
+        canonical,
+        sessions,
+        registry,
+        signup_identity_provider=upstream,
+        founder_invitation_hashes=config.founder_invitation_hashes,
+    )
     workspace = PilotWorkspaceApplication(service)
     return OperationalPilotApplication(workspace, sessions, config)

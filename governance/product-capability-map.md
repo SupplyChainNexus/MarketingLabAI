@@ -2,7 +2,7 @@
 
 ## Review checkpoint
 
-Reviewed after MLAI-029.6 Client-Facing Strategy Workspace and Design-Partner Readiness.
+Reviewed for MLAI-030.1 Founder Design Partner Signup and Tenant Provisioning.
 
 ## Maturity scale
 
@@ -39,6 +39,7 @@ deployment-specific identity, legal, privacy, and rehearsal evidence is absent.
 | Compliance | Preventative guidance and independent evaluation | Reduces brand and policy risk | 3 | Expose in pilot |
 | Memory | Provider, model, workflow, and event audit context | Preserves traceability | 2 | Extend in pilot |
 | Identity | External identity boundary, tenant authorization, and revocable sessions | Protects customer data and actions | 3 | Select provider only when pilot is unfrozen |
+| Identity | Invitation-controlled Founder Design Partner tenant claiming | Lets approved owners create isolated free accounts without fabricated identities | 2 | Deploy external identity and browser signup in MLAI-030.2 |
 | Interface | Authenticated pilot API contract | Gives the workspace one governed, retry-safe boundary | 3 | Maintain through MLAI-027.5/027.6 |
 | Interface | Guided session-protected workspace with Positioning, Strategy, workflow, and design-partner readiness | Makes the governed vertical slice understandable and usable | 3 | Keep real-data activation founder-controlled |
 | Operations | Deployment, health, safe logs, rate limits, backup, restore, CI, and incident process | Makes a future private pilot supportable | 3 | Rehearse only when pilot is unfrozen |
@@ -65,3 +66,4 @@ deployment-specific identity, legal, privacy, and rehearsal evidence is absent.
 13. MLAI-029.4 Marketing Mix and Measurement
 14. MLAI-029.5 Governed Workflow Integration
 15. MLAI-029.6 Client-Facing Strategy Workspace and Design-Partner Readiness
+16. MLAI-030.1 Founder Design Partner Signup and Tenant Provisioning

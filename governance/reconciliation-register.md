@@ -161,3 +161,13 @@ future omissions impossible.
 **Ratified authority:** Apply the permanent Repository Integrity Protocol to
 every future story. Treat each failure or warning as evidence requiring
 classification, and stop when scope or staging cannot be proven complete.
+
+## R-017 — Pre-created pilot accounts versus evaluated signup
+
+The founder proposed adding Strand Auto Parts and Velani Wholesale as free pilot
+accounts, then clarified that both should experience signup rather than receive
+manually created accounts.
+
+**Ratified authority:** Both are approved candidates, but each tenant and owner
+membership is created only through authenticated, invitation-controlled signup.
+Founder entitlement does not authorize real customer data.

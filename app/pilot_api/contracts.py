@@ -48,6 +48,24 @@ class DesignPartnerReadinessRequest:
 
 
 @dataclass(slots=True, frozen=True)
+class DesignPartnerSignupRequest:
+    partner_name: str
+    invitation_code: str
+    privacy_notice_accepted: bool
+    synthetic_data_boundary_accepted: bool
+
+    def __post_init__(self) -> None:
+        for name in ("partner_name", "invitation_code"):
+            object.__setattr__(self, name, required_text(getattr(self, name), name))
+        for name in (
+            "privacy_notice_accepted",
+            "synthetic_data_boundary_accepted",
+        ):
+            if not isinstance(getattr(self, name), bool):
+                raise TypeError(f"{name} must be a boolean.")
+
+
+@dataclass(slots=True, frozen=True)
 class OnboardingRequest:
     brand_id: str
     business: dict[str, Any]

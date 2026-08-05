@@ -71,6 +71,12 @@ class PilotOperationsTests(unittest.TestCase):
                 "MLAI_IDENTITY_PROVIDER": "oidc-test",
                 "MLAI_IDENTITY_ADAPTER_FACTORY": "deployment.identity:create_adapter",
                 "MLAI_PROVIDER_REGISTRY_FACTORY": "deployment.providers:create_registry",
+                "MLAI_FOUNDER_INVITATION_HASHES_JSON": json.dumps(
+                    {
+                        "strand-auto-parts-pilot": "a" * 64,
+                        "velani-wholesale-pilot": "b" * 64,
+                    }
+                ),
                 "MLAI_ALLOW_REAL_CUSTOMER_DATA": "false",
             }
         )

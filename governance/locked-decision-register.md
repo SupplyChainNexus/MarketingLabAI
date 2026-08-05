@@ -596,8 +596,12 @@ cause, impact, and treatment. The full controls are locked in
 **Status:** Current / Governance
 **Source:** ADR-0019
 
-Strand Auto Parts is the proposed first Founder Design Partner. Its founder
-account may receive full feature access with billing disabled, but entitlement
+Strand Auto Parts and Velani Wholesale are the approved Founder Design Partner
+candidates. Their founder accounts may receive full feature access with billing disabled, but entitlement
 does not grant customer-data permission. Real-data activation requires a new
 founder-approved decision after privacy, identity, recovery, support, and data
 boundary gates pass. Readiness never self-authorizes activation.
+
+MLAI-030.1 requires each owner to sign up through trusted external
+authentication and a business-specific invitation. Accounts are not manually
+pre-created, and identity subjects may not be invented for convenience.

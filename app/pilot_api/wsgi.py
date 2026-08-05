@@ -9,6 +9,7 @@ from app.pilot_api.contracts import (
     CampaignRevisionRequest,
     ContextRequest,
     DesignPartnerReadinessRequest,
+    DesignPartnerSignupRequest,
     ExportRequest,
     GenerationRequest,
     OnboardingRequest,
@@ -61,12 +62,17 @@ class PilotWsgiApplication:
             raise PilotApiError(404, "not_found", "Endpoint was not found.")
         path = str(environ.get("PATH_INFO", ""))
         credential = self._bearer(environ.get("HTTP_AUTHORIZATION", ""))
-        tenant_id = str(environ.get("HTTP_X_TENANT_ID", "")).strip()
-        if not tenant_id:
-            raise PilotApiError(400, "tenant_required", "X-Tenant-ID is required.")
         body, key = self._json_body(environ), str(
             environ.get("HTTP_IDEMPOTENCY_KEY", "")
         )
+        if path == "/v1/pilot/design-partner/signup":
+            return self.service.design_partner_signup(
+                credential=credential,
+                request=DesignPartnerSignupRequest(**body),
+            )
+        tenant_id = str(environ.get("HTTP_X_TENANT_ID", "")).strip()
+        if not tenant_id:
+            raise PilotApiError(400, "tenant_required", "X-Tenant-ID is required.")
         common = {"credential": credential, "tenant_id": tenant_id}
         if path == "/v1/pilot/context":
             return self.service.context(request=ContextRequest(**body), **common)

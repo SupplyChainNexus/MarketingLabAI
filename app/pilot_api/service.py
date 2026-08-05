@@ -12,7 +12,11 @@ from app.ai.registry import IntelligenceProviderRegistry
 from app.application import CanonicalApplication, LifecycleConflictError
 from app.compliance.engine import ComplianceEngine
 from app.compliance.models import ReviewSubjectType
-from app.design_partner import DesignPartnerReadinessEvaluator
+from app.design_partner import (
+    DesignPartnerReadinessEvaluator,
+    FounderDesignPartnerSignupService,
+    SignupConflictError,
+)
 from app.identity import AuthorizationDeniedError, IdentityProviderAdapter
 from app.pilot_api.contracts import (
     ApiResponse,
@@ -21,6 +25,7 @@ from app.pilot_api.contracts import (
     CampaignRevisionRequest,
     ContextRequest,
     DesignPartnerReadinessRequest,
+    DesignPartnerSignupRequest,
     ExportRequest,
     GenerationRequest,
     OnboardingRequest,
@@ -43,6 +48,9 @@ class PilotApiService:
         application: CanonicalApplication,
         identity_provider: IdentityProviderAdapter,
         registry: IntelligenceProviderRegistry,
+        *,
+        signup_identity_provider: IdentityProviderAdapter | None = None,
+        founder_invitation_hashes: dict[str, str] | None = None,
     ) -> None:
         if not isinstance(application, CanonicalApplication):
             raise TypeError("application must be a CanonicalApplication.")
@@ -54,6 +62,33 @@ class PilotApiService:
         self.identity_provider = identity_provider
         self.registry = registry
         self.idempotency = IdempotencyRepository(application.database)
+        self.founder_signup = FounderDesignPartnerSignupService(
+            application.database,
+            signup_identity_provider or identity_provider,
+            founder_invitation_hashes or {},
+        )
+
+    def design_partner_signup(
+        self,
+        *,
+        credential: str,
+        request: DesignPartnerSignupRequest,
+    ) -> ApiResponse:
+        try:
+            result = self.founder_signup.signup(
+                credential=credential,
+                partner_name=request.partner_name,
+                invitation_code=request.invitation_code,
+                privacy_notice_accepted=request.privacy_notice_accepted,
+                synthetic_data_boundary_accepted=(
+                    request.synthetic_data_boundary_accepted
+                ),
+            )
+        except PermissionError as error:
+            raise PilotApiError(403, "invitation_denied", str(error)) from error
+        except SignupConflictError as error:
+            raise PilotApiError(409, "invitation_claimed", str(error)) from error
+        return ApiResponse(200 if result.replayed else 201, result.to_dict())
 
     def context(
         self, *, credential: str, tenant_id: str, request: ContextRequest
