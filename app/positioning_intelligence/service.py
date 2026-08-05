@@ -7,6 +7,7 @@ from datetime import UTC, datetime
 
 from app.positioning_intelligence.models import PositioningDecision, PositioningStatus
 from app.positioning_intelligence.repository import PositioningRepository
+from app.positioning_intelligence.value_proposition import ValuePropositionCandidate
 
 
 def _now() -> str:
@@ -78,3 +79,69 @@ class PositioningService:
         )
         self.repository.save(approved)
         return approved
+
+    def approve_candidate(
+        self,
+        decision: PositioningDecision,
+        candidate: ValuePropositionCandidate,
+    ) -> PositioningDecision:
+        if not isinstance(candidate, ValuePropositionCandidate):
+            raise TypeError("candidate must be a ValuePropositionCandidate.")
+        if not candidate.is_ready:
+            raise ValueError(
+                "only a ready value proposition candidate may be approved."
+            )
+        if (
+            candidate.positioning_id != decision.positioning_id
+            or candidate.positioning_version != decision.version
+        ):
+            raise ValueError("candidate belongs to another positioning version.")
+        if decision.value_proposition != candidate.statement:
+            raise ValueError("decision must record the reviewed candidate statement.")
+        return self.approve(decision)
+
+    def retire(self, decision: PositioningDecision) -> PositioningDecision:
+        current = self.repository.latest(
+            tenant_id=decision.tenant_id,
+            positioning_id=decision.positioning_id,
+        )
+        if current != decision:
+            raise ValueError("only the latest positioning version may be retired.")
+        if current.status is not PositioningStatus.APPROVED:
+            raise ValueError("only approved positioning may be retired.")
+        retired_at = _now()
+        retired = replace(
+            current,
+            version=current.version + 1,
+            status=PositioningStatus.RETIRED,
+            created_at=retired_at,
+            updated_at=retired_at,
+            approved_at="",
+        )
+        self.repository.save(retired)
+        return retired
+
+    def replace(
+        self,
+        retired: PositioningDecision,
+        replacement: PositioningDecision,
+    ) -> PositioningDecision:
+        current = self.repository.latest(
+            tenant_id=retired.tenant_id,
+            positioning_id=retired.positioning_id,
+        )
+        if current != retired or current.status is not PositioningStatus.RETIRED:
+            raise ValueError("replacement requires the latest retired positioning.")
+        if (
+            replacement.positioning_id == retired.positioning_id
+            or replacement.version != 1
+            or replacement.status is not PositioningStatus.DRAFT
+        ):
+            raise ValueError("replacement must be a new draft positioning identity.")
+        if (
+            replacement.tenant_id != retired.tenant_id
+            or replacement.brand_id != retired.brand_id
+        ):
+            raise ValueError("replacement must preserve tenant and brand ownership.")
+        self.repository.save(replacement)
+        return replacement

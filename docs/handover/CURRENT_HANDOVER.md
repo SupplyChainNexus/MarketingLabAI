@@ -3,13 +3,13 @@
 ## Checkpoint
 
 - Branch: `feature/tenant-architecture`
-- Installation baseline: `c8c783d`
+- Installation baseline: `90872f2`
 - Remote state before this story: synchronized with
   `origin/feature/tenant-architecture`
 - Last completed epic: MLAI-027 Secure Pilot Vertical Slice
 - Active epic: MLAI-028 Positioning Intelligence
-- Active story: MLAI-028.3 Differentiation and Proof
-- Validation target: reviewed evidence, claim boundaries, continuity, and full regression
+- Active story: MLAI-028.4 Value Proposition and Positioning Decisions
+- Validation target: candidate readiness, lifecycle boundaries, continuity, and full regression
 
 ## Product direction
 
@@ -39,6 +39,11 @@ proof points, and any required reviewed alternative evidence are traceable.
 Unreviewed or undeclared alternative evidence cannot support a comparative
 claim, and prohibited or unsupported claims remain explicit gaps.
 
+MLAI-028.4 builds traceable value-proposition candidates from same-version
+relevance, differentiation, proof, and verified evidence. Incomplete inputs
+produce no claim. Human review remains separate from approval, retirement adds
+an immutable version, and replacement begins a new draft identity.
+
 ## Architectural boundary
 
 Positioning is a decision domain, not a Campaign Plan field or prompt-writing
@@ -60,8 +65,8 @@ decision. Remind the founder at that point, as requested.
 
 ## Remaining constraints
 
-- Value-proposition and final positioning-decision builders remain future
-  MLAI-028 increments.
+- Canonical application and generation integration remain future MLAI-028.5
+  work; incomplete or draft positioning must not flow downstream.
 - Alternative evidence has no canonical repository or expiry lifecycle yet;
   synthetic fixtures must not be represented as market truth.
 - Product use cases are not yet a governed Product Intelligence field and are
@@ -72,6 +77,6 @@ decision. Remind the founder at that point, as requested.
 
 ## Next engineer's first action
 
-Run the complete MLAI-028.3 validator. Then begin MLAI-028.4 by building
-evidence-grounded value propositions from governed relevance and
-differentiation results without turning candidate selection into approval.
+Run the complete MLAI-028.4 validator. Then begin MLAI-028.5 by composing only
+approved positioning through CanonicalApplication and provider-neutral context
+without unfreezing the customer pilot.

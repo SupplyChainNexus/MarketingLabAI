@@ -67,9 +67,24 @@ unproven, prohibited, and comparative claims without reviewed alternative
 evidence remain explicit gaps. The evaluator neither invents competitor facts
 nor treats lexical overlap as market proof.
 
+## Value proposition and decision lifecycle
+
+MLAI-028.4 builds a candidate only when target-product relevance, governed
+differentiation, proof, and verified positioning evidence belong to the same
+immutable version. Its confidence is the minimum confidence carried by the
+verified positioning evidence, not an invented intelligence score. Assumptions,
+unknown reasons, product limitations, prohibited claims, and source provenance
+remain visible.
+
+An incomplete candidate contains no value-proposition claim. A ready candidate
+still requires human review, must be copied into a new immutable draft version,
+and can then pass the existing approval boundary. Retirement creates another
+immutable version. Replacement starts a new draft positioning identity for the
+same tenant and brand, preserving the retired history.
+
 ## Next increment
 
-MLAI-028.4 will build evidence-grounded value propositions and positioning
-decisions from governed relevance and differentiation results. Selection in
-MLAI-028.3 remains candidate decision support, not approval or market
-validation.
+MLAI-028.5 will compose approved positioning through the canonical application
+boundary and provider-neutral context adapters. It must not expose incomplete
+or draft positioning to Strategy or generation and does not unfreeze the
+customer pilot.

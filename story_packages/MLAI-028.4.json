@@ -1,0 +1,17 @@
+{
+  "story_id": "MLAI-028.4",
+  "slug": "value_proposition_decisions",
+  "title": "Value Proposition and Positioning Decisions",
+  "focused_tests": [
+    "tests.test_positioning_value_proposition",
+    "tests.test_positioning_differentiation",
+    "tests.test_positioning_relevance",
+    "tests.test_positioning_intelligence",
+    "tests.test_positioning_repository"
+  ],
+  "import_modules": [
+    "app.positioning_intelligence",
+    "app.positioning_intelligence.value_proposition"
+  ],
+  "commit_message": "feat(positioning): add value proposition decisions"
+}

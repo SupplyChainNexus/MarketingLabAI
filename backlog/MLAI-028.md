@@ -2,7 +2,7 @@
 
 ## Status
 
-MLAI-028.3 implemented - synthetic differentiation evidence only
+MLAI-028.4 implemented - synthetic positioning candidates only
 
 ## Product authority
 
@@ -47,9 +47,9 @@ or assumptions remain before Marketing Strategy is developed.
 
 ### MLAI-028.4 - Value Proposition and Positioning Decisions
 
-- [ ] Build evidence-grounded value propositions and offer framing.
-- [ ] Support positioning statements with confidence and limitations.
-- [ ] Add review, approval, retirement, and replacement rules.
+- [x] Build evidence-grounded value propositions and offer framing.
+- [x] Support positioning statements with confidence and limitations.
+- [x] Add review, approval, retirement, and replacement rules.
 
 ### MLAI-028.5 - Governed Workflow Integration
 

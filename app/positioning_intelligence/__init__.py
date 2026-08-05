@@ -24,9 +24,16 @@ from app.positioning_intelligence.relevance import (
 )
 from app.positioning_intelligence.repository import PositioningRepository
 from app.positioning_intelligence.service import PositioningService
+from app.positioning_intelligence.value_proposition import (
+    CandidateStatus,
+    ValuePropositionBuilder,
+    ValuePropositionCandidate,
+    ValuePropositionGap,
+)
 
 __all__ = [
     "AlternativeEvidence",
+    "CandidateStatus",
     "DifferentiationGap",
     "DifferentiationProofEvaluator",
     "DifferentiationReport",
@@ -43,5 +50,8 @@ __all__ = [
     "TargetKind",
     "TargetProductRelevance",
     "TargetProductRelevanceEvaluator",
+    "ValuePropositionBuilder",
+    "ValuePropositionCandidate",
+    "ValuePropositionGap",
     "normalized_terms",
 ]
