@@ -1,0 +1,17 @@
+{
+  "story_id": "MLAI-028.3",
+  "slug": "differentiation_and_proof",
+  "title": "Differentiation and Proof",
+  "focused_tests": [
+    "tests.test_positioning_differentiation",
+    "tests.test_positioning_relevance",
+    "tests.test_positioning_intelligence",
+    "tests.test_positioning_repository",
+    "tests.test_product_intelligence"
+  ],
+  "import_modules": [
+    "app.positioning_intelligence",
+    "app.positioning_intelligence.differentiation"
+  ],
+  "commit_message": "feat(positioning): add governed differentiation proof"
+}

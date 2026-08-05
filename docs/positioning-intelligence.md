@@ -2,8 +2,9 @@
 
 MLAI-028.1 establishes the trustworthy storage and lifecycle boundary for
 Positioning Intelligence. MLAI-028.2 adds deterministic target-product
-reference validation and relevance explanations. It does not generate final
-positioning automatically.
+reference validation and relevance explanations. MLAI-028.3 adds governed
+differentiation and proof selection. It does not generate final positioning
+automatically.
 
 ## Domain boundary
 
@@ -52,7 +53,23 @@ intersection, and the currently unmodelled product-use-case field remain
 explicit gaps. Product and offer limitations and prohibited claims flow into
 the result without being interpreted as benefits.
 
+## Differentiation and proof
+
+MLAI-028.3 evaluates proposed differentiators against the selected product's
+recorded features, benefits, proof points, and prohibited claims. Comparative
+distinctions additionally require verified evidence for an alternative named
+by the positioning decision. Unreviewed, rejected, or undeclared alternative
+evidence cannot support selection.
+
+Every selected differentiator preserves product support, proof points,
+alternative evidence, review status, and source provenance. Unsupported,
+unproven, prohibited, and comparative claims without reviewed alternative
+evidence remain explicit gaps. The evaluator neither invents competitor facts
+nor treats lexical overlap as market proof.
+
 ## Next increment
 
-MLAI-028.3 will add governed differentiation and proof selection. Relevance
-matches are candidate evidence, not approved positioning or market validation.
+MLAI-028.4 will build evidence-grounded value propositions and positioning
+decisions from governed relevance and differentiation results. Selection in
+MLAI-028.3 remains candidate decision support, not approval or market
+validation.

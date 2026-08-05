@@ -2,7 +2,7 @@
 
 ## Status
 
-MLAI-028.2 implemented - synthetic relevance evaluation only
+MLAI-028.3 implemented - synthetic differentiation evidence only
 
 ## Product authority
 
@@ -40,10 +40,10 @@ or assumptions remain before Marketing Strategy is developed.
 
 ### MLAI-028.3 - Differentiation and Proof
 
-- [ ] Model relevant alternatives and competitor context.
-- [ ] Select defensible differentiators and proof points.
-- [ ] Prevent prohibited, unsupported, or contradictory claims.
-- [ ] Preserve evidence provenance and review status.
+- [x] Model relevant alternatives and competitor context.
+- [x] Select defensible differentiators and proof points.
+- [x] Prevent prohibited, unsupported, or contradictory claims.
+- [x] Preserve evidence provenance and review status.
 
 ### MLAI-028.4 - Value Proposition and Positioning Decisions
 

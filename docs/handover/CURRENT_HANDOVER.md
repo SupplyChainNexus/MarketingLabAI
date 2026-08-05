@@ -3,13 +3,13 @@
 ## Checkpoint
 
 - Branch: `feature/tenant-architecture`
-- Installation baseline: `0861f90`
+- Installation baseline: `c8c783d`
 - Remote state before this story: synchronized with
   `origin/feature/tenant-architecture`
 - Last completed epic: MLAI-027 Secure Pilot Vertical Slice
 - Active epic: MLAI-028 Positioning Intelligence
-- Active story: MLAI-028.2 Target-Product Relevance
-- Validation target: relevance, reference boundaries, continuity, and full regression
+- Active story: MLAI-028.3 Differentiation and Proof
+- Validation target: reviewed evidence, claim boundaries, continuity, and full regression
 
 ## Product direction
 
@@ -34,6 +34,11 @@ Customer and tenant-scoped Product Intelligence repositories. It produces
 transparent lexical relevance matches, explicit evidence gaps, limitations,
 and prohibited claims without inventing a score or missing research.
 
+MLAI-028.3 selects proposed differentiators only when recorded product support,
+proof points, and any required reviewed alternative evidence are traceable.
+Unreviewed or undeclared alternative evidence cannot support a comparative
+claim, and prohibited or unsupported claims remain explicit gaps.
+
 ## Architectural boundary
 
 Positioning is a decision domain, not a Campaign Plan field or prompt-writing
@@ -55,8 +60,10 @@ decision. Remind the founder at that point, as requested.
 
 ## Remaining constraints
 
-- Differentiation, proof selection, and value-proposition builders remain
-  future MLAI-028 increments.
+- Value-proposition and final positioning-decision builders remain future
+  MLAI-028 increments.
+- Alternative evidence has no canonical repository or expiry lifecycle yet;
+  synthetic fixtures must not be represented as market truth.
 - Product use cases are not yet a governed Product Intelligence field and are
   reported as an explicit relevance gap.
 - Marketing Strategy must not begin until the Positioning dependency is ready.
@@ -65,6 +72,6 @@ decision. Remind the founder at that point, as requested.
 
 ## Next engineer's first action
 
-Run the complete MLAI-028.2 validator. Then begin MLAI-028.3 by modelling
-relevant alternatives and selecting defensible differentiators and proof while
-preserving evidence provenance and prohibited-claim boundaries.
+Run the complete MLAI-028.3 validator. Then begin MLAI-028.4 by building
+evidence-grounded value propositions from governed relevance and
+differentiation results without turning candidate selection into approval.

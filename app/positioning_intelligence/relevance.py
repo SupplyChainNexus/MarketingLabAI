@@ -29,7 +29,7 @@ _IGNORED_WORDS = {
 }
 
 
-def _terms(value: str) -> set[str]:
+def normalized_terms(value: str) -> set[str]:
     return {
         term
         for term in re.findall(r"[a-z0-9]+", value.casefold())
@@ -220,7 +220,9 @@ class TargetProductRelevanceEvaluator:
         matches: list[RelevanceMatch] = []
         for customer in customer_statements:
             for product in product_statements:
-                shared = tuple(sorted(_terms(customer) & _terms(product)))
+                shared = tuple(
+                    sorted(normalized_terms(customer) & normalized_terms(product))
+                )
                 if shared:
                     matches.append(
                         RelevanceMatch(

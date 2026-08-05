@@ -15,4 +15,5 @@
 | TD-011 | API operations | Waitress, TLS-aware config, single-process rate limiting, health and logs exist. Distributed rate limiting is intentionally absent. | Low | Revisit only if deployment becomes multi-instance |
 | TD-012 | Workspace identity | Temporary credential entry was removed and browser operations require server session plus CSRF. | Critical | Resolved by MLAI-027.6 |
 | TD-013 | Positioning references | Positioning target, product, and offer identifiers are validated against Customer and Product Intelligence repositories. | High | Resolved by MLAI-028.2 |
-| TD-014 | Product use cases | Product Intelligence has no governed use-case field, so relevance reports the gap rather than inferring use cases. | Medium | Open — review with MLAI-028.3 evidence design |
+| TD-014 | Product use cases | Product Intelligence has no governed use-case field, so relevance reports the gap rather than inferring use cases. | Medium | Open — resolve before MLAI-028.4 framing |
+| TD-015 | Alternative evidence persistence | Reviewed alternative evidence is provider-neutral input to differentiation but has no canonical repository or expiry lifecycle. | Medium | Define with future research evidence; do not persist synthetic fixtures as market truth |

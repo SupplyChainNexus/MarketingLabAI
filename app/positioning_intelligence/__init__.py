@@ -1,5 +1,13 @@
 """Public Positioning Intelligence API."""
 
+from app.positioning_intelligence.differentiation import (
+    AlternativeEvidence,
+    DifferentiationGap,
+    DifferentiationProofEvaluator,
+    DifferentiationReport,
+    DifferentiationSelection,
+    EvidenceReviewStatus,
+)
 from app.positioning_intelligence.models import (
     PositioningDecision,
     PositioningEvidence,
@@ -12,11 +20,18 @@ from app.positioning_intelligence.relevance import (
     RelevanceMatch,
     TargetProductRelevance,
     TargetProductRelevanceEvaluator,
+    normalized_terms,
 )
 from app.positioning_intelligence.repository import PositioningRepository
 from app.positioning_intelligence.service import PositioningService
 
 __all__ = [
+    "AlternativeEvidence",
+    "DifferentiationGap",
+    "DifferentiationProofEvaluator",
+    "DifferentiationReport",
+    "DifferentiationSelection",
+    "EvidenceReviewStatus",
     "PositioningDecision",
     "PositioningEvidence",
     "PositioningRepository",
@@ -28,4 +43,5 @@ __all__ = [
     "TargetKind",
     "TargetProductRelevance",
     "TargetProductRelevanceEvaluator",
+    "normalized_terms",
 ]
