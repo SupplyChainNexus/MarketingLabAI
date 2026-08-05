@@ -30,8 +30,15 @@ class CampaignPlanMigrationTests(unittest.TestCase):
         self.assertEqual(
             {str(row["name"]) for row in rows},
             {
-                "campaign_id", "version", "tenant_id", "brand_id", "name",
-                "status", "payload_json", "created_at", "updated_at",
+                "campaign_id",
+                "version",
+                "tenant_id",
+                "brand_id",
+                "name",
+                "status",
+                "payload_json",
+                "created_at",
+                "updated_at",
             },
         )
 

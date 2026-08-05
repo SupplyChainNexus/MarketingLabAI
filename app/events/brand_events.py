@@ -61,4 +61,4 @@ class BrandCreatedEvent(DomainEvent):
             ),
         )
 
-        super().__post_init__()
+        DomainEvent.__post_init__(self)

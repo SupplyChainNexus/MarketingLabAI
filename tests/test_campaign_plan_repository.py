@@ -8,9 +8,15 @@ from datetime import date
 from pathlib import Path
 
 from app.campaign_planner import (
-    CampaignAudience, CampaignChannel, CampaignMetric, CampaignObjective,
-    CampaignPlan, CampaignPlanRepository, CampaignPlanningService,
-    CampaignStatus, CampaignTimeline,
+    CampaignAudience,
+    CampaignChannel,
+    CampaignMetric,
+    CampaignObjective,
+    CampaignPlan,
+    CampaignPlanningService,
+    CampaignPlanRepository,
+    CampaignStatus,
+    CampaignTimeline,
 )
 from app.database.connection import SQLiteDatabase
 
@@ -41,14 +47,17 @@ class CampaignPlanRepositoryTests(unittest.TestCase):
     @staticmethod
     def make_plan(**overrides: object) -> CampaignPlan:
         values: dict[str, object] = {
-            "campaign_id": "campaign-one", "tenant_id": "default",
-            "brand_id": "brand-one", "name": "Workshop Acquisition",
+            "campaign_id": "campaign-one",
+            "tenant_id": "default",
+            "brand_id": "brand-one",
+            "name": "Workshop Acquisition",
             "objective": CampaignObjective("Increase enquiries", "Support growth"),
             "audience": CampaignAudience("Workshops", "Independent workshops"),
             "timeline": CampaignTimeline(date(2026, 9, 1), date(2026, 9, 30)),
             "channels": (CampaignChannel("Facebook"),),
             "success_metrics": (CampaignMetric("Leads", "25"),),
-            "owner": "Campaign Team", "status": CampaignStatus.APPROVED,
+            "owner": "Campaign Team",
+            "status": CampaignStatus.APPROVED,
         }
         values.update(overrides)
         return CampaignPlan(**values)
@@ -72,17 +81,23 @@ class CampaignPlanRepositoryTests(unittest.TestCase):
 
     def test_history_and_latest_brand_listing(self) -> None:
         self.repository.save(self.plan)
-        self.repository.save(self.service.create_next_version(self.plan, name="Updated"))
+        self.repository.save(
+            self.service.create_next_version(self.plan, name="Updated")
+        )
         self.repository.save(
             self.make_plan(
-                campaign_id="campaign-two", name="Draft Campaign",
+                campaign_id="campaign-two",
+                name="Draft Campaign",
                 status=CampaignStatus.DRAFT,
             )
         )
         self.assertEqual(
-            [plan.version for plan in self.repository.list_versions(
-                "campaign-one", tenant_id="default"
-            )],
+            [
+                plan.version
+                for plan in self.repository.list_versions(
+                    "campaign-one", tenant_id="default"
+                )
+            ],
             [1, 2],
         )
         latest = self.repository.list_latest_for_brand(
@@ -91,7 +106,9 @@ class CampaignPlanRepositoryTests(unittest.TestCase):
         approved = self.repository.list_latest_for_brand(
             tenant_id="default", brand_id="brand-one", status="approved"
         )
-        self.assertEqual([plan.campaign_id for plan in latest], ["campaign-one", "campaign-two"])
+        self.assertEqual(
+            [plan.campaign_id for plan in latest], ["campaign-one", "campaign-two"]
+        )
         self.assertEqual([plan.campaign_id for plan in approved], ["campaign-one"])
         self.assertEqual(latest[0].version, 2)
 
@@ -113,10 +130,12 @@ class CampaignPlanRepositoryTests(unittest.TestCase):
 
     def test_exists_and_count_include_immutable_versions(self) -> None:
         self.repository.save(self.plan)
-        self.repository.save(self.service.create_next_version(self.plan, name="Updated"))
-        self.assertTrue(self.repository.exists(
-            "campaign-one", tenant_id="default", version=1
-        ))
+        self.repository.save(
+            self.service.create_next_version(self.plan, name="Updated")
+        )
+        self.assertTrue(
+            self.repository.exists("campaign-one", tenant_id="default", version=1)
+        )
         self.assertEqual(self.repository.count(tenant_id="default"), 2)
 
 

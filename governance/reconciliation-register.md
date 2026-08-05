@@ -141,3 +141,13 @@ boundaries, lifecycle, evidence, security, or implementation timing.
 an evidence-to-learning decision loop. The frameworks are required reasoning
 coverage where relevant, not rigid universal forms. Existing ADRs, tested code,
 and the capability map continue to control implementation maturity and timing.
+
+## R-015 — Operational readiness versus pilot activation
+
+MLAI-027.6 establishes a hardened synthetic operational gate. The founder has
+separately frozen customer-pilot activity until a later customer-facing stage.
+
+**Ratified authority:** Engineering readiness does not grant customer-data
+permission. Readiness must report the customer pilot unauthorized until a new
+founder-approved decision, privacy choices, live identity deployment, and
+operational rehearsal are complete.

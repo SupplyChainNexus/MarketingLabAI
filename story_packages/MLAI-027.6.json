@@ -1,0 +1,20 @@
+{
+  "story_id": "MLAI-027.6",
+  "slug": "pilot_operations_release_gate",
+  "title": "Pilot Operations and Release Gate",
+  "focused_tests": [
+    "tests.test_pilot_operations",
+    "tests.test_pilot_workspace",
+    "tests.test_pilot_api",
+    "tests.test_authorized_application",
+    "tests.test_sqlite_database"
+  ],
+  "import_modules": [
+    "app.operations",
+    "app.operations.runtime",
+    "app.operations.sessions",
+    "app.operations.recovery",
+    "app.operations.wsgi"
+  ],
+  "commit_message": "feat(operations): establish controlled pilot release gate"
+}

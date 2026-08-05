@@ -30,10 +30,15 @@ class CampaignPlanRepository:
                     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
                     (
-                        plan.campaign_id, plan.version, plan.tenant_id,
-                        plan.brand_id, plan.name, plan.status.value,
+                        plan.campaign_id,
+                        plan.version,
+                        plan.tenant_id,
+                        plan.brand_id,
+                        plan.name,
+                        plan.status.value,
                         json.dumps(plan.to_dict(), ensure_ascii=False, sort_keys=True),
-                        plan.created_at.isoformat(), plan.updated_at.isoformat(),
+                        plan.created_at.isoformat(),
+                        plan.updated_at.isoformat(),
                     ),
                 )
         except Exception as error:

@@ -2,7 +2,7 @@
 
 ## Status
 
-In progress - MLAI-027.5 implemented
+MLAI-027.6 implemented - customer pilot remains founder-frozen
 
 ## Product authority
 
@@ -69,12 +69,13 @@ limitations, and export the result with a complete audit trail.
 
 ### MLAI-027.6 - Pilot Operations and Release Gate
 
-- [ ] Add deployment and runtime configuration.
-- [ ] Add environment-managed secrets.
-- [ ] Add tested database backup and restore.
-- [ ] Add readiness checks and privacy-safe structured logs.
-- [ ] Add CI gates, operational runbook, data handling, and incident process.
-- [ ] Pass synthetic-pilot and private-pilot security gates.
+- [x] Add deployment and runtime configuration.
+- [x] Add environment-managed secrets.
+- [x] Add tested database backup and restore.
+- [x] Add readiness checks and privacy-safe structured logs.
+- [x] Add CI gates, operational runbook, data handling, and incident process.
+- [x] Pass the synthetic operational gate while retaining the founder freeze on
+      any customer pilot.
 
 ## Epic acceptance criteria
 

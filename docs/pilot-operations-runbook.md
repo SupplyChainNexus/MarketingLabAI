@@ -1,0 +1,49 @@
+# Pilot Operations Runbook
+
+## Release state
+
+MLAI-027.6 supports synthetic operational validation only. The founder has
+frozen the customer pilot. Do not load real customer data until a later
+founder-approved PDR changes that state.
+
+## Runtime
+
+1. Install `requirements.txt` in the project virtual environment.
+2. Supply every `MLAI_*` variable shown in `.env.example` from the deployment
+   secret/configuration service. Never commit `.env`.
+3. Implement the configured external identity-adapter and provider-registry
+   factories outside core domains.
+4. Terminate TLS before the application and forward only trusted proxy headers.
+5. Run `scripts/run_pilot.ps1`; it starts Waitress on `127.0.0.1:8080`.
+6. Confirm `/health/live` and `/health/ready`. Readiness must say
+   `synthetic_pilot_ready=true` and `private_customer_pilot_authorized=false`.
+
+The identity integration exchanges a verified external credential at
+`POST /v1/pilot/session`. The response issues a Secure, HttpOnly, SameSite
+session cookie and a separate CSRF token. Workspace mutations require both.
+
+## Backup and restore
+
+- Run `scripts/backup_pilot.ps1` before migration, deployment, and daily while
+  synthetic pilot work is active.
+- Store backup output outside the repository with restricted access.
+- Record its SHA-256 and integrity result in the release evidence.
+- Test restoration with `scripts/restore_pilot.ps1 -BackupPath <file>
+  -DestinationPath <new-file>`; restore never overwrites an existing database.
+- Validate the restored database before any traffic is switched.
+
+## Deployment and rollback
+
+Deploy from a tested commit, preserve the prior package and database backup,
+run migrations idempotently, then check readiness. If readiness or a smoke test
+fails, stop traffic, restore the prior package, and—only if data compatibility
+requires it—restore the verified pre-deployment backup to a new path. Record
+the decision and evidence.
+
+## Monitoring and support
+
+Alert on readiness failure, repeated authentication failure, rate-limit spikes,
+database integrity failure, backup failure, and elevated 5xx responses. Logs
+may include request ID, route, method, outcome, tenant ID, provider identifier,
+and timing. They must not include credentials, cookies, prompts, generated
+content, customer context, instructions, or secrets.

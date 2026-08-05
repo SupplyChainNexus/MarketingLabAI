@@ -1,14 +1,15 @@
 "use strict";
 
-const state = { review: null, result: null };
+const cookieValue = (name) => document.cookie.split("; ").find((part) => part.startsWith(`${name}=`))?.split("=").slice(1).join("=") || "";
+const state = { review: null, result: null, csrfToken: cookieValue("mlai_csrf") };
 const byId = (id) => document.getElementById(id);
 const value = (id) => byId(id).value.trim();
 const requestKey = (operation) => `${operation}-${crypto.randomUUID()}`;
 
 async function api(path, body, operation = "") {
-  const headers = { "Content-Type": "application/json", "Authorization": `Bearer ${value("credential")}`, "X-Tenant-ID": value("tenantId") };
+  const headers = { "Content-Type": "application/json", "X-Tenant-ID": value("tenantId"), "X-CSRF-Token": state.csrfToken };
   if (operation) headers["Idempotency-Key"] = requestKey(operation);
-  const response = await fetch(path, { method: "POST", headers, body: JSON.stringify(body) });
+  const response = await fetch(path, { method: "POST", headers, credentials: "same-origin", body: JSON.stringify(body) });
   const payload = await response.json();
   if (!response.ok) throw new Error(payload.error?.message || "The pilot request failed.");
   return payload.data;

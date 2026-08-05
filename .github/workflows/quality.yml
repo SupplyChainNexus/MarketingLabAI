@@ -1,0 +1,33 @@
+name: quality
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt -r requirements-dev.txt
+      - run: |
+          printf 'GEMINI_API_KEY=ci-synthetic-key\nGEMINI_MODEL=gemini-3.6-flash\n' > .env
+      - run: python -m ruff check app tests
+      - run: python -m black --check app tests
+      - run: python -m unittest discover -s tests -p "test_*.py"
+
+  powershell-continuity:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - shell: powershell
+        run: |
+          & ".\tests\test_handover_system.ps1"
+          & ".\tests\test_story_package_generator.ps1"

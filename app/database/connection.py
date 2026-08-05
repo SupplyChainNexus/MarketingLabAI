@@ -191,6 +191,22 @@ class SQLiteDatabase:
                         ON DELETE CASCADE
                 );
 
+                CREATE TABLE IF NOT EXISTS pilot_sessions (
+                    token_hash TEXT PRIMARY KEY,
+                    csrf_hash TEXT NOT NULL,
+                    provider TEXT NOT NULL,
+                    subject_id TEXT NOT NULL,
+                    tenant_id TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    expires_at TEXT NOT NULL,
+                    revoked_at TEXT,
+                    FOREIGN KEY (tenant_id) REFERENCES tenants(tenant_id)
+                        ON DELETE CASCADE
+                );
+
+                CREATE INDEX IF NOT EXISTS idx_pilot_sessions_expiry
+                    ON pilot_sessions(expires_at, revoked_at);
+
                 CREATE TABLE IF NOT EXISTS compliance_rules (
                     rule_id TEXT NOT NULL,
                     version INTEGER NOT NULL,
@@ -370,6 +386,16 @@ class SQLiteDatabase:
                 VALUES (
                     2,
                     'Add versioned compliance rules',
+                    strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+                )
+                """)
+
+            connection.execute("""
+                INSERT OR IGNORE INTO schema_migrations (
+                    version, description, applied_at
+                ) VALUES (
+                    13,
+                    'Add revocable pilot sessions',
                     strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
                 )
                 """)

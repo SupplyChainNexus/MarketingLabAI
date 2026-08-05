@@ -13,6 +13,11 @@ $RequiredFiles = @(
     "governance\pdrs\PDR-0001-product-direction-ratification.md",
     "governance\pdrs\PDR-0002-secure-pilot-vertical-slice.md",
     "governance\pdrs\PDR-0003-marketing-decision-doctrine.md",
+    "governance\adrs\ADR-0014-pilot-operations-release-gate.md",
+    "docs\pilot-release-gate.md",
+    "docs\pilot-operations-runbook.md",
+    "docs\privacy-and-data-handling.md",
+    "docs\pilot-incident-response.md",
     "docs\launch-readiness-review.md",
     "backlog\MLAI-027.md",
     "docs\engineering\continuity.md",
@@ -111,12 +116,12 @@ $CurrentHandoverText = Get-Content -LiteralPath (
     Join-Path $ProjectRoot "docs\handover\CURRENT_HANDOVER.md"
 ) -Raw
 
-if ($CurrentHandoverText -notmatch "MLAI-027.1 through MLAI-027.5") {
-    throw "Current handover does not record MLAI-027.5 completion."
+if ($CurrentHandoverText -notmatch "MLAI-027.1 through MLAI-027.6") {
+    throw "Current handover does not record MLAI-027.6 completion."
 }
 
-if ($CurrentHandoverText -notmatch "Start with \*\*MLAI-027.6") {
-    throw "Current handover does not identify MLAI-027.6 as the next story."
+if ($CurrentHandoverText -notmatch "customer pilot remains explicitly") {
+    throw "Current handover does not preserve the founder pilot freeze."
 }
 
 $CompositionDecisionText = Get-Content -LiteralPath (
@@ -159,6 +164,21 @@ if (
     ($WorkspaceDecisionText -notmatch "Real customer data")
 ) {
     throw "ADR-0013 does not preserve the thin synthetic workspace boundary."
+}
+
+$OperationsDecisionText = Get-Content -LiteralPath (
+    Join-Path $ProjectRoot "governance\adrs\ADR-0014-pilot-operations-release-gate.md"
+) -Raw
+
+if ($OperationsDecisionText -notmatch '(?m)^Accepted\r?$') {
+    throw "ADR-0014 is not recorded as accepted."
+}
+
+if (
+    ($OperationsDecisionText -notmatch "Waitress") -or
+    ($OperationsDecisionText -notmatch "customer pilot unauthorized")
+) {
+    throw "ADR-0014 does not preserve runtime and pilot-freeze boundaries."
 }
 
 Write-Host "MARKETINGLABAI HANDOVER REGRESSION TESTS PASSED" -ForegroundColor Green

@@ -2,7 +2,7 @@
 
 ## Review checkpoint
 
-Reviewed after MLAI-027.5 and PDR-0003 Marketing Decision Doctrine.
+Reviewed after MLAI-027.6 and PDR-0003 Marketing Decision Doctrine.
 
 ## Maturity scale
 
@@ -15,8 +15,8 @@ Reviewed after MLAI-027.5 and PDR-0003 Marketing Decision Doctrine.
 | 4 — Production | Operational, monitored, secure, and customer-ready |
 | 5 — Enterprise | Scalable, configurable, governed, and deeply auditable |
 
-No capability is rated level 4 because MarketingLabAI does not yet have a
-secure deployed customer workflow.
+Level 4 remains unavailable because the customer pilot is founder-frozen and
+deployment-specific identity, legal, privacy, and rehearsal evidence is absent.
 
 ## Current capability map
 
@@ -38,10 +38,10 @@ secure deployed customer workflow.
 | Generation | Provider-neutral orchestration and Company, Customer, Product, and memory context assembly | Produces governed marketing assets | 3 | Maintain through secure pilot |
 | Compliance | Preventative guidance and independent evaluation | Reduces brand and policy risk | 3 | Expose in pilot |
 | Memory | Provider, model, workflow, and event audit context | Preserves traceability | 2 | Extend in pilot |
-| Identity | External identity boundary and tenant authorization | Protects customer data and actions | 3 | Connect live provider in MLAI-027.4/027.6 |
+| Identity | External identity boundary, tenant authorization, and revocable sessions | Protects customer data and actions | 3 | Select provider only when pilot is unfrozen |
 | Interface | Authenticated pilot API contract | Gives the workspace one governed, retry-safe boundary | 3 | Maintain through MLAI-027.5/027.6 |
-| Interface | Guided synthetic pilot workspace | Makes the governed vertical slice understandable and usable | 3 | Operationalize in MLAI-027.6 |
-| Operations | Deployment, monitoring, backup, restore, and incident process | Makes private pilot safe and supportable | 0 | MLAI-027.6 |
+| Interface | Guided session-protected synthetic pilot workspace | Makes the governed vertical slice understandable and usable | 3 | Maintain while customer pilot is frozen |
+| Operations | Deployment, health, safe logs, rate limits, backup, restore, CI, and incident process | Makes a future private pilot supportable | 3 | Rehearse only when pilot is unfrozen |
 | Calendar | International Marketing Calendar | Coordinates time-based activity | 0 | Deferred MLAI-026 |
 | Publishing | Connector-controlled execution | Reduces manual channel work | 0 | Post-pilot |
 | Learning | Actual results, evidence-grounded campaign learning, adaptation, and experiments | Closes the marketing control loop | 0 | Post-real outcomes; never infer synthetic learning |
@@ -56,5 +56,5 @@ secure deployed customer workflow.
 4. MLAI-027.4 Pilot API and Workflow Contract
 5. MLAI-027.5 Thin Pilot Workspace
 6. MLAI-027.6 Pilot Operations and Release Gate
-7. Controlled pilot evidence review
-8. Reconsider MLAI-026 and remaining Product, Positioning, and Strategy depth
+7. Founder-frozen customer-pilot checkpoint
+8. Continue the approved product sequence until a customer-facing pilot is necessary
