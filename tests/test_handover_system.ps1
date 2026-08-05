@@ -265,4 +265,35 @@ if (
     throw "Current handover does not preserve marketing-mix boundaries."
 }
 
+$WorkspaceDecisionText = Get-Content -LiteralPath (
+    Join-Path $ProjectRoot "governance\adrs\ADR-0019-client-facing-strategy-workspace-design-partner-readiness.md"
+) -Raw
+$IntegrityProtocolText = Get-Content -LiteralPath (
+    Join-Path $ProjectRoot "governance\repository-integrity-protocol.md"
+) -Raw
+
+if (
+    ($WorkspaceDecisionText -notmatch "Strand Auto Parts") -or
+    ($WorkspaceDecisionText -notmatch "billing disabled") -or
+    ($WorkspaceDecisionText -notmatch "real_data_activation_authorized")
+) {
+    throw "ADR-0019 does not preserve the design-partner activation boundary."
+}
+
+if (
+    ($CurrentHandoverText -notmatch "MLAI-029.6") -or
+    ($CurrentHandoverText -notmatch "Repository Integrity Protocol") -or
+    ($CurrentHandoverText -notmatch "customer pilot remains explicitly founder-frozen")
+) {
+    throw "Current handover does not preserve MLAI-029.6 boundaries."
+}
+
+if (
+    ($IntegrityProtocolText -notmatch "explicit allowlist") -or
+    ($IntegrityProtocolText -notmatch "classify every failure") -or
+    ($IntegrityProtocolText -notmatch "local/remote commit equality")
+) {
+    throw "Repository Integrity Protocol is incomplete."
+}
+
 Write-Host "MARKETINGLABAI HANDOVER REGRESSION TESTS PASSED" -ForegroundColor Green

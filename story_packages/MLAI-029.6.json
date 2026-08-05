@@ -1,0 +1,17 @@
+{
+  "story_id": "MLAI-029.6",
+  "slug": "strategy_workspace_design_partner_readiness",
+  "title": "Client-Facing Strategy Workspace and Design-Partner Readiness",
+  "focused_tests": [
+    "tests.test_strategy_workspace_readiness",
+    "tests.test_pilot_api",
+    "tests.test_pilot_workspace",
+    "tests.test_strategy_workflow_integration"
+  ],
+  "import_modules": [
+    "app.design_partner.readiness",
+    "app.pilot_api.service",
+    "app.pilot_workspace.wsgi"
+  ],
+  "commit_message": "feat(workspace): add strategy design-partner readiness"
+}

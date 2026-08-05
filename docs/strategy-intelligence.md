@@ -66,3 +66,17 @@ The provider receives a human-reviewed Strategy section containing objectives,
 choices, non-choices, verified evidence, assumptions, and unknowns. Audit
 metadata records the exact Strategy identity and version. Draft creation remains
 backward compatible, while governed generation cannot bypass Strategy approval.
+
+## Client-facing workspace and design-partner readiness
+
+MLAI-029.6 exposes the exact approved Strategy alongside Positioning, Campaign
+Plan, and Marketing Brief review. The response is transport-safe: it includes
+decision identity, version, objectives, choices, limitations, confidence, and
+readiness without exposing tenant ownership or raw evidence records.
+
+Generation readiness requires all four governed artifacts to be current,
+approved, brand-aligned, and version-aligned. A separate deterministic Founder
+Design Partner assessment reports six operational and governance gates. Strand
+Auto Parts is the proposed first design partner with full feature access and
+billing disabled. Even when every gate passes, the evaluator returns real-data
+activation as unauthorized until the founder records a separate decision.

@@ -2,7 +2,7 @@
 
 ## Review checkpoint
 
-Reviewed after MLAI-029.4 Marketing Mix and Measurement.
+Reviewed after MLAI-029.6 Client-Facing Strategy Workspace and Design-Partner Readiness.
 
 ## Maturity scale
 
@@ -29,12 +29,8 @@ deployment-specific identity, legal, privacy, and rehearsal evidence is absent.
 | Customer | Personas, needs, motivations, triggers, objections, channels, and journeys | Improves relevance and persuasion | 3 | Compose into pilot |
 | Product | Verified product and offer context | Prevents inaccurate offers and unsupported claims | 3 | Maintain; add lifecycle evidence after pilot |
 | Positioning | Target selection, persona-product matching, differentiation, value proposition, alternatives, proof, and governed workflow context | Establishes why a chosen customer should prefer the offer | 3 | Complete synthetic integration; validate only when pilot is unfrozen |
-| Strategy | Tenant-owned strategy lifecycle, approved positioning dependency, evidence, assumptions, unknowns, objectives, choices, and confidence | Establishes an auditable strategic source of truth | 1 | Continue MLAI-029.2 through MLAI-029.6 |
-| Strategy | Deterministic situation synthesis, opportunities, constraints, risks, PESTLE evidence, and explicit gaps | Turns governed inputs into an explainable decision context | 2 | Continue MLAI-029.3 |
-| Strategy | Measurable objectives, strategic choices, rationale, confidence, constraints, and explicit non-choices | Turns situation evidence into reviewable direction | 2 | Continue MLAI-029.4 |
-| Strategy | Coherent marketing mix, objective-linked channels, and measurement coverage | Converts strategic direction into coordinated marketing decisions | 2 | Continue MLAI-029.5 |
-| Strategy | Coherent marketing mix, channel roles, messaging hierarchy, and measurement plan | Turns intelligence into coordinated decisions | 0 | Deliver in MLAI-029.3 and MLAI-029.4 |
-| Environment | Evidence-backed political, economic, social, technological, legal, and environmental signals | Keeps decisions responsive to material market conditions | 0 | Define with Strategy without premature live feeds |
+| Strategy | Governed lifecycle, situation synthesis, objectives, choices, marketing mix, measurement, approved workflow context, and client-facing review | Establishes an auditable strategy source of truth and usable decision journey | 3 | Validate with a founder-approved design partner only after activation gates pass |
+| Environment | Evidence-backed political, economic, social, technological, legal, and environmental signals | Keeps decisions responsive to material market conditions | 2 | Preserve explicit gaps; defer live feeds |
 | Application | Canonical SQLite composition root | Gives future interfaces one governed runtime boundary | 3 | Maintain through MLAI-027 |
 | Campaign | Campaign Plan lifecycle and validation | Makes coordinated campaigns reviewable | 3 | Maintain |
 | Campaign | Asset planning, dependencies, readiness, and blocked-work reporting | Makes delivery work actionable | 3 | Maintain |
@@ -44,7 +40,7 @@ deployment-specific identity, legal, privacy, and rehearsal evidence is absent.
 | Memory | Provider, model, workflow, and event audit context | Preserves traceability | 2 | Extend in pilot |
 | Identity | External identity boundary, tenant authorization, and revocable sessions | Protects customer data and actions | 3 | Select provider only when pilot is unfrozen |
 | Interface | Authenticated pilot API contract | Gives the workspace one governed, retry-safe boundary | 3 | Maintain through MLAI-027.5/027.6 |
-| Interface | Guided session-protected synthetic pilot workspace | Makes the governed vertical slice understandable and usable | 3 | Maintain while customer pilot is frozen |
+| Interface | Guided session-protected workspace with Positioning, Strategy, workflow, and design-partner readiness | Makes the governed vertical slice understandable and usable | 3 | Keep real-data activation founder-controlled |
 | Operations | Deployment, health, safe logs, rate limits, backup, restore, CI, and incident process | Makes a future private pilot supportable | 3 | Rehearse only when pilot is unfrozen |
 | Calendar | International Marketing Calendar | Coordinates time-based activity | 0 | Deferred MLAI-026 |
 | Publishing | Connector-controlled execution | Reduces manual channel work | 0 | Post-pilot |

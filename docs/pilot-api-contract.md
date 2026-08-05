@@ -25,6 +25,7 @@ require `Idempotency-Key`.
 | `POST /v1/pilot/context` | Read tenant-authorized context and explicit missing indicators. |
 | `POST /v1/pilot/onboarding/context` | Save minimum verified Company, Customer, and Product context. |
 | `POST /v1/pilot/workflow-review` | Read transport-safe current plan, brief, context, and readiness views. |
+| `POST /v1/pilot/design-partner/readiness` | Assess deterministic founder design-partner gates without authorizing activation. |
 | `POST /v1/pilot/generate` | Generate from named approved Campaign Plan and Marketing Brief versions. |
 | `POST /v1/pilot/campaign-plans/{id}/approve` | Approve the expected current plan version. |
 | `POST /v1/pilot/marketing-briefs/{id}/approve` | Approve the expected current brief version. |
@@ -49,6 +50,13 @@ operation, and key. An exact replay returns the stored response with
 Successful generation includes independent compliance results, explicit pilot
 limitations, and provider, model, Campaign Plan, Marketing Brief, and timestamp
 audit metadata for workspace review.
+
+Workflow review includes the exact approved Strategy governing the Plan and
+Brief. Design-partner readiness accepts a partner name and explicit evidence for
+founder approval, privacy choices, external identity, recovery rehearsal,
+support ownership, and data-boundary acceptance. It always keeps real-data
+activation unauthorized; only a separate founder decision may change that
+boundary.
 
 ## Security boundary
 

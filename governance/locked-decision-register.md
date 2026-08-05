@@ -578,3 +578,26 @@ silently omitted. Metrics identify a target, method, timeframe, and eventual
 actual result. AI may assist analysis but may not invent research, positioning,
 strategy, performance, or learning. Learning claims require real outcomes, and
 humans retain governed approval authority.
+
+### LDR-047 — Story repository integrity
+
+**Status:** Current / Governance
+**Source:** MLAI-029.6 repository-integrity audit
+
+Every story must verify its baseline, allowlist intended paths, refuse unexpected
+dirty paths, report staged and remaining work, classify every failure, run the
+applicable focused and repository-wide gates, and verify clean local/remote
+synchronization. A warning or failure may not be dismissed without an explicit
+cause, impact, and treatment. The full controls are locked in
+`governance/repository-integrity-protocol.md`.
+
+### LDR-048 — Founder Design Partner boundary
+
+**Status:** Current / Governance
+**Source:** ADR-0019
+
+Strand Auto Parts is the proposed first Founder Design Partner. Its founder
+account may receive full feature access with billing disabled, but entitlement
+does not grant customer-data permission. Real-data activation requires a new
+founder-approved decision after privacy, identity, recovery, support, and data
+boundary gates pass. Readiness never self-authorizes activation.

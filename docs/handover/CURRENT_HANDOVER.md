@@ -3,11 +3,11 @@
 ## Checkpoint
 
 - Branch: `feature/tenant-architecture`
-- Installation baseline: `890572c`
+- Installation baseline: `c9b63f3`
 - Remote state before this story: synchronized
-- Last completed epic: MLAI-028 Positioning Intelligence
-- Active epic: MLAI-029 Marketing Strategy Intelligence
-- Active story: MLAI-029.5 Governed Workflow Integration
+- Last completed epic: MLAI-029 Marketing Strategy Intelligence
+- Active epic: none; next epic requires founder sequencing
+- Completed story: MLAI-029.6 Client-Facing Strategy Workspace and Design-Partner Readiness
 
 ## Product direction
 
@@ -48,6 +48,18 @@ persists immutable Strategy references on Campaign Plans and Marketing Briefs,
 and requires matching Strategy and Positioning references before governed AI
 generation. Provider context and audit metadata retain exact version identity.
 
+MLAI-029.6 adds a client-facing Strategy review to the same authorized
+workspace and requires aligned current Positioning, Strategy, Campaign Plan,
+and Marketing Brief versions for generation readiness. It also adds a
+deterministic Founder Design Partner assessment. Strand Auto Parts is the
+proposed first partner with full feature access and billing disabled, but the
+assessment never authorizes real customer data.
+
+The Repository Integrity Protocol is now locked for every future story:
+baseline and scope verification, tracked/untracked/staged reporting, failure
+classification, complete applicable quality gates, no remaining intended paths,
+and clean local/remote synchronization are mandatory.
+
 ## Locked MLAI-029 sequence
 
 1. MLAI-029.1 Strategy Intelligence Foundation
@@ -60,14 +72,15 @@ generation. Provider context and audit metadata retain exact version identity.
 ## Release state
 
 The customer pilot remains explicitly founder-frozen. Synthetic evidence is
-not market validation or learning. At MLAI-029.6, remind the founder that a
-controlled pilot becomes necessary and assess Strand Auto Parts as a temporary
-Founder Design Partner. Real customer data still requires a new approved pilot
-decision, legal/privacy choices, deployed identity, recovery rehearsal, and
-support ownership.
+not market validation or learning. A controlled design-partner pilot is now the
+next necessary product-validation checkpoint, but readiness is not activation.
+Real customer data still requires a new founder-approved pilot decision,
+legal/privacy choices, deployed identity, recovery rehearsal, support ownership,
+and accepted data boundaries.
 
 ## Next engineer action
 
-Validate and commit MLAI-029.5, then begin MLAI-029.6. At that next stage the
-controlled design-partner pilot becomes necessary; remind the founder and retain
-the freeze until a new explicit pilot decision is approved.
+Validate and commit MLAI-029.6. Then present the readiness evidence and blockers
+for a separate founder activation decision; retain the freeze until that
+decision is explicitly approved. Sequence the next epic without inventing
+market learning before real outcomes exist.

@@ -2,7 +2,7 @@
 
 ## Status
 
-MLAI-029.5 implemented - Governed Workflow Integration
+MLAI-029 complete - Client-Facing Strategy Workspace and Design-Partner Readiness
 
 ## Product authority
 
@@ -50,9 +50,9 @@ inventing research, forecasts, performance, or learning.
 
 ### MLAI-029.6 - Client-Facing Strategy Workspace and Design-Partner Readiness
 
-- [ ] Add a guided customer-facing strategy review and approval journey.
-- [ ] Assess Strand Auto Parts as a controlled Founder Design Partner.
-- [ ] Require a new founder-approved pilot decision before real customer data.
+- [x] Add a guided customer-facing strategy review and approval journey.
+- [x] Assess Strand Auto Parts as a controlled Founder Design Partner.
+- [x] Require a new founder-approved pilot decision before real customer data.
 
 ## Explicitly deferred
 

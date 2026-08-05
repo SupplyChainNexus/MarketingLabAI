@@ -8,6 +8,7 @@ from app.pilot_api.contracts import (
     BriefRevisionRequest,
     CampaignRevisionRequest,
     ContextRequest,
+    DesignPartnerReadinessRequest,
     ExportRequest,
     GenerationRequest,
     OnboardingRequest,
@@ -76,6 +77,10 @@ class PilotWsgiApplication:
         if path == "/v1/pilot/workflow-review":
             return self.service.workflow_review(
                 request=WorkflowReviewRequest(**body), **common
+            )
+        if path == "/v1/pilot/design-partner/readiness":
+            return self.service.design_partner_readiness(
+                request=DesignPartnerReadinessRequest(**body), **common
             )
         if path == "/v1/pilot/onboarding/context":
             return self.service.save_onboarding_context(

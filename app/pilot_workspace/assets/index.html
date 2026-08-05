@@ -67,6 +67,11 @@
         <p class="muted">Positioning approval is a separate human decision and cannot be changed from this execution workspace.</p>
       </article>
       <article class="panel">
+        <div class="section-heading"><span class="step">4</span><div><h2>Strategy review</h2><p id="strategyStatus"></p></div></div>
+        <dl id="strategySummary"></dl>
+        <p class="muted">Objectives, choices, non-choices, assumptions, and unknowns remain visible. Approval is never inferred from AI output.</p>
+      </article>
+      <article class="panel">
         <div class="section-heading"><span class="step">4</span><div><h2>Campaign Plan review</h2><p id="campaignStatus"></p></div></div>
         <dl id="campaignSummary"></dl>
         <label>Revision note<textarea id="campaignNotes" rows="3"></textarea></label>
@@ -78,6 +83,22 @@
         <label>Revision note<textarea id="briefNotes" rows="3"></textarea></label>
         <div class="actions"><button id="reviseBrief">Save revision</button><button id="approveBrief" class="primary">Approve brief</button></div>
       </article>
+    </section>
+
+    <section class="panel" id="designPartnerPanel">
+      <div class="section-heading"><span class="step">8</span><div><h2>Founder Design Partner readiness</h2><p>Assess Strand Auto Parts without activating real-data processing.</p></div></div>
+      <label>Design Partner name<input id="partnerName" value="Strand Auto Parts"></label>
+      <div class="indicator-grid">
+        <label><input type="checkbox" id="founderApproval"> Founder activation approval recorded</label>
+        <label><input type="checkbox" id="privacyReady"> Privacy choices completed</label>
+        <label><input type="checkbox" id="identityReady"> External identity deployed</label>
+        <label><input type="checkbox" id="recoveryReady"> Backup and recovery rehearsed</label>
+        <label><input type="checkbox" id="supportReady"> Support owner assigned</label>
+        <label><input type="checkbox" id="dataBoundaryReady"> Data boundary accepted</label>
+      </div>
+      <button id="assessPartner">Assess readiness</button>
+      <dl id="partnerReadiness"></dl>
+      <p class="muted">The Founder Design Partner account has full feature access with billing disabled. Readiness never activates real customer data automatically.</p>
     </section>
 
     <section class="panel" id="generationPanel" hidden>

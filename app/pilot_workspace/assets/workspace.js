@@ -48,9 +48,11 @@ function renderReview(data) {
   byId("campaignStatus").textContent = `Version ${data.campaign_plan.version} · ${data.campaign_plan.status}`;
   byId("briefStatus").textContent = `Version ${data.marketing_brief.version} · ${data.marketing_brief.status}`;
   byId("positioningStatus").textContent = data.positioning.ready ? "Approved positioning ready" : data.positioning.reason;
+  byId("strategyStatus").textContent = data.strategy.ready ? "Approved Strategy ready" : data.strategy.reason;
   renderDefinitionList(byId("campaignSummary"), data.campaign_plan);
   renderDefinitionList(byId("briefSummary"), data.marketing_brief);
   renderDefinitionList(byId("positioningSummary"), data.positioning);
+  renderDefinitionList(byId("strategySummary"), data.strategy);
   byId("campaignNotes").value = data.campaign_plan.notes || "";
   byId("briefNotes").value = data.marketing_brief.notes || "";
   byId("generateAsset").disabled = !data.generation_ready;
@@ -59,7 +61,7 @@ function renderReview(data) {
 async function loadWorkflow() {
   try {
     const data = await api("/v1/pilot/workflow-review", { brand_id:value("brandId"), campaign_id:value("campaignId"), brief_id:value("briefId") });
-    renderReview(data); message(data.generation_ready ? "Positioning, plan, and brief are approved and ready." : "Approved positioning, Campaign Plan, and Marketing Brief are required before generation.");
+    renderReview(data); message(data.generation_ready ? "Positioning, Strategy, plan, and brief are approved and ready." : "Approved Positioning, Strategy, Campaign Plan, and Marketing Brief are required before generation.");
   } catch (error) { message(error.message, true); }
 }
 
@@ -106,6 +108,24 @@ async function safeExport() {
   } catch (error) { message(error.message, true); }
 }
 
+async function assessPartner() {
+  try {
+    const data = await api("/v1/pilot/design-partner/readiness", {
+      partner_name:value("partnerName"),
+      evidence:{
+        founder_approval:byId("founderApproval").checked,
+        privacy_choices_complete:byId("privacyReady").checked,
+        external_identity_ready:byId("identityReady").checked,
+        backup_recovery_rehearsed:byId("recoveryReady").checked,
+        support_owner_assigned:byId("supportReady").checked,
+        data_boundary_accepted:byId("dataBoundaryReady").checked
+      }
+    });
+    renderDefinitionList(byId("partnerReadiness"), data);
+    message(data.ready_for_activation_decision ? "Readiness evidence is complete. Founder activation remains a separate decision." : "Design Partner blockers remain visible; the pilot stays frozen.");
+  } catch (error) { message(error.message, true); }
+}
+
 byId("loadWorkflow").addEventListener("click", loadWorkflow);
 byId("saveOnboarding").addEventListener("click", saveOnboarding);
 byId("approveCampaign").addEventListener("click", () => lifecycle("campaign-plans", "approve", state.review.campaign_plan.version));
@@ -115,3 +135,4 @@ byId("reviseBrief").addEventListener("click", () => lifecycle("marketing-briefs"
 byId("generateAsset").addEventListener("click", generate);
 byId("reviseGeneration").addEventListener("click", () => { byId("generationInstructions").focus(); byId("resultPanel").hidden=true; });
 byId("safeExport").addEventListener("click", safeExport);
+byId("assessPartner").addEventListener("click", assessPartner);

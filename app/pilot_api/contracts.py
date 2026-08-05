@@ -35,6 +35,19 @@ class WorkflowReviewRequest:
 
 
 @dataclass(slots=True, frozen=True)
+class DesignPartnerReadinessRequest:
+    partner_name: str
+    evidence: dict[str, bool]
+
+    def __post_init__(self) -> None:
+        object.__setattr__(
+            self, "partner_name", required_text(self.partner_name, "partner_name")
+        )
+        if not isinstance(self.evidence, dict):
+            raise TypeError("evidence must be an object.")
+
+
+@dataclass(slots=True, frozen=True)
 class OnboardingRequest:
     brand_id: str
     business: dict[str, Any]

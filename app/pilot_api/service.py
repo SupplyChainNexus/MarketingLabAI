@@ -12,6 +12,7 @@ from app.ai.registry import IntelligenceProviderRegistry
 from app.application import CanonicalApplication, LifecycleConflictError
 from app.compliance.engine import ComplianceEngine
 from app.compliance.models import ReviewSubjectType
+from app.design_partner import DesignPartnerReadinessEvaluator
 from app.identity import AuthorizationDeniedError, IdentityProviderAdapter
 from app.pilot_api.contracts import (
     ApiResponse,
@@ -19,6 +20,7 @@ from app.pilot_api.contracts import (
     BriefRevisionRequest,
     CampaignRevisionRequest,
     ContextRequest,
+    DesignPartnerReadinessRequest,
     ExportRequest,
     GenerationRequest,
     OnboardingRequest,
@@ -152,6 +154,33 @@ class PilotApiService:
                 )
             except (FileNotFoundError, AuthorizationDeniedError):
                 positioning_reason = "Positioning is unavailable for this tenant."
+        strategy = None
+        strategy_ready = False
+        strategy_reason = "A shared Strategy reference is required."
+        plan_strategy = (plan.strategy_id, plan.strategy_version)
+        brief_strategy = (brief.strategy_id, brief.strategy_version)
+        if plan.strategy_id and plan_strategy == brief_strategy:
+            try:
+                strategy = session.review_strategy(
+                    plan.strategy_id, version=plan.strategy_version
+                )
+                latest_strategy = self.application.strategy_intelligence.latest(
+                    tenant_id=tenant_id, strategy_id=plan.strategy_id
+                )
+                strategy_ready = (
+                    strategy.brand_id == request.brand_id
+                    and strategy.status.value == "approved"
+                    and strategy.version == latest_strategy.version
+                    and (strategy.positioning_id, strategy.positioning_version)
+                    == plan_reference
+                )
+                strategy_reason = (
+                    "Current approved Strategy is available."
+                    if strategy_ready
+                    else "Strategy is not current, approved, and reference-aligned."
+                )
+            except (FileNotFoundError, AuthorizationDeniedError):
+                strategy_reason = "Strategy is unavailable for this tenant."
         return ApiResponse(
             200,
             {
@@ -161,13 +190,31 @@ class PilotApiService:
                 "positioning": self._positioning_summary(
                     positioning, positioning_ready, positioning_reason
                 ),
+                "strategy": self._strategy_summary(
+                    strategy, strategy_ready, strategy_reason
+                ),
                 "generation_ready": (
                     plan.status.value == "approved"
                     and brief.status.value == "approved"
                     and positioning_ready
+                    and strategy_ready
                 ),
             },
         )
+
+    def design_partner_readiness(
+        self,
+        *,
+        credential: str,
+        tenant_id: str,
+        request: DesignPartnerReadinessRequest,
+    ) -> ApiResponse:
+        self._session(credential, tenant_id)
+        data = DesignPartnerReadinessEvaluator().evaluate(
+            partner_name=request.partner_name,
+            evidence=request.evidence,
+        )
+        return ApiResponse(200, data)
 
     def save_onboarding_context(
         self,
@@ -481,6 +528,27 @@ class PilotApiService:
             "value_proposition": positioning.value_proposition,
             "limitations": list(positioning.assumptions)
             + [item.reason for item in positioning.unknowns],
+            "ready": ready,
+            "reason": reason,
+        }
+
+    @staticmethod
+    def _strategy_summary(strategy, ready: bool, reason: str):
+        if strategy is None:
+            return {"ready": False, "reason": reason}
+        return {
+            "strategy_id": strategy.strategy_id,
+            "version": strategy.version,
+            "status": strategy.status.value,
+            "planning_horizon": strategy.planning_horizon,
+            "business_objectives": list(strategy.business_objectives),
+            "strategic_choices": list(strategy.strategic_choices),
+            "explicit_non_choices": list(strategy.explicit_non_choices),
+            "assumptions": list(strategy.assumptions),
+            "unknowns": [item.reason for item in strategy.unknowns],
+            "confidence": strategy.confidence,
+            "positioning_id": strategy.positioning_id,
+            "positioning_version": strategy.positioning_version,
             "ready": ready,
             "reason": reason,
         }

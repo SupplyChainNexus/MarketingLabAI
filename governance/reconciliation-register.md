@@ -151,3 +151,13 @@ separately frozen customer-pilot activity until a later customer-facing stage.
 permission. Readiness must report the customer pilot unauthorized until a new
 founder-approved decision, privacy choices, live identity deployment, and
 operational rehearsal are complete.
+
+## R-016 — Historical unreachable blobs versus current repository integrity
+
+Repository audits found no omitted executable behavior in unreachable objects;
+the recovered objects were superseded governance revisions. This does not make
+future omissions impossible.
+
+**Ratified authority:** Apply the permanent Repository Integrity Protocol to
+every future story. Treat each failure or warning as evidence requiring
+classification, and stop when scope or staging cannot be proven complete.

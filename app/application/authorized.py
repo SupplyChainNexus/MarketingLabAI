@@ -319,6 +319,17 @@ class AuthorizedTenantApplication:
         self._authorize_brand(Permission.VIEW, decision.brand_id)
         return decision
 
+    def review_strategy(self, strategy_id: str, *, version: int):
+        """Return one authorized, tenant-scoped Strategy decision."""
+
+        decision = self.application.strategy_intelligence.get(
+            tenant_id=self.tenant_id,
+            strategy_id=strategy_id,
+            version=version,
+        )
+        self._authorize_brand(Permission.VIEW, decision.brand_id)
+        return decision
+
     def revise_campaign_plan(
         self,
         campaign_id: str,
