@@ -129,3 +129,15 @@ states, and superseded instructions.
 **Rule:** Current tested code, accepted ADRs, committed backlog state, current
 documentation, and Git history outrank conversational implementation details.
 The chat remains evidence for intent and rationale.
+
+## R-014 — Foundational marketing frameworks versus product authority
+
+A founder-supplied quick-reference guide summarized customer-first marketing,
+STP, the 4Ps and service extensions, PEST, and a five-step marketing plan. The
+principles align with MarketingLabAI but do not, by themselves, define domain
+boundaries, lifecycle, evidence, security, or implementation timing.
+
+**Ratified authority:** PDR-0003 preserves the relevant marketing doctrine as
+an evidence-to-learning decision loop. The frameworks are required reasoning
+coverage where relevant, not rigid universal forms. Existing ADRs, tested code,
+and the capability map continue to control implementation maturity and timing.

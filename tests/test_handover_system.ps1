@@ -12,6 +12,7 @@ $RequiredFiles = @(
     "governance\pdrs\PDR-TEMPLATE.md",
     "governance\pdrs\PDR-0001-product-direction-ratification.md",
     "governance\pdrs\PDR-0002-secure-pilot-vertical-slice.md",
+    "governance\pdrs\PDR-0003-marketing-decision-doctrine.md",
     "docs\launch-readiness-review.md",
     "backlog\MLAI-027.md",
     "docs\engineering\continuity.md",
@@ -77,6 +78,33 @@ if (
     ($PilotDecisionText -notmatch "Secure Pilot Vertical Slice")
 ) {
     throw "PDR-0002 does not approve MLAI-027."
+}
+
+$MarketingDoctrineText = Get-Content -LiteralPath (
+    Join-Path $ProjectRoot "governance\pdrs\PDR-0003-marketing-decision-doctrine.md"
+) -Raw
+
+if ($MarketingDoctrineText -notmatch '(?m)^Accepted\r?$') {
+    throw "PDR-0003 is not recorded as accepted."
+}
+
+$RequiredDoctrineTerms = @(
+    "Customer segmentation",
+    "Target selection",
+    "Positioning",
+    "Marketing-mix decisions",
+    "Independent compliance",
+    "Evidence-backed learning"
+)
+
+foreach ($RequiredTerm in $RequiredDoctrineTerms) {
+    if ($MarketingDoctrineText -notmatch [regex]::Escape($RequiredTerm)) {
+        throw "PDR-0003 is missing doctrine term: $RequiredTerm"
+    }
+}
+
+if ($MarketingDoctrineText -notmatch "MLAI-027.6 remains an operational release story") {
+    throw "PDR-0003 does not preserve MLAI-027.6 scope."
 }
 
 $CurrentHandoverText = Get-Content -LiteralPath (

@@ -542,3 +542,39 @@ data exists.
 
 The exact story numbers must be maintained in the live roadmap rather than
 copied from obsolete chat sprint numbering.
+
+## H. Marketing decision doctrine
+
+### LDR-046 — Evidence-to-learning marketing decision loop
+
+**Status:** Current / Governance; partially implemented
+**Source:** PDR-0003
+
+MarketingLabAI's canonical marketing decision loop is:
+
+1. verified company and market evidence;
+2. customer segmentation;
+3. target selection;
+4. positioning;
+5. coherent marketing-mix decisions;
+6. objectives and strategy;
+7. campaign planning and approved briefs;
+8. governed generation;
+9. independent compliance;
+10. controlled execution;
+11. measurement; and
+12. evidence-backed learning and adaptation.
+
+Customer value and an explicit business objective lead the loop. Research,
+assumptions, uncertainty, and unknowns remain distinguishable. STP precedes
+final positioning and strategy. Product, Price, Place, and Promotion form the
+minimum marketing-mix lens; service contexts may add People, Process, and
+Physical Evidence. Environmental analysis covers at least Political, Economic,
+Social, and Technological factors and remains extensible.
+
+Frameworks provide required decision coverage where relevant, not rigid forms.
+Material factors may be recorded as irrelevant or unknown but may not be
+silently omitted. Metrics identify a target, method, timeframe, and eventual
+actual result. AI may assist analysis but may not invent research, positioning,
+strategy, performance, or learning. Learning claims require real outcomes, and
+humans retain governed approval authority.

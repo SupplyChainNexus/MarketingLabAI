@@ -8,6 +8,7 @@ In progress - MLAI-027.5 implemented
 
 - governance/pdrs/PDR-0001-product-direction-ratification.md
 - governance/pdrs/PDR-0002-secure-pilot-vertical-slice.md
+- governance/pdrs/PDR-0003-marketing-decision-doctrine.md
 - docs/launch-readiness-review.md
 
 ## Objective
