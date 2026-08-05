@@ -7,7 +7,7 @@
 - Remote state before this story: synchronized
 - Last completed epic: MLAI-028 Positioning Intelligence
 - Active epic: MLAI-029 Marketing Strategy Intelligence
-- Active story: MLAI-029.3 Objectives and Strategic Choices
+- Active story: MLAI-029.4 Marketing Mix and Measurement
 
 ## Product direction
 
@@ -39,6 +39,10 @@ MLAI-029.3 validates measurable objectives and explicit strategic choices
 against the same immutable Situation Report. The evaluator does not invent
 baselines, targets, budgets, forecasts, or results.
 
+MLAI-029.4 validates the minimum four-part marketing mix, optional service
+extensions, objective-linked channel roles, and measurement coverage. It does
+not invent pricing, budgets, forecasts, attribution, or results.
+
 ## Locked MLAI-029 sequence
 
 1. MLAI-029.1 Strategy Intelligence Foundation
@@ -59,6 +63,6 @@ support ownership.
 
 ## Next engineer action
 
-Validate and commit MLAI-029.3, then begin Marketing Mix and Measurement. Do not
+Validate and commit MLAI-029.4, then begin Governed Workflow Integration. Do not
 add live research feeds, forecasts, Calendar, publishing, billing, attribution,
 or learning.

@@ -257,4 +257,12 @@ if (
     throw "Current handover does not preserve objective and choice boundaries."
 }
 
+if (
+    ($CurrentHandoverText -notmatch "MLAI-029.4") -or
+    ($CurrentHandoverText -notmatch "minimum four-part marketing mix") -or
+    ($CurrentHandoverText -notmatch "does\s+not invent pricing")
+) {
+    throw "Current handover does not preserve marketing-mix boundaries."
+}
+
 Write-Host "MARKETINGLABAI HANDOVER REGRESSION TESTS PASSED" -ForegroundColor Green

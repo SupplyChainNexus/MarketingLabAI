@@ -45,3 +45,11 @@ record outcome, metric, human-supplied target, timeframe, method, and evidence
 references. Choices record rationale, confidence, constraints, and explicit
 non-choices. The evaluator requires the same immutable Situation Report and
 reports unlinked inputs as gaps. Targets are not forecasts or promised results.
+
+## Marketing mix and measurement
+
+MLAI-029.4 validates coherent Product, Price, Place, and Promotion decisions,
+optional service extensions, channel roles, and one measurement plan per
+objective. Missing elements and invalid objective links remain explicit gaps.
+Budgets, pricing, targets, and measurements are human inputs, not forecasts,
+attribution, or results.

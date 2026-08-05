@@ -2,7 +2,7 @@
 
 ## Status
 
-MLAI-029.3 implemented - Objectives and Strategic Choices
+MLAI-029.4 implemented - Marketing Mix and Measurement
 
 ## Product authority
 
@@ -39,8 +39,8 @@ inventing research, forecasts, performance, or learning.
 
 ### MLAI-029.4 - Marketing Mix and Measurement
 
-- [ ] Coordinate Product, Price, Place, and Promotion decisions.
-- [ ] Define channel roles, messaging hierarchy, budget constraints, and measurement.
+- [x] Coordinate Product, Price, Place, and Promotion decisions.
+- [x] Define channel roles, messaging hierarchy, budget constraints, and measurement.
 
 ### MLAI-029.5 - Governed Workflow Integration
 

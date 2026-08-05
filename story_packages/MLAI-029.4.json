@@ -1,0 +1,1 @@
+{"story_id":"MLAI-029.4","slug":"marketing_mix_measurement","title":"Marketing Mix and Measurement","focused_tests":["tests.test_strategy_marketing_mix","tests.test_strategy_choices","tests.test_strategy_situation"],"import_modules":["app.strategy_intelligence.marketing_mix"],"commit_message":"feat(strategy): add marketing mix measurement"}

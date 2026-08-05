@@ -8,6 +8,15 @@ from app.strategy_intelligence.choices import (
     StrategicChoice,
     StrategicChoiceEvaluator,
 )
+from app.strategy_intelligence.marketing_mix import (
+    ChannelRole,
+    MarketingMixEvaluator,
+    MarketingMixReport,
+    MeasurementPlan,
+    MixDecision,
+    MixElement,
+    MixGap,
+)
 from app.strategy_intelligence.models import (
     StrategyDecision,
     StrategyEvidence,
@@ -27,6 +36,13 @@ from app.strategy_intelligence.situation import (
 )
 
 __all__ = [
+    "ChannelRole",
+    "MarketingMixEvaluator",
+    "MarketingMixReport",
+    "MeasurementPlan",
+    "MixDecision",
+    "MixElement",
+    "MixGap",
     "ChoiceGap",
     "ChoiceReport",
     "MeasurableObjective",
