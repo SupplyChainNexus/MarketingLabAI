@@ -83,8 +83,24 @@ $CurrentHandoverText = Get-Content -LiteralPath (
     Join-Path $ProjectRoot "docs\handover\CURRENT_HANDOVER.md"
 ) -Raw
 
-if ($CurrentHandoverText -notmatch "Start with \*\*MLAI-027.1") {
-    throw "Current handover does not identify MLAI-027.1 as the next story."
+if ($CurrentHandoverText -notmatch "MLAI-027.1 is complete") {
+    throw "Current handover does not record MLAI-027.1 completion."
+}
+
+if ($CurrentHandoverText -notmatch "Start with \*\*MLAI-027.2") {
+    throw "Current handover does not identify MLAI-027.2 as the next story."
+}
+
+$CompositionDecisionText = Get-Content -LiteralPath (
+    Join-Path $ProjectRoot "governance\adrs\ADR-0009-canonical-application-composition.md"
+) -Raw
+
+if ($CompositionDecisionText -notmatch '(?m)^Accepted\r?$') {
+    throw "ADR-0009 is not recorded as accepted."
+}
+
+if ($CompositionDecisionText -notmatch "CanonicalApplication") {
+    throw "ADR-0009 does not preserve the canonical application boundary."
 }
 
 Write-Host "MARKETINGLABAI HANDOVER REGRESSION TESTS PASSED" -ForegroundColor Green

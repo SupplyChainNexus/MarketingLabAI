@@ -3,11 +3,11 @@
 ## Checkpoint
 
 - Branch: `feature/tenant-architecture`
-- Ratified baseline: `db7a6c8`
-- Remote state at selection: synchronized with `origin/feature/tenant-architecture`
+- Current implementation checkpoint: `ee5da24`
+- Remote state: synchronized with `origin/feature/tenant-architecture`
 - Last completed product epic: MLAI-025 Campaign Planning Platform
-- Last completed governance work: continuity system and PDR-0001 ratification
-- Last recorded validation: 683 Python tests; continuity regressions passed
+- Last completed story: MLAI-027.1 Canonical Application Composition
+- Last recorded validation: 687 Python tests and 60 focused tests passed
 
 ## Product direction
 
@@ -30,14 +30,23 @@ MLAI-027 will compose one private-pilot journey from trusted tenant context and
 verified intelligence through Campaign Plan, approved Marketing Brief,
 governed generation, independent compliance review, and safe export.
 
-Start with **MLAI-027.1 — Canonical Application Composition**.
+MLAI-027.1 is complete. The canonical application root now composes one SQLite
+database, tenant and intelligence repositories, Campaign Plans, Marketing
+Briefs, Prompt Packs, provider-neutral generation, independent compliance, and
+an explicit campaign-artifact boundary. Customer Intelligence is now included
+in provider prompts and request audit metadata.
 
-## Mandatory first-story constraints
+Start with **MLAI-027.2 — Verified Product and Offer Context**.
 
-- Inspect and reuse existing services and repositories.
-- Select one canonical runtime persistence path.
-- Treat legacy JSON paths as migration or compatibility boundaries.
-- Do not add a UI before the synthetic composed workflow passes.
+## MLAI-027.2 constraints
+
+- Extend the canonical application and SQLite persistence path.
+- Define verified Product and Offer Intelligence without inventing unknowns.
+- Preserve product features, benefits, prices, limitations, proof, warranties,
+  availability, and prohibited claims as distinct fields.
+- Route verified Product context through established AI context boundaries.
+- Keep legacy JSON paths as migration or compatibility boundaries.
+- Do not add an API or UI.
 - Do not introduce real customer data.
 - Add an ADR for the application boundary and dependency direction.
 - Preserve provider neutrality, tenant boundaries, lifecycle separation, and
@@ -47,11 +56,12 @@ Start with **MLAI-027.1 — Canonical Application Composition**.
 
 See `governance/registers/risk-register.md` and
 `governance/registers/technical-debt-register.md`. The primary risks are missing
-identity/authorization, split runtime persistence, absent customer surface, and
-absent pilot operations.
+identity/authorization, incomplete Product and Offer Intelligence, remaining
+legacy compatibility paths, absent customer surface, and absent pilot
+operations.
 
 ## Next engineer's first action
 
-Create the MLAI-027.1 story manifest and source package only after reviewing
-PDR-0002, the launch-readiness review, existing composition points, and relevant
-accepted ADRs.
+Review ADR-0009 and the MLAI-027.1 synthetic workflow, then implement MLAI-027.2
+through the canonical application composition root. Do not admit real customer
+data, add an interface, or bypass tenant-owned SQLite repositories.
