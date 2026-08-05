@@ -2,7 +2,7 @@
 
 ## Review checkpoint
 
-Reviewed at `ee5da24` after MLAI-027.1 Canonical Application Composition.
+Reviewed for MLAI-027.2 Verified Product and Offer Context.
 
 ## Maturity scale
 
@@ -27,14 +27,14 @@ secure deployed customer workflow.
 | Company | Competitive context | Preserves known competitor evidence | 2 | Maintain |
 | Customer | Segments and ICPs | Defines relevant customer groups | 3 | Compose into pilot |
 | Customer | Personas, needs, motivations, triggers, objections, channels, and journeys | Improves relevance and persuasion | 3 | Compose into pilot |
-| Product | Verified product and offer context | Prevents inaccurate offers and unsupported claims | 0 | MLAI-027.2 |
+| Product | Verified product and offer context | Prevents inaccurate offers and unsupported claims | 3 | Maintain; add lifecycle evidence after pilot |
 | Positioning | Persona-product matching and differentiated offer | Selects relevant benefits and proof | 0 | After Product foundation |
 | Strategy | Objectives, channel choice, messaging hierarchy, and measurement plan | Turns intelligence into coordinated decisions | 0 | After Positioning; pilot uses approved brief scope |
 | Application | Canonical SQLite composition root | Gives future interfaces one governed runtime boundary | 3 | Maintain through MLAI-027 |
 | Campaign | Campaign Plan lifecycle and validation | Makes coordinated campaigns reviewable | 3 | Maintain |
 | Campaign | Asset planning, dependencies, readiness, and blocked-work reporting | Makes delivery work actionable | 3 | Maintain |
 | Brief | Versioned Marketing Brief and Prompt Pack workflow | Preserves approved execution intent | 3 | Maintain |
-| Generation | Provider-neutral orchestration and Company, Customer, and memory context assembly | Produces governed marketing assets | 3 | Extend with Product context in MLAI-027.2 |
+| Generation | Provider-neutral orchestration and Company, Customer, Product, and memory context assembly | Produces governed marketing assets | 3 | Maintain through secure pilot |
 | Compliance | Preventative guidance and independent evaluation | Reduces brand and policy risk | 3 | Expose in pilot |
 | Memory | Provider, model, workflow, and event audit context | Preserves traceability | 2 | Extend in pilot |
 | Identity | User authentication and tenant authorization | Protects customer data and actions | 0 | MLAI-027.3 |

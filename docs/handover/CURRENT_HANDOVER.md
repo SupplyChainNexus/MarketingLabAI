@@ -6,8 +6,8 @@
 - Current implementation checkpoint: `ee5da24`
 - Remote state: synchronized with `origin/feature/tenant-architecture`
 - Last completed product epic: MLAI-025 Campaign Planning Platform
-- Last completed story: MLAI-027.1 Canonical Application Composition
-- Last recorded validation: 687 Python tests and 60 focused tests passed
+- Last completed story: MLAI-027.2 Verified Product and Offer Context
+- Last recorded validation: MLAI-027.2 focused and complete regressions passed
 
 ## Product direction
 
@@ -30,25 +30,24 @@ MLAI-027 will compose one private-pilot journey from trusted tenant context and
 verified intelligence through Campaign Plan, approved Marketing Brief,
 governed generation, independent compliance review, and safe export.
 
-MLAI-027.1 is complete. The canonical application root now composes one SQLite
+MLAI-027.1 and MLAI-027.2 are complete. The canonical application root composes one SQLite
 database, tenant and intelligence repositories, Campaign Plans, Marketing
 Briefs, Prompt Packs, provider-neutral generation, independent compliance, and
-an explicit campaign-artifact boundary. Customer Intelligence is now included
-in provider prompts and request audit metadata.
+an explicit campaign-artifact boundary. Company, Customer, verified Product,
+and memory context are included through distinct provider prompt boundaries and
+request audit metadata.
 
-Start with **MLAI-027.2 — Verified Product and Offer Context**.
+Start with **MLAI-027.3 - Identity and Tenant Authorization**.
 
-## MLAI-027.2 constraints
+## MLAI-027.3 constraints
 
-- Extend the canonical application and SQLite persistence path.
-- Define verified Product and Offer Intelligence without inventing unknowns.
-- Preserve product features, benefits, prices, limitations, proof, warranties,
-  availability, and prohibited claims as distinct fields.
-- Route verified Product context through established AI context boundaries.
+- Establish trusted identity and tenant authorization before real customer data.
+- Deny cross-tenant access at application-service boundaries.
+- Extend the canonical application rather than creating an alternate runtime.
 - Keep legacy JSON paths as migration or compatibility boundaries.
 - Do not add an API or UI.
 - Do not introduce real customer data.
-- Add an ADR for the application boundary and dependency direction.
+- Add an ADR for identity, authorization, and dependency direction.
 - Preserve provider neutrality, tenant boundaries, lifecycle separation, and
   deterministic-first reasoning.
 
@@ -56,12 +55,13 @@ Start with **MLAI-027.2 — Verified Product and Offer Context**.
 
 See `governance/registers/risk-register.md` and
 `governance/registers/technical-debt-register.md`. The primary risks are missing
-identity/authorization, incomplete Product and Offer Intelligence, remaining
+identity/authorization, incomplete Positioning and Strategy Intelligence, remaining
 legacy compatibility paths, absent customer surface, and absent pilot
 operations.
 
 ## Next engineer's first action
 
-Review ADR-0009 and the MLAI-027.1 synthetic workflow, then implement MLAI-027.2
-through the canonical application composition root. Do not admit real customer
-data, add an interface, or bypass tenant-owned SQLite repositories.
+Review ADR-0009, ADR-0010, and the synthetic canonical workflow, then implement
+MLAI-027.3 through the canonical application composition root. Do not admit real
+customer data, add an interface, or treat caller-supplied tenant IDs as
+authorization evidence.

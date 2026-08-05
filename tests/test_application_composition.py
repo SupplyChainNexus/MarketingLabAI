@@ -33,6 +33,12 @@ from app.database.connection import SQLiteDatabase
 from app.intelligence.models import BusinessIntelligenceProfile
 from app.marketing_brief import BriefStatus, MarketingBrief
 from app.models import BrandProfile, VoiceProfile
+from app.product_intelligence import (
+    ProductEvidence,
+    ProductIntelligenceProfile,
+    ProductRecord,
+    ProductType,
+)
 from app.prompts.models import PromptPack
 
 
@@ -101,6 +107,7 @@ class CanonicalApplicationTests(unittest.TestCase):
             self.application.brands,
             self.application.business_intelligence,
             self.application.customer_intelligence,
+            self.application.product_intelligence,
             self.application.memory,
             self.application.campaign_plans,
             self.application.marketing_briefs,
@@ -111,7 +118,9 @@ class CanonicalApplicationTests(unittest.TestCase):
         for repository in repositories:
             self.assertIs(repository.database, self.application.database)
 
-    def test_context_assembler_composes_company_and_customer_context(self) -> None:
+    def test_context_assembler_composes_company_customer_and_product_context(
+        self,
+    ) -> None:
         self.application.business_intelligence.save(
             BusinessIntelligenceProfile(
                 brand_id="brand-one",
@@ -139,8 +148,24 @@ class CanonicalApplicationTests(unittest.TestCase):
                 ],
             )
         )
+        self.application.product_intelligence.save(
+            ProductIntelligenceProfile(
+                tenant_id="default",
+                brand_id="brand-one",
+                products=[
+                    ProductRecord(
+                        "service-one",
+                        "Priority sourcing",
+                        ProductType.SERVICE,
+                        evidence=[ProductEvidence("Synthetic approved catalogue")],
+                    )
+                ],
+            )
+        )
 
-        context = self.application.build_context_assembler().build(brand_id="brand-one")
+        context = self.application.build_context_assembler().build(
+            tenant_id="default", brand_id="brand-one"
+        )
 
         self.assertIn("- Revenue model: Retail sales", context.company_context)
         self.assertIn(
@@ -148,6 +173,7 @@ class CanonicalApplicationTests(unittest.TestCase):
             context.customer_context,
         )
         self.assertIn("- Pain points: Vehicle downtime", context.customer_context)
+        self.assertIn("Name: Priority sourcing", context.product_context)
 
     def test_approved_plan_runs_through_governed_generation(self) -> None:
         plan = CampaignPlan(

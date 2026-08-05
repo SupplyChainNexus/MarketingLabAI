@@ -10,3 +10,4 @@
 | TD-005 | Release metadata | `pyproject.toml` references a missing root README and contains stale version/description metadata. | Medium | Open |
 | TD-006 | Delivery automation | No tracked CI workflow validates tests, formatting, static analysis, migrations, or continuity on remote changes. | High | Open — MLAI-027.6 |
 | TD-007 | Governance accuracy | Capability maturity previously lagged implemented Customer Intelligence and Campaign Planner evidence. | Medium | Addressed by MLAI-027 adoption review; maintain each epic |
+| TD-009 | Product Intelligence | Current Product/Offer profiles are mutable snapshots without offer expiry or approval history. | Low | Define version, review, and expiry lifecycle from pilot evidence after MLAI-027.2 |

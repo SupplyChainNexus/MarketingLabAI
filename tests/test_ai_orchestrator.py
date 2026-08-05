@@ -118,6 +118,7 @@ class AIOrchestratorTests(unittest.TestCase):
                 "task": "Create a campaign",
                 "company_brain_included": False,
                 "customer_intelligence_included": False,
+                "product_intelligence_included": False,
                 "memory_included": False,
                 "memory_count": 0,
             },
@@ -136,6 +137,18 @@ class AIOrchestratorTests(unittest.TestCase):
 
         self.assertIn("Customer Context:", prompt)
         self.assertIn("- Pain points: Vehicle downtime", prompt)
+
+    def test_build_prompt_keeps_verified_product_context_separate(self) -> None:
+        from app.ai.assembler import AIContext
+
+        prompt = self.orchestrator._build_prompt(
+            context=AIContext(product_context="Price: Unknown"),
+            task="Create a campaign",
+            instructions="Use verified context only.",
+        )
+
+        self.assertIn("Verified Product and Offer Context:", prompt)
+        self.assertIn("Price: Unknown", prompt)
 
     def test_generate_can_override_provider(self) -> None:
         secondary = NamedMockProvider(

@@ -22,6 +22,14 @@ from app.database.repositories import (
 )
 from app.intelligence.models import BusinessIntelligenceProfile
 from app.memory.models import MemoryEvent
+from app.product_intelligence import (
+    ProductContextProvider,
+    ProductEvidence,
+    ProductIntelligenceProfile,
+    ProductIntelligenceRepository,
+    ProductRecord,
+    ProductType,
+)
 
 
 class AIContextTests(unittest.TestCase):
@@ -31,11 +39,13 @@ class AIContextTests(unittest.TestCase):
             memory_context="- A useful memory.",
             memory_count=1,
             customer_context="- Pain points: Vehicle downtime",
+            product_context="Name: Priority sourcing",
         )
 
         self.assertTrue(context.company_brain_included)
         self.assertTrue(context.customer_intelligence_included)
         self.assertTrue(context.memory_included)
+        self.assertTrue(context.product_intelligence_included)
         self.assertEqual(context.memory_count, 1)
 
     def test_empty_context_reports_no_sections(self) -> None:
@@ -44,6 +54,7 @@ class AIContextTests(unittest.TestCase):
         self.assertFalse(context.company_brain_included)
         self.assertFalse(context.customer_intelligence_included)
         self.assertFalse(context.memory_included)
+        self.assertFalse(context.product_intelligence_included)
         self.assertEqual(context.memory_count, 0)
 
     def test_existing_positional_arguments_remain_compatible(self) -> None:
@@ -76,10 +87,12 @@ class AIContextAssemblerTests(unittest.TestCase):
         self.brands = BrandRepository(self.database)
         self.intelligence = BusinessIntelligenceRepository(self.database)
         self.customers = CustomerIntelligenceRepository(self.database)
+        self.products = ProductIntelligenceRepository(self.database)
         self.memory = MemoryRepository(self.database)
         self.customer_provider = CustomerContextProvider(
             repository=self.customers,
         )
+        self.product_provider = ProductContextProvider(self.products)
 
         self.brands.save(
             {
@@ -199,6 +212,31 @@ class AIContextAssemblerTests(unittest.TestCase):
         )
         self.assertFalse(context.company_brain_included)
         self.assertFalse(context.memory_included)
+
+    def test_assembler_loads_tenant_scoped_product_context(self) -> None:
+        self.products.save(
+            ProductIntelligenceProfile(
+                tenant_id="default",
+                brand_id="brand-one",
+                products=[
+                    ProductRecord(
+                        "service-one",
+                        "Priority sourcing",
+                        ProductType.SERVICE,
+                        evidence=[ProductEvidence("Synthetic catalogue")],
+                    )
+                ],
+            )
+        )
+        assembler = AIContextAssembler(
+            product_context_provider=self.product_provider,
+        )
+
+        context = assembler.build(tenant_id="default", brand_id="brand-one")
+
+        self.assertTrue(context.product_intelligence_included)
+        self.assertIn("Name: Priority sourcing", context.product_context)
+        self.assertIn("Price: Unknown", context.product_context)
 
     def test_assembler_loads_institutional_memory(
         self,

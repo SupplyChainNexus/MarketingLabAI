@@ -1,0 +1,22 @@
+{
+  "story_id": "MLAI-027.2",
+  "slug": "verified_product_offer_context",
+  "title": "Verified Product and Offer Context",
+  "focused_tests": [
+    "tests.test_product_intelligence",
+    "tests.test_product_intelligence_repository",
+    "tests.test_product_context_provider",
+    "tests.test_product_intelligence_migration",
+    "tests.test_ai_context_assembler",
+    "tests.test_ai_orchestrator",
+    "tests.test_application_composition"
+  ],
+  "import_modules": [
+    "app.product_intelligence",
+    "app.product_intelligence.models",
+    "app.product_intelligence.repository",
+    "app.product_intelligence.provider",
+    "app.application"
+  ],
+  "commit_message": "feat(product-intelligence): add verified offer context"
+}

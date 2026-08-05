@@ -106,6 +106,7 @@ class AIOrchestrator:
             validated_sections.append(section)
 
         context = self.context_assembler.build(
+            tenant_id=tenant_id,
             brand_id=brand_id,
         )
 
@@ -125,6 +126,9 @@ class AIOrchestrator:
                 "company_brain_included": (context.company_brain_included),
                 "customer_intelligence_included": (
                     context.customer_intelligence_included
+                ),
+                "product_intelligence_included": (
+                    context.product_intelligence_included
                 ),
                 "memory_included": (context.memory_included),
                 "memory_count": context.memory_count,
@@ -170,6 +174,12 @@ class AIOrchestrator:
             PromptSection(
                 title="Customer Context",
                 content=context.customer_context,
+            )
+        )
+        composer.add(
+            PromptSection(
+                title="Verified Product and Offer Context",
+                content=context.product_context,
             )
         )
         composer.add(

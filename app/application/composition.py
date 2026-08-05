@@ -24,6 +24,10 @@ from app.marketing_brief.campaign_workflow import MarketingBriefCampaignWorkflow
 from app.marketing_brief.prompt_pack import MarketingBriefPromptPackService
 from app.marketing_brief.repository import MarketingBriefRepository
 from app.marketing_brief.service import MarketingBriefService
+from app.product_intelligence import (
+    ProductContextProvider,
+    ProductIntelligenceRepository,
+)
 from app.prompts.repository import PromptPackRepository
 from app.prompts.selector import PromptPackSelector
 from app.tenants.repository import TenantRepository
@@ -38,6 +42,7 @@ class CanonicalApplication:
     brands: BrandRepository
     business_intelligence: BusinessIntelligenceRepository
     customer_intelligence: CustomerIntelligenceRepository
+    product_intelligence: ProductIntelligenceRepository
     memory: MemoryRepository
     campaign_plans: CampaignPlanRepository
     marketing_briefs: MarketingBriefRepository
@@ -60,6 +65,7 @@ class CanonicalApplication:
             brands=BrandRepository(selected_database),
             business_intelligence=BusinessIntelligenceRepository(selected_database),
             customer_intelligence=CustomerIntelligenceRepository(selected_database),
+            product_intelligence=ProductIntelligenceRepository(selected_database),
             memory=MemoryRepository(selected_database),
             campaign_plans=CampaignPlanRepository(selected_database),
             marketing_briefs=MarketingBriefRepository(selected_database),
@@ -74,6 +80,9 @@ class CanonicalApplication:
             intelligence_repository=self.business_intelligence,
             customer_context_provider=CustomerContextProvider(
                 repository=self.customer_intelligence,
+            ),
+            product_context_provider=ProductContextProvider(
+                repository=self.product_intelligence,
             ),
             memory_repository=self.memory,
         )

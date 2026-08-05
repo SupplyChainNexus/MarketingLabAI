@@ -2,7 +2,7 @@
 
 ## Status
 
-In progress - MLAI-027.1 implemented
+In progress - MLAI-027.2 implemented
 
 ## Product authority
 
@@ -36,12 +36,12 @@ limitations, and export the result with a complete audit trail.
 
 ### MLAI-027.2 - Verified Product and Offer Context
 
-- [ ] Define minimum Product Intelligence models and validation.
-- [ ] Capture identity, features, benefits, prices, limitations, proof,
+- [x] Define minimum Product Intelligence models and validation.
+- [x] Capture identity, features, benefits, prices, limitations, proof,
       warranties, availability, and prohibited claims.
-- [ ] Preserve unknown values explicitly.
-- [ ] Integrate verified context through established AI context boundaries.
-- [ ] Add persistence and focused regression coverage.
+- [x] Preserve unknown values explicitly.
+- [x] Integrate verified context through established AI context boundaries.
+- [x] Add persistence and focused regression coverage.
 
 ### MLAI-027.3 - Identity and Tenant Authorization
 

@@ -129,6 +129,17 @@ class SQLiteDatabase:
                         ON DELETE CASCADE
                 );
 
+                CREATE TABLE IF NOT EXISTS product_intelligence_profiles (
+                    tenant_id TEXT NOT NULL,
+                    brand_id TEXT NOT NULL,
+                    payload_json TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    PRIMARY KEY (tenant_id, brand_id),
+                    FOREIGN KEY (tenant_id) REFERENCES tenants(tenant_id),
+                    FOREIGN KEY (brand_id) REFERENCES brands(brand_id)
+                        ON DELETE CASCADE
+                );
+
                 CREATE TABLE IF NOT EXISTS compliance_rules (
                     rule_id TEXT NOT NULL,
                     version INTEGER NOT NULL,
@@ -374,6 +385,21 @@ class SQLiteDatabase:
                 VALUES (
                     8,
                     'Add versioned marketing briefs',
+                    strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+                )
+                """
+            )
+
+            connection.execute(
+                """
+                INSERT OR IGNORE INTO schema_migrations (
+                    version,
+                    description,
+                    applied_at
+                )
+                VALUES (
+                    10,
+                    'Add verified Product Intelligence profiles',
                     strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
                 )
                 """
