@@ -2,7 +2,7 @@
 
 ## Review checkpoint
 
-Reviewed after MLAI-029.2 Situation and Opportunity Synthesis.
+Reviewed after MLAI-029.3 Objectives and Strategic Choices.
 
 ## Maturity scale
 
@@ -31,6 +31,7 @@ deployment-specific identity, legal, privacy, and rehearsal evidence is absent.
 | Positioning | Target selection, persona-product matching, differentiation, value proposition, alternatives, proof, and governed workflow context | Establishes why a chosen customer should prefer the offer | 3 | Complete synthetic integration; validate only when pilot is unfrozen |
 | Strategy | Tenant-owned strategy lifecycle, approved positioning dependency, evidence, assumptions, unknowns, objectives, choices, and confidence | Establishes an auditable strategic source of truth | 1 | Continue MLAI-029.2 through MLAI-029.6 |
 | Strategy | Deterministic situation synthesis, opportunities, constraints, risks, PESTLE evidence, and explicit gaps | Turns governed inputs into an explainable decision context | 2 | Continue MLAI-029.3 |
+| Strategy | Measurable objectives, strategic choices, rationale, confidence, constraints, and explicit non-choices | Turns situation evidence into reviewable direction | 2 | Continue MLAI-029.4 |
 | Strategy | Coherent marketing mix, channel roles, messaging hierarchy, and measurement plan | Turns intelligence into coordinated decisions | 0 | Deliver in MLAI-029.3 and MLAI-029.4 |
 | Environment | Evidence-backed political, economic, social, technological, legal, and environmental signals | Keeps decisions responsive to material market conditions | 0 | Define with Strategy without premature live feeds |
 | Application | Canonical SQLite composition root | Gives future interfaces one governed runtime boundary | 3 | Maintain through MLAI-027 |

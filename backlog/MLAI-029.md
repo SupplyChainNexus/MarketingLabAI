@@ -2,7 +2,7 @@
 
 ## Status
 
-MLAI-029.2 implemented - Situation and Opportunity Synthesis
+MLAI-029.3 implemented - Objectives and Strategic Choices
 
 ## Product authority
 
@@ -34,8 +34,8 @@ inventing research, forecasts, performance, or learning.
 
 ### MLAI-029.3 - Objectives and Strategic Choices
 
-- [ ] Define measurable objectives, priorities, constraints, choices, and non-choices.
-- [ ] Preserve rationale, confidence, approval, and unsupported forecast boundaries.
+- [x] Define measurable objectives, priorities, constraints, choices, and non-choices.
+- [x] Preserve rationale, confidence, approval, and unsupported forecast boundaries.
 
 ### MLAI-029.4 - Marketing Mix and Measurement
 

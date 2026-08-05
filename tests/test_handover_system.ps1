@@ -249,4 +249,12 @@ if (
     throw "Current handover does not preserve Strategy synthesis boundaries."
 }
 
+if (
+    ($CurrentHandoverText -notmatch "MLAI-029.3") -or
+    ($CurrentHandoverText -notmatch "explicit strategic choices") -or
+    ($CurrentHandoverText -notmatch "does not invent")
+) {
+    throw "Current handover does not preserve objective and choice boundaries."
+}
+
 Write-Host "MARKETINGLABAI HANDOVER REGRESSION TESTS PASSED" -ForegroundColor Green

@@ -1,0 +1,15 @@
+{
+  "story_id": "MLAI-029.3",
+  "slug": "objectives_strategic_choices",
+  "title": "Objectives and Strategic Choices",
+  "focused_tests": [
+    "tests.test_strategy_choices",
+    "tests.test_strategy_situation",
+    "tests.test_strategy_intelligence"
+  ],
+  "import_modules": [
+    "app.strategy_intelligence",
+    "app.strategy_intelligence.choices"
+  ],
+  "commit_message": "feat(strategy): add objectives and strategic choices"
+}

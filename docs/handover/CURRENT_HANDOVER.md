@@ -7,7 +7,7 @@
 - Remote state before this story: synchronized
 - Last completed epic: MLAI-028 Positioning Intelligence
 - Active epic: MLAI-029 Marketing Strategy Intelligence
-- Active story: MLAI-029.2 Situation and Opportunity Synthesis
+- Active story: MLAI-029.3 Objectives and Strategic Choices
 
 ## Product direction
 
@@ -35,6 +35,10 @@ Customer, Product, approved Positioning, and time-stamped user-supplied PESTLE
 evidence. It returns traceable opportunities, constraints, risks, gaps, and
 limitations without live research, opaque scoring, forecasts, or invented facts.
 
+MLAI-029.3 validates measurable objectives and explicit strategic choices
+against the same immutable Situation Report. The evaluator does not invent
+baselines, targets, budgets, forecasts, or results.
+
 ## Locked MLAI-029 sequence
 
 1. MLAI-029.1 Strategy Intelligence Foundation
@@ -55,6 +59,6 @@ support ownership.
 
 ## Next engineer action
 
-Validate and commit MLAI-029.2, then begin Objectives and Strategic Choices.
-Do not add live research feeds, forecasts, Calendar, publishing, billing,
-attribution, or learning.
+Validate and commit MLAI-029.3, then begin Marketing Mix and Measurement. Do not
+add live research feeds, forecasts, Calendar, publishing, billing, attribution,
+or learning.

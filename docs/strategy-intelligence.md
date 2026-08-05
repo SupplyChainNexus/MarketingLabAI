@@ -37,3 +37,11 @@ Every environmental signal requires a factor, declared effect, source,
 observation timestamp, confidence, and verification state. Missing Company,
 Customer, Product, or PESTLE evidence becomes an explicit gap. The report is
 not a forecast, recommendation score, market validation, or learning record.
+
+## Objectives and strategic choices
+
+MLAI-029.3 adds measurable objective and strategic-choice contracts. Objectives
+record outcome, metric, human-supplied target, timeframe, method, and evidence
+references. Choices record rationale, confidence, constraints, and explicit
+non-choices. The evaluator requires the same immutable Situation Report and
+reports unlinked inputs as gaps. Targets are not forecasts or promised results.
