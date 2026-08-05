@@ -1,88 +1,57 @@
 # MarketingLabAI Product Capability Map
 
-## Purpose
+## Review checkpoint
 
-This document maps MarketingLabAI's product capabilities to traditional
-marketing functions, customer value, dependencies, maturity, and delivery
-priority.
+Reviewed at `db7a6c8` during the Launch Readiness and Vertical-Slice Review.
 
-## Maturity Scale
+## Maturity scale
 
 | Level | Meaning |
 |---|---|
-| 0 — Concept | Vision exists but no implementation |
+| 0 — Concept | Direction exists but no implementation |
 | 1 — Foundation | Initial models or infrastructure exist |
-| 2 — Functional | Core use case works locally |
-| 3 — Integrated | Capability participates in a complete workflow |
+| 2 — Functional | Core use case works locally through services or tests |
+| 3 — Integrated | Capability participates in a governed internal workflow |
 | 4 — Production | Operational, monitored, secure, and customer-ready |
 | 5 — Enterprise | Scalable, configurable, governed, and deeply auditable |
 
-## Current Capability Map
+No capability is rated level 4 because MarketingLabAI does not yet have a
+secure deployed customer workflow.
 
-| Intelligence Layer | Capability | Traditional Function | Customer Value | Current Maturity | Priority |
-|---|---|---|---|---:|---|
-| Company | Brand profile | Brand management | Consistent company identity | 3 | Maintain |
-| Company | Business intelligence | Marketing leadership and commercial analysis | Commercially grounded marketing | 3 | Maintain |
-| Company | Commercial intelligence | Commercial manager | Uses verified commercial context | 3 | Maintain |
-| Company | Market intelligence | Market analyst | Applies channels, markets, and seasonality | 3 | Maintain |
-| Company | Operational intelligence | Marketing operations | Keeps campaigns realistic for capacity | 3 | Maintain |
-| Company | Growth intelligence | Growth analyst | Exposes deterministic commercial metrics | 3 | Extend carefully |
-| Company | Competitive intelligence | Competitive analyst | Preserves known competitor context | 2 | Expand later |
-| Company | Strategic objectives | Marketing director | Connects work to business goals | 3 | Maintain |
-| Customer | ICP management | Market research and segmentation | Identifies suitable customer groups | 0 | Immediate |
-| Customer | Personas | Customer strategist | Tailors messaging to distinct buyers | 0 | Immediate |
-| Customer | Pain points and motivations | Customer researcher | Improves message relevance | 0 | Immediate |
-| Customer | Triggers and objections | Sales enablement | Improves persuasion and objection handling | 0 | Immediate |
-| Customer | Journey stages | Lifecycle marketer | Aligns campaigns to buying readiness | 0 | Immediate |
-| Product | Product catalogue | Product marketing | Gives the system exact offerings | 0 | Next |
-| Product | Features and benefits | Product marketer | Connects capabilities to customer value | 0 | Next |
-| Product | Proof and substantiation | Product marketing and legal | Reduces unsupported claims | 0 | Next |
-| Product | Pricing, warranties, and limitations | Commercial and legal review | Produces accurate offers | 0 | Next |
-| Positioning | Persona-product matching | Senior product marketer | Selects relevant benefits and proof | 0 | After Product |
-| Positioning | Positioning matrices | Product marketing lead | Differentiates offers by segment | 0 | After Product |
-| Positioning | Offer structures | Growth and campaign strategy | Improves campaign relevance | 0 | After Product |
-| Strategy | Campaign strategy | Marketing strategist | Converts objectives into an execution plan | 0 | After Positioning |
-| Strategy | Channel selection | Media strategist | Focuses effort on suitable channels | 0 | After Positioning |
-| Strategy | Messaging hierarchy | Creative strategist | Creates coherent campaign communication | 0 | After Positioning |
-| Campaign | Campaign generation | Copy and campaign team | Creates governed marketing assets | 3 | Improve |
-| Campaign | Provider selection | AI operations | Uses suitable provider capabilities | 3 | Maintain |
-| Compliance | Pre-generation guidance | Brand and legal review | Reduces avoidable violations | 3 | Improve |
-| Compliance | Post-generation evaluation | Compliance reviewer | Independently validates content | 3 | Improve |
-| Memory | Institutional memory | Marketing operations and knowledge management | Retains organizational learning | 2 | Expand after pilots |
-| Learning | Campaign learning | Performance analyst | Reuses evidence from outcomes | 0 | Post-pilot |
-| Learning | Experiment planner | Growth team | Creates structured learning cycles | 0 | Post-pilot |
-| Analytics | Performance analytics | Marketing analyst | Explains campaign outcomes | 0 | Post-pilot |
-| Analytics | Attribution | Attribution analyst | Connects activity to outcomes | 0 | Post-pilot |
-| Executive | KPI forecasting | Planning and finance | Supports forward planning | 0 | Post-data |
-| Executive | Budget optimization | Marketing director | Improves resource allocation | 0 | Post-data |
-| Executive | Executive reporting | CMO and leadership | Produces decision-ready summaries | 0 | Post-data |
+## Current capability map
 
-## Immediate Delivery Sequence
+| Layer | Capability | Customer value | Maturity | Priority |
+|---|---|---|---:|---|
+| Company | Brand and voice profiles | Consistent identity and communication | 3 | Compose into pilot |
+| Company | Business, commercial, market, operational, growth, and strategic context | Commercially grounded decisions | 3 | Compose into pilot |
+| Company | Competitive context | Preserves known competitor evidence | 2 | Maintain |
+| Customer | Segments and ICPs | Defines relevant customer groups | 3 | Compose into pilot |
+| Customer | Personas, needs, motivations, triggers, objections, channels, and journeys | Improves relevance and persuasion | 3 | Compose into pilot |
+| Product | Verified product and offer context | Prevents inaccurate offers and unsupported claims | 0 | MLAI-027.2 |
+| Positioning | Persona-product matching and differentiated offer | Selects relevant benefits and proof | 0 | After Product foundation |
+| Strategy | Objectives, channel choice, messaging hierarchy, and measurement plan | Turns intelligence into coordinated decisions | 0 | After Positioning; pilot uses approved brief scope |
+| Campaign | Campaign Plan lifecycle and validation | Makes coordinated campaigns reviewable | 3 | MLAI-027.1 composition |
+| Campaign | Asset planning, dependencies, readiness, and blocked-work reporting | Makes delivery work actionable | 3 | MLAI-027.1 composition |
+| Brief | Versioned Marketing Brief and Prompt Pack workflow | Preserves approved execution intent | 3 | MLAI-027.1 composition |
+| Generation | Provider-neutral orchestration and context assembly | Produces governed marketing assets | 3 | Replace legacy entry path |
+| Compliance | Preventative guidance and independent evaluation | Reduces brand and policy risk | 3 | Expose in pilot |
+| Memory | Provider, model, workflow, and event audit context | Preserves traceability | 2 | Extend in pilot |
+| Identity | User authentication and tenant authorization | Protects customer data and actions | 0 | MLAI-027.3 |
+| Interface | Pilot API and guided workspace | Makes capability usable without an engineer | 0 | MLAI-027.4/027.5 |
+| Operations | Deployment, monitoring, backup, restore, and incident process | Makes private pilot safe and supportable | 0 | MLAI-027.6 |
+| Calendar | International Marketing Calendar | Coordinates time-based activity | 0 | Deferred MLAI-026 |
+| Publishing | Connector-controlled execution | Reduces manual channel work | 0 | Post-pilot |
+| Learning | Evidence-grounded campaign learning and experiments | Improves future decisions | 0 | Post-real outcomes |
+| Analytics | Performance, attribution, forecasting, and budget optimization | Explains and improves commercial impact | 0 | Post-data |
+| Executive | Decision-ready executive intelligence | Supports leadership decisions | 0 | Future premium extension |
 
-### Current checkpoint — Campaign Planning complete
+## Approved delivery sequence
 
-MLAI-025 completed deterministic Campaign Planning, asset and dependency
-planning, Marketing Brief integration, and immutable versioned persistence.
-Capability maturity values must be refreshed from tested implementation before
-selecting the next story.
-
-### Following Capability Sequence
-
-1. Product Intelligence
-2. Positioning Intelligence
-3. Marketing Strategy Intelligence
-4. Governed Campaign Workflow Expansion
-5. Pilot Execution
-6. Learning and Analytics
-
-## Capability Review Questions
-
-Every roadmap review must consider:
-
-- Has the maturity level changed?
-- Is the capability integrated or isolated?
-- Is customer value measurable?
-- Does it rely on real evidence?
-- Is it sufficiently governed?
-- Has technical debt been recorded?
-- Is the next dependency genuinely ready?
+1. MLAI-027.1 Canonical Application Composition
+2. MLAI-027.2 Verified Product and Offer Context
+3. MLAI-027.3 Identity and Tenant Authorization
+4. MLAI-027.4 Pilot API and Workflow Contract
+5. MLAI-027.5 Thin Pilot Workspace
+6. MLAI-027.6 Pilot Operations and Release Gate
+7. Controlled pilot evidence review
+8. Reconsider MLAI-026 and remaining Product, Positioning, and Strategy depth

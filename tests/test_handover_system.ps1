@@ -11,6 +11,9 @@ $RequiredFiles = @(
     "governance\pdrs\README.md",
     "governance\pdrs\PDR-TEMPLATE.md",
     "governance\pdrs\PDR-0001-product-direction-ratification.md",
+    "governance\pdrs\PDR-0002-secure-pilot-vertical-slice.md",
+    "docs\launch-readiness-review.md",
+    "backlog\MLAI-027.md",
     "docs\engineering\continuity.md",
     "docs\handover\CURRENT_HANDOVER.md",
     "scripts\build_handover.ps1"
@@ -59,6 +62,29 @@ if ($RatificationText -notmatch '(?m)^Accepted\r?$') {
 
 if ($RatificationText -notmatch "Launch Readiness and Vertical-Slice Review") {
     throw "PDR-0001 does not preserve the required next-epic review."
+}
+
+$PilotDecisionText = Get-Content -LiteralPath (
+    Join-Path $ProjectRoot "governance\pdrs\PDR-0002-secure-pilot-vertical-slice.md"
+) -Raw
+
+if ($PilotDecisionText -notmatch '(?m)^Accepted\r?$') {
+    throw "PDR-0002 is not recorded as accepted."
+}
+
+if (
+    ($PilotDecisionText -notmatch "MLAI-027") -or
+    ($PilotDecisionText -notmatch "Secure Pilot Vertical Slice")
+) {
+    throw "PDR-0002 does not approve MLAI-027."
+}
+
+$CurrentHandoverText = Get-Content -LiteralPath (
+    Join-Path $ProjectRoot "docs\handover\CURRENT_HANDOVER.md"
+) -Raw
+
+if ($CurrentHandoverText -notmatch "Start with \*\*MLAI-027.1") {
+    throw "Current handover does not identify MLAI-027.1 as the next story."
 }
 
 Write-Host "MARKETINGLABAI HANDOVER REGRESSION TESTS PASSED" -ForegroundColor Green

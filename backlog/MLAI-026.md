@@ -2,11 +2,18 @@
 
 ## Status
 
-Deferred
+Deferred — reaffirmed by PDR-0002
 
 ## Architectural Authority
 
 - `governance/adrs/ADR-0007-international-marketing-calendar-architecture.md`
+- `governance/pdrs/PDR-0002-secure-pilot-vertical-slice.md`
+
+## Priority decision
+
+The Launch Readiness and Vertical-Slice Review found that secure application
+composition is more urgent than another planning domain. MLAI-027 is the active
+epic. Reconsider MLAI-026 only after controlled-pilot evidence is reviewed.
 
 ## Objective
 

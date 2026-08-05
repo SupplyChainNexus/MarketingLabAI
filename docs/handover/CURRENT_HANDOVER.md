@@ -3,59 +3,55 @@
 ## Checkpoint
 
 - Branch: `feature/tenant-architecture`
-- Commit: `6da6157`
-- Remote state: synchronized with `origin/feature/tenant-architecture`
-- Repository state at handover: clean
-- Last completed epic: MLAI-025 Campaign Planning Platform
-- Last recorded validation: 69 focused tests and 683 complete-suite tests passed
+- Ratified baseline: `db7a6c8`
+- Remote state at selection: synchronized with `origin/feature/tenant-architecture`
+- Last completed product epic: MLAI-025 Campaign Planning Platform
+- Last completed governance work: continuity system and PDR-0001 ratification
+- Last recorded validation: 683 Python tests; continuity regressions passed
 
 ## Product direction
 
 MarketingLabAI is a Marketing Intelligence Operating System and the AI
-Marketing Department for growing businesses. It must help customers spend less
-time marketing and achieve better marketing results. AI is the engine, not the
-headline.
+Marketing Department for growing businesses. AI is the engine, not the
+headline. PDR-0001 is the founder-ratified product direction.
 
-## Implemented checkpoint
+## Launch-readiness decision
 
-MLAI-025 provides a provider-neutral Campaign Planner with deterministic plan
-and asset validation, lifecycle control, dependency ordering, Marketing Brief
-workflow integration, audit references, and immutable tenant-scoped versioned
-persistence.
+The `db7a6c8` review found strong tested domains but no secure customer-usable
+journey. The CLI still exposes legacy JSON-backed onboarding and campaign
+generation rather than the newer tenant-owned governed workflow.
 
-## Immediate continuation decision
+PDR-0002 approves MLAI-027 Secure Pilot Vertical Slice as the next epic. MLAI-026
+Marketing Calendar remains deferred.
 
-MLAI-026 International Marketing Calendar Intelligence is architecturally
-defined and deferred pending an explicit launch-priority review. Campaign
-Planner completion satisfies its technical dependency, but completion does not
-automatically authorize implementation. Review ADR-0007 and current commercial
-launch requirements before activating MLAI-026.
+## Active epic
 
-## Known governance work
+MLAI-027 will compose one private-pilot journey from trusted tenant context and
+verified intelligence through Campaign Plan, approved Marketing Brief,
+governed generation, independent compliance review, and safe export.
 
-- Reconcile the stale opening and priority language in `docs/product_vision.md`.
-- Refresh capability maturity from the implemented repository; do not trust old
-  sprint numbering.
-- Confirm canonical subscription tier names before encoding them.
-- Treat recovered founding prices as historical candidates until commercial
-  costs and policy are reviewed.
-- Preserve Marketing Intelligence Score as a future hypothesis requiring an
-  evidence model, explainability, validation, and anti-gaming rules.
-- Inventory security governance before assigning a new ADR number.
+Start with **MLAI-027.1 — Canonical Application Composition**.
 
-## Non-negotiable boundaries
+## Mandatory first-story constraints
 
-- Intelligence hierarchy and deterministic-first reasoning
-- Explicit missing context and evidence-grounded learning
-- Provider neutrality and connector isolation
-- Tenant isolation, auditability, least privilege, and human accountability
-- Separate campaign, asset, brief, generation, calendar, publishing, and
-  learning lifecycles
-- Generator-level fixes instead of recurring package repair patches
-- Complete PowerShell 5.1-compatible owner instructions
+- Inspect and reuse existing services and repositories.
+- Select one canonical runtime persistence path.
+- Treat legacy JSON paths as migration or compatibility boundaries.
+- Do not add a UI before the synthetic composed workflow passes.
+- Do not introduce real customer data.
+- Add an ADR for the application boundary and dependency direction.
+- Preserve provider neutrality, tenant boundaries, lifecycle separation, and
+  deterministic-first reasoning.
+
+## Current risks and debt
+
+See `governance/registers/risk-register.md` and
+`governance/registers/technical-debt-register.md`. The primary risks are missing
+identity/authorization, split runtime persistence, absent customer surface, and
+absent pilot operations.
 
 ## Next engineer's first action
 
-Run the handover regression test, review the founder-decision queue in the
-locked-decision register, and perform a launch-priority review before opening
-the next implementation story.
+Create the MLAI-027.1 story manifest and source package only after reviewing
+PDR-0002, the launch-readiness review, existing composition points, and relevant
+accepted ADRs.
