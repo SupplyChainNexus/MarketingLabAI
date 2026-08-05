@@ -28,6 +28,11 @@ from app.positioning_intelligence import (
     PositioningStatus,
     TargetKind,
 )
+from app.strategy_intelligence import (
+    StrategyDecision,
+    StrategyEvidence,
+    StrategyStatus,
+)
 
 
 class PositioningWorkflowIntegrationTests(unittest.TestCase):
@@ -50,6 +55,22 @@ class PositioningWorkflowIntegrationTests(unittest.TestCase):
         self.provider = MockIntelligenceProvider("Synthetic result")
         self.registry.register(self.provider)
         self._save_positioning()
+        self.application.strategy_intelligence.save(
+            StrategyDecision(
+                strategy_id="strategy-one",
+                version=1,
+                tenant_id="default",
+                brand_id="brand-one",
+                positioning_id="positioning-one",
+                positioning_version=1,
+                status=StrategyStatus.APPROVED,
+                business_objectives=["Validate synthetic demand"],
+                evidence=[
+                    StrategyEvidence("Synthetic", "Reviewed objective", 0.9, True)
+                ],
+                approved_at="2026-08-06T00:00:00+00:00",
+            )
+        )
 
     def tearDown(self) -> None:
         self.folder.cleanup()
@@ -79,7 +100,15 @@ class PositioningWorkflowIntegrationTests(unittest.TestCase):
             )
         )
 
-    def _save_execution(self, positioning_id="positioning-one", version=1) -> None:
+    def _save_execution(
+        self,
+        positioning_id="positioning-one",
+        version=1,
+        strategy_id="strategy-one",
+        strategy_version=1,
+        brief_strategy_id=None,
+        brief_strategy_version=None,
+    ) -> None:
         self.application.campaign_plans.save(
             CampaignPlan(
                 campaign_id="campaign-one",
@@ -95,6 +124,8 @@ class PositioningWorkflowIntegrationTests(unittest.TestCase):
                 status=CampaignStatus.APPROVED,
                 positioning_id=positioning_id,
                 positioning_version=version,
+                strategy_id=strategy_id,
+                strategy_version=strategy_version,
             )
         )
         self.application.marketing_briefs.save(
@@ -112,6 +143,14 @@ class PositioningWorkflowIntegrationTests(unittest.TestCase):
                 status=BriefStatus.APPROVED,
                 positioning_id=positioning_id,
                 positioning_version=version,
+                strategy_id=(
+                    strategy_id if brief_strategy_id is None else brief_strategy_id
+                ),
+                strategy_version=(
+                    strategy_version
+                    if brief_strategy_version is None
+                    else brief_strategy_version
+                ),
             )
         )
 
@@ -139,7 +178,93 @@ class PositioningWorkflowIntegrationTests(unittest.TestCase):
         request = self.provider.requests[0]
         self.assertIn("Approved Positioning Context", request.prompt)
         self.assertIn("A verified synthetic value proposition.", request.prompt)
+        self.assertIn("Approved Marketing Strategy Context", request.prompt)
+        self.assertIn("Strategy reference: strategy-one v1", request.prompt)
         self.assertEqual(request.metadata["approved_positioning_id"], "positioning-one")
+        self.assertEqual(request.metadata["approved_strategy_id"], "strategy-one")
+        self.assertEqual(request.metadata["approved_strategy_version"], 1)
+
+    def test_missing_strategy_reference_blocks_generation(self) -> None:
+        self._save_execution(strategy_id="", strategy_version=0)
+        with self.assertRaisesRegex(LifecycleConflictError, "same approved strategy"):
+            self._generate()
+        self.assertEqual(self.provider.requests, [])
+
+    def test_mismatched_plan_and_brief_strategy_blocks_generation(self) -> None:
+        self._save_execution(brief_strategy_id="strategy-two", brief_strategy_version=1)
+        with self.assertRaisesRegex(LifecycleConflictError, "same approved strategy"):
+            self._generate()
+        self.assertEqual(self.provider.requests, [])
+
+    def test_stale_strategy_reference_blocks_generation(self) -> None:
+        self._save_execution()
+        self.application.strategy_intelligence.save(
+            StrategyDecision(
+                strategy_id="strategy-one",
+                version=2,
+                tenant_id="default",
+                brand_id="brand-one",
+                positioning_id="positioning-one",
+                positioning_version=1,
+                status=StrategyStatus.APPROVED,
+                business_objectives=["Revised synthetic objective"],
+                evidence=[StrategyEvidence("Synthetic", "Reviewed", 0.9, True)],
+                approved_at="2026-08-07T00:00:00+00:00",
+            )
+        )
+        with self.assertRaisesRegex(LifecycleConflictError, "current approved version"):
+            self._generate()
+        self.assertEqual(self.provider.requests, [])
+
+    def test_draft_strategy_context_is_rejected(self) -> None:
+        self.application.strategy_intelligence.save(
+            StrategyDecision(
+                strategy_id="draft-strategy",
+                version=1,
+                tenant_id="default",
+                brand_id="brand-one",
+                positioning_id="positioning-one",
+                positioning_version=1,
+                status=StrategyStatus.DRAFT,
+            )
+        )
+        with self.assertRaisesRegex(ValueError, "currently approved"):
+            self.application.build_context_assembler().build(
+                tenant_id="default",
+                brand_id="brand-one",
+                strategy_id="draft-strategy",
+                strategy_version=1,
+            )
+
+    def test_cross_brand_strategy_context_is_rejected(self) -> None:
+        with self.assertRaisesRegex(ValueError, "requested brand differ"):
+            self.application.build_context_assembler().build(
+                tenant_id="default",
+                brand_id="brand-two",
+                strategy_id="strategy-one",
+                strategy_version=1,
+            )
+
+    def test_strategy_positioning_mismatch_blocks_generation(self) -> None:
+        self._save_positioning(positioning_id="positioning-two")
+        self.application.strategy_intelligence.save(
+            StrategyDecision(
+                strategy_id="strategy-two",
+                version=1,
+                tenant_id="default",
+                brand_id="brand-one",
+                positioning_id="positioning-two",
+                positioning_version=1,
+                status=StrategyStatus.APPROVED,
+                business_objectives=["Synthetic alternative objective"],
+                evidence=[StrategyEvidence("Synthetic", "Reviewed", 0.9, True)],
+                approved_at="2026-08-06T00:00:00+00:00",
+            )
+        )
+        self._save_execution(strategy_id="strategy-two", strategy_version=1)
+        with self.assertRaisesRegex(LifecycleConflictError, "do not match"):
+            self._generate()
+        self.assertEqual(self.provider.requests, [])
 
     def test_missing_positioning_reference_blocks_generation(self) -> None:
         self._save_execution("", 0)
@@ -193,6 +318,10 @@ class PositioningWorkflowIntegrationTests(unittest.TestCase):
         )
         self.assertEqual(
             (brief.positioning_id, brief.positioning_version), ("positioning-one", 1)
+        )
+        self.assertEqual((plan.strategy_id, plan.strategy_version), ("strategy-one", 1))
+        self.assertEqual(
+            (brief.strategy_id, brief.strategy_version), ("strategy-one", 1)
         )
 
 

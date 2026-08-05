@@ -33,6 +33,11 @@ from app.positioning_intelligence import (
     PositioningStatus,
     TargetKind,
 )
+from app.strategy_intelligence import (
+    StrategyDecision,
+    StrategyEvidence,
+    StrategyStatus,
+)
 from app.tenants.models import Tenant
 
 
@@ -107,6 +112,22 @@ class PilotApiTests(unittest.TestCase):
                 approved_at="2026-08-06T00:00:00+00:00",
             )
         )
+        self.application.strategy_intelligence.save(
+            StrategyDecision(
+                strategy_id="strategy-one",
+                version=1,
+                tenant_id="default",
+                brand_id="brand-one",
+                positioning_id="positioning-one",
+                positioning_version=1,
+                status=StrategyStatus.APPROVED,
+                business_objectives=["Validate synthetic demand"],
+                evidence=[
+                    StrategyEvidence("Synthetic", "Reviewed objective", 0.9, True)
+                ],
+                approved_at="2026-08-06T00:00:00+00:00",
+            )
+        )
         self.application.campaign_plans.save(
             CampaignPlan(
                 campaign_id="campaign-one",
@@ -126,6 +147,8 @@ class PilotApiTests(unittest.TestCase):
                 status=CampaignStatus.APPROVED,
                 positioning_id="positioning-one",
                 positioning_version=1,
+                strategy_id="strategy-one",
+                strategy_version=1,
             )
         )
         self.application.marketing_briefs.save(
@@ -148,6 +171,8 @@ class PilotApiTests(unittest.TestCase):
                 status=BriefStatus.APPROVED,
                 positioning_id="positioning-one",
                 positioning_version=1,
+                strategy_id="strategy-one",
+                strategy_version=1,
             )
         )
 

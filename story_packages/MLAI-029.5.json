@@ -1,0 +1,15 @@
+{
+  "story_id": "MLAI-029.5",
+  "slug": "governed_workflow_integration",
+  "title": "Governed Workflow Integration",
+  "focused_tests": [
+    "tests.test_strategy_workflow_integration",
+    "tests.test_positioning_workflow_integration",
+    "tests.test_ai_orchestrator"
+  ],
+  "import_modules": [
+    "app.strategy_intelligence.context",
+    "app.application.composition"
+  ],
+  "commit_message": "feat(strategy): integrate governed workflow context"
+}

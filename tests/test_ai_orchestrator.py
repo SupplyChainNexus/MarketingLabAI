@@ -124,6 +124,9 @@ class AIOrchestratorTests(unittest.TestCase):
                 "positioning_intelligence_included": False,
                 "positioning_id": "",
                 "positioning_version": 0,
+                "strategy_intelligence_included": False,
+                "strategy_id": "",
+                "strategy_version": 0,
             },
         )
 

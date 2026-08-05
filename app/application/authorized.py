@@ -214,6 +214,45 @@ class AuthorizedTenantApplication:
             raise LifecycleConflictError(
                 "Referenced positioning is not the current approved version."
             )
+        plan_strategy = (plan.strategy_id, plan.strategy_version)
+        brief_strategy = (brief.strategy_id, brief.strategy_version)
+        if not plan.strategy_id or plan_strategy != brief_strategy:
+            raise LifecycleConflictError(
+                "Campaign Plan and Marketing Brief require the same approved "
+                "strategy reference."
+            )
+        try:
+            strategy = self.application.strategy_intelligence.get(
+                tenant_id=self.tenant_id,
+                strategy_id=plan.strategy_id,
+                version=plan.strategy_version,
+            )
+            latest_strategy = self.application.strategy_intelligence.latest(
+                tenant_id=self.tenant_id,
+                strategy_id=plan.strategy_id,
+            )
+        except FileNotFoundError as error:
+            raise LifecycleConflictError(
+                "Referenced strategy was not found for this tenant."
+            ) from error
+        if strategy.brand_id != brand_id:
+            raise LifecycleConflictError(
+                "Referenced strategy belongs to another brand."
+            )
+        if (
+            strategy.status.value != "approved"
+            or latest_strategy.version != strategy.version
+        ):
+            raise LifecycleConflictError(
+                "Referenced strategy is not the current approved version."
+            )
+        if (
+            strategy.positioning_id,
+            strategy.positioning_version,
+        ) != plan_reference:
+            raise LifecycleConflictError(
+                "Approved strategy and positioning references do not match."
+            )
         return self.application.build_ai_orchestrator(registry).generate(
             tenant_id=self.tenant_id,
             brand_id=brand_id,
@@ -228,9 +267,13 @@ class AuthorizedTenantApplication:
                 "approved_brief_version": brief.version,
                 "approved_positioning_id": positioning.positioning_id,
                 "approved_positioning_version": positioning.version,
+                "approved_strategy_id": strategy.strategy_id,
+                "approved_strategy_version": strategy.version,
             },
             positioning_id=positioning.positioning_id,
             positioning_version=positioning.version,
+            strategy_id=strategy.strategy_id,
+            strategy_version=strategy.version,
             **options,
         )
 

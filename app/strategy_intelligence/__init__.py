@@ -8,6 +8,7 @@ from app.strategy_intelligence.choices import (
     StrategicChoice,
     StrategicChoiceEvaluator,
 )
+from app.strategy_intelligence.context import StrategyContextProvider
 from app.strategy_intelligence.marketing_mix import (
     ChannelRole,
     MarketingMixEvaluator,
@@ -36,6 +37,7 @@ from app.strategy_intelligence.situation import (
 )
 
 __all__ = [
+    "StrategyContextProvider",
     "ChannelRole",
     "MarketingMixEvaluator",
     "MarketingMixReport",

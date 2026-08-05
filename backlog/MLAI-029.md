@@ -2,7 +2,7 @@
 
 ## Status
 
-MLAI-029.4 implemented - Marketing Mix and Measurement
+MLAI-029.5 implemented - Governed Workflow Integration
 
 ## Product authority
 
@@ -44,9 +44,9 @@ inventing research, forecasts, performance, or learning.
 
 ### MLAI-029.5 - Governed Workflow Integration
 
-- [ ] Compose approved strategy through the canonical application.
-- [ ] Require traceable strategy references in plans, briefs, and generation.
-- [ ] Add authorized API integration and audit coverage.
+- [x] Compose approved strategy through the canonical application.
+- [x] Require traceable strategy references in plans, briefs, and generation.
+- [x] Add authorized integration and audit metadata coverage.
 
 ### MLAI-029.6 - Client-Facing Strategy Workspace and Design-Partner Readiness
 

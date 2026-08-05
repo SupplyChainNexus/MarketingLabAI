@@ -13,6 +13,7 @@ from app.database.repositories import (
 )
 from app.positioning_intelligence.context import PositioningContextProvider
 from app.product_intelligence.provider import ProductContextProvider
+from app.strategy_intelligence.context import StrategyContextProvider
 
 
 @dataclass(slots=True, frozen=True)
@@ -25,6 +26,7 @@ class AIContext:
     customer_context: str = ""
     product_context: str = ""
     positioning_context: str = ""
+    strategy_context: str = ""
 
     @property
     def company_brain_included(self) -> bool:
@@ -56,6 +58,12 @@ class AIContext:
 
         return bool(self.positioning_context)
 
+    @property
+    def strategy_intelligence_included(self) -> bool:
+        """Return whether approved Strategy Intelligence is available."""
+
+        return bool(self.strategy_context)
+
 
 class AIContextAssembler:
     """Load and format context required by AI orchestration."""
@@ -68,6 +76,7 @@ class AIContextAssembler:
         customer_context_provider: CustomerContextProvider | None = None,
         product_context_provider: ProductContextProvider | None = None,
         positioning_context_provider: PositioningContextProvider | None = None,
+        strategy_context_provider: StrategyContextProvider | None = None,
         company_brain_prompt_builder: CompanyBrainPromptBuilder | None = None,
         memory_prompt_builder: MemoryPromptBuilder | None = None,
         memory_limit: int = 10,
@@ -107,6 +116,12 @@ class AIContextAssembler:
             raise TypeError(
                 "positioning_context_provider must be a PositioningContextProvider."
             )
+        if strategy_context_provider is not None and not isinstance(
+            strategy_context_provider, StrategyContextProvider
+        ):
+            raise TypeError(
+                "strategy_context_provider must be a StrategyContextProvider."
+            )
 
         if company_brain_prompt_builder is not None and not isinstance(
             company_brain_prompt_builder,
@@ -130,6 +145,7 @@ class AIContextAssembler:
         self.customer_context_provider = customer_context_provider
         self.product_context_provider = product_context_provider
         self.positioning_context_provider = positioning_context_provider
+        self.strategy_context_provider = strategy_context_provider
         self.company_brain_prompt_builder = (
             company_brain_prompt_builder or CompanyBrainPromptBuilder()
         )
@@ -143,6 +159,8 @@ class AIContextAssembler:
         tenant_id: str = "default",
         positioning_id: str = "",
         positioning_version: int = 0,
+        strategy_id: str = "",
+        strategy_version: int = 0,
     ) -> AIContext:
         """Assemble available context for one brand."""
 
@@ -163,6 +181,9 @@ class AIContextAssembler:
         positioning_context = self._load_positioning_context(
             tenant_id, brand_id, positioning_id, positioning_version
         )
+        strategy_context = self._load_strategy_context(
+            tenant_id, brand_id, strategy_id, strategy_version
+        )
         memory_context = self._load_memory_context(brand_id)
         memory_count = len(memory_context.splitlines()) if memory_context else 0
 
@@ -173,6 +194,28 @@ class AIContextAssembler:
             customer_context=customer_context,
             product_context=product_context,
             positioning_context=positioning_context,
+            strategy_context=strategy_context,
+        )
+
+    def _load_strategy_context(
+        self,
+        tenant_id: str,
+        brand_id: str,
+        strategy_id: str,
+        strategy_version: int,
+    ) -> str:
+        if not strategy_id and strategy_version == 0:
+            return ""
+        if not strategy_id or strategy_version < 1:
+            raise ValueError("strategy_id and strategy_version must be paired.")
+        provider = self.strategy_context_provider
+        if provider is None:
+            raise ValueError("Strategy context is not configured.")
+        return provider.build(
+            tenant_id=tenant_id,
+            brand_id=brand_id,
+            strategy_id=strategy_id,
+            strategy_version=strategy_version,
         )
 
     def _load_positioning_context(

@@ -244,6 +244,8 @@ class CampaignPlan:
     notes: str = ""
     positioning_id: str = ""
     positioning_version: int = 0
+    strategy_id: str = ""
+    strategy_version: int = 0
     created_at: datetime = field(default_factory=_utc_now)
     updated_at: datetime = field(default_factory=_utc_now)
 
@@ -262,6 +264,15 @@ class CampaignPlan:
         if bool(self.positioning_id) != (self.positioning_version >= 1):
             raise ValueError(
                 "positioning_id and positioning_version must be provided together."
+            )
+        self.strategy_id = _optional_text("strategy_id", self.strategy_id)
+        if isinstance(self.strategy_version, bool) or not isinstance(
+            self.strategy_version, int
+        ):
+            raise TypeError("strategy_version must be an integer.")
+        if bool(self.strategy_id) != (self.strategy_version >= 1):
+            raise ValueError(
+                "strategy_id and strategy_version must be provided together."
             )
 
         if isinstance(self.version, bool) or not isinstance(self.version, int):
@@ -351,6 +362,8 @@ class CampaignPlan:
             "notes": self.notes,
             "positioning_id": self.positioning_id,
             "positioning_version": self.positioning_version,
+            "strategy_id": self.strategy_id,
+            "strategy_version": self.strategy_version,
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
         }
@@ -379,6 +392,8 @@ class CampaignPlan:
             notes=data.get("notes", ""),
             positioning_id=data.get("positioning_id", ""),
             positioning_version=data.get("positioning_version", 0),
+            strategy_id=data.get("strategy_id", ""),
+            strategy_version=data.get("strategy_version", 0),
             created_at=datetime.fromisoformat(data["created_at"]),
             updated_at=datetime.fromisoformat(data["updated_at"]),
         )

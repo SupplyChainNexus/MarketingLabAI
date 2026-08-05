@@ -7,7 +7,7 @@
 - Remote state before this story: synchronized
 - Last completed epic: MLAI-028 Positioning Intelligence
 - Active epic: MLAI-029 Marketing Strategy Intelligence
-- Active story: MLAI-029.4 Marketing Mix and Measurement
+- Active story: MLAI-029.5 Governed Workflow Integration
 
 ## Product direction
 
@@ -43,6 +43,11 @@ MLAI-029.4 validates the minimum four-part marketing mix, optional service
 extensions, objective-linked channel roles, and measurement coverage. It does
 not invent pricing, budgets, forecasts, attribution, or results.
 
+MLAI-029.5 composes current approved Strategy through the canonical application,
+persists immutable Strategy references on Campaign Plans and Marketing Briefs,
+and requires matching Strategy and Positioning references before governed AI
+generation. Provider context and audit metadata retain exact version identity.
+
 ## Locked MLAI-029 sequence
 
 1. MLAI-029.1 Strategy Intelligence Foundation
@@ -63,6 +68,6 @@ support ownership.
 
 ## Next engineer action
 
-Validate and commit MLAI-029.4, then begin Governed Workflow Integration. Do not
-add live research feeds, forecasts, Calendar, publishing, billing, attribution,
-or learning.
+Validate and commit MLAI-029.5, then begin MLAI-029.6. At that next stage the
+controlled design-partner pilot becomes necessary; remind the founder and retain
+the freeze until a new explicit pilot decision is approved.

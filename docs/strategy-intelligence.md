@@ -53,3 +53,16 @@ optional service extensions, channel roles, and one measurement plan per
 objective. Missing elements and invalid objective links remain explicit gaps.
 Budgets, pricing, targets, and measurements are human inputs, not forecasts,
 attribution, or results.
+
+## Governed workflow integration
+
+MLAI-029.5 makes the current approved `StrategyDecision` canonical AI context.
+Campaign Plans and Marketing Briefs carry paired immutable strategy references.
+Governed generation requires both artifacts to reference the same current,
+approved, tenant- and brand-owned Strategy version. The Strategy must in turn
+reference the same approved Positioning version used by those artifacts.
+
+The provider receives a human-reviewed Strategy section containing objectives,
+choices, non-choices, verified evidence, assumptions, and unknowns. Audit
+metadata records the exact Strategy identity and version. Draft creation remains
+backward compatible, while governed generation cannot bypass Strategy approval.

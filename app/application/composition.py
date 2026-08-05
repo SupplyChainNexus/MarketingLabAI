@@ -41,6 +41,11 @@ from app.product_intelligence import (
 )
 from app.prompts.repository import PromptPackRepository
 from app.prompts.selector import PromptPackSelector
+from app.strategy_intelligence import (
+    StrategyContextProvider,
+    StrategyRepository,
+    StrategyService,
+)
 from app.tenants.repository import TenantRepository
 
 
@@ -55,6 +60,7 @@ class CanonicalApplication:
     customer_intelligence: CustomerIntelligenceRepository
     product_intelligence: ProductIntelligenceRepository
     positioning_intelligence: PositioningRepository
+    strategy_intelligence: StrategyRepository
     memory: MemoryRepository
     campaign_plans: CampaignPlanRepository
     marketing_briefs: MarketingBriefRepository
@@ -82,6 +88,7 @@ class CanonicalApplication:
             customer_intelligence=CustomerIntelligenceRepository(selected_database),
             product_intelligence=ProductIntelligenceRepository(selected_database),
             positioning_intelligence=PositioningRepository(selected_database),
+            strategy_intelligence=StrategyRepository(selected_database),
             memory=MemoryRepository(selected_database),
             campaign_plans=CampaignPlanRepository(selected_database),
             marketing_briefs=MarketingBriefRepository(selected_database),
@@ -131,6 +138,9 @@ class CanonicalApplication:
             positioning_context_provider=PositioningContextProvider(
                 repository=self.positioning_intelligence,
             ),
+            strategy_context_provider=StrategyContextProvider(
+                repository=self.strategy_intelligence,
+            ),
             memory_repository=self.memory,
         )
 
@@ -138,6 +148,14 @@ class CanonicalApplication:
         """Return the canonical immutable Positioning Intelligence service."""
 
         return PositioningService(self.positioning_intelligence)
+
+    def build_strategy_service(self) -> StrategyService:
+        """Return the canonical immutable Strategy Intelligence service."""
+
+        return StrategyService(
+            self.strategy_intelligence,
+            positioning_repository=self.positioning_intelligence,
+        )
 
     def build_marketing_brief_service(self) -> MarketingBriefService:
         """Return the canonical immutable Marketing Brief service."""

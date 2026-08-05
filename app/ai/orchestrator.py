@@ -57,6 +57,8 @@ class AIOrchestrator:
         additional_sections: Sequence[PromptSection] = (),
         positioning_id: str = "",
         positioning_version: int = 0,
+        strategy_id: str = "",
+        strategy_version: int = 0,
     ) -> IntelligenceResponse:
         """Generate a provider-neutral intelligence response."""
 
@@ -112,6 +114,8 @@ class AIOrchestrator:
             brand_id=brand_id,
             positioning_id=positioning_id,
             positioning_version=positioning_version,
+            strategy_id=strategy_id,
+            strategy_version=strategy_version,
         )
 
         prompt = self._build_prompt(
@@ -141,6 +145,9 @@ class AIOrchestrator:
                 ),
                 "positioning_id": positioning_id,
                 "positioning_version": positioning_version,
+                "strategy_intelligence_included": context.strategy_intelligence_included,
+                "strategy_id": strategy_id,
+                "strategy_version": strategy_version,
             }
         )
 
@@ -195,6 +202,12 @@ class AIOrchestrator:
             PromptSection(
                 title="Approved Positioning Context",
                 content=context.positioning_context,
+            )
+        )
+        composer.add(
+            PromptSection(
+                title="Approved Marketing Strategy Context",
+                content=context.strategy_context,
             )
         )
         composer.add(

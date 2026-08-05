@@ -165,6 +165,8 @@ class MarketingBrief:
     notes: str = ""
     positioning_id: str = ""
     positioning_version: int = 0
+    strategy_id: str = ""
+    strategy_version: int = 0
     status: BriefStatus = BriefStatus.DRAFT
     version: int = 1
     created_at: str = field(default_factory=current_utc_timestamp)
@@ -210,6 +212,15 @@ class MarketingBrief:
         if bool(self.positioning_id) != (self.positioning_version >= 1):
             raise ValueError(
                 "positioning_id and positioning_version must be provided together."
+            )
+        self.strategy_id = _optional_text(self.strategy_id)
+        if isinstance(self.strategy_version, bool) or not isinstance(
+            self.strategy_version, int
+        ):
+            raise TypeError("strategy_version must be an integer.")
+        if bool(self.strategy_id) != (self.strategy_version >= 1):
+            raise ValueError(
+                "strategy_id and strategy_version must be provided together."
             )
 
         self.channels = _clean_text_list(
@@ -373,6 +384,8 @@ class MarketingBrief:
             "notes": self.notes,
             "positioning_id": self.positioning_id,
             "positioning_version": self.positioning_version,
+            "strategy_id": self.strategy_id,
+            "strategy_version": self.strategy_version,
             "status": self.status.value,
             "version": self.version,
             "created_at": self.created_at,
