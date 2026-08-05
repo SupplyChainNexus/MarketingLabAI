@@ -5,7 +5,6 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 
-
 EXCLUDED_DIRECTORIES = {
     ".git",
     ".venv",
@@ -26,10 +25,7 @@ DEPRECATED_ORCHESTRATOR_KEYWORDS = {
 def is_excluded(path: Path) -> bool:
     """Return whether a file belongs to an excluded directory."""
 
-    return any(
-        part in EXCLUDED_DIRECTORIES
-        for part in path.parts
-    )
+    return any(part in EXCLUDED_DIRECTORIES for part in path.parts)
 
 
 def is_orchestrator_call(node: ast.Call) -> bool:
@@ -68,9 +64,7 @@ def main() -> int:
             UnicodeError,
             SyntaxError,
         ) as error:
-            failures.append(
-                f"{path}: unable to inspect file: {error}"
-            )
+            failures.append(f"{path}: unable to inspect file: {error}")
             continue
 
         for node in ast.walk(tree):
@@ -81,10 +75,7 @@ def main() -> int:
                 continue
 
             for keyword in node.keywords:
-                if (
-                    keyword.arg
-                    in DEPRECATED_ORCHESTRATOR_KEYWORDS
-                ):
+                if keyword.arg in DEPRECATED_ORCHESTRATOR_KEYWORDS:
                     failures.append(
                         f"{path}:{node.lineno}: "
                         "AIOrchestrator uses deprecated "
@@ -99,10 +90,7 @@ def main() -> int:
 
         return 1
 
-    print(
-        "No deprecated AIOrchestrator "
-        "constructor arguments found."
-    )
+    print("No deprecated AIOrchestrator " "constructor arguments found.")
     return 0
 
 
