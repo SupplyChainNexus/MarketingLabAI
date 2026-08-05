@@ -2,7 +2,7 @@
 
 ## Status
 
-MLAI-029.1 implemented - Strategy Intelligence foundation
+MLAI-029.2 implemented - Situation and Opportunity Synthesis
 
 ## Product authority
 
@@ -28,9 +28,9 @@ inventing research, forecasts, performance, or learning.
 
 ### MLAI-029.2 - Situation and Opportunity Synthesis
 
-- [ ] Deterministically synthesize Company, Customer, Product, and Positioning inputs.
-- [ ] Record user-supplied environmental evidence and explicit gaps.
-- [ ] Produce opportunities, constraints, risks, and limitations without live feeds.
+- [x] Deterministically synthesize Company, Customer, Product, and Positioning inputs.
+- [x] Record user-supplied environmental evidence and explicit gaps.
+- [x] Produce opportunities, constraints, risks, and limitations without live feeds.
 
 ### MLAI-029.3 - Objectives and Strategic Choices
 

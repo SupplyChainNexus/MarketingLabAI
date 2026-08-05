@@ -1,0 +1,17 @@
+{
+  "story_id": "MLAI-029.2",
+  "slug": "situation_opportunity_synthesis",
+  "title": "Situation and Opportunity Synthesis",
+  "focused_tests": [
+    "tests.test_strategy_situation",
+    "tests.test_strategy_intelligence",
+    "tests.test_positioning_intelligence",
+    "tests.test_product_intelligence",
+    "tests.test_customer_intelligence"
+  ],
+  "import_modules": [
+    "app.strategy_intelligence",
+    "app.strategy_intelligence.situation"
+  ],
+  "commit_message": "feat(strategy): add situation opportunity synthesis"
+}

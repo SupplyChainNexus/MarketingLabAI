@@ -7,7 +7,7 @@
 - Remote state before this story: synchronized
 - Last completed epic: MLAI-028 Positioning Intelligence
 - Active epic: MLAI-029 Marketing Strategy Intelligence
-- Active story: MLAI-029.1 Strategy Intelligence Foundation
+- Active story: MLAI-029.2 Situation and Opportunity Synthesis
 
 ## Product direction
 
@@ -30,6 +30,11 @@ choices and non-choices, immutable lifecycle, human approval, and migration 15.
 Approval requires verified evidence, at least one business objective, and the
 exact referenced Positioning version to be approved for the same brand.
 
+MLAI-029.2 adds deterministic situation synthesis over supplied Company,
+Customer, Product, approved Positioning, and time-stamped user-supplied PESTLE
+evidence. It returns traceable opportunities, constraints, risks, gaps, and
+limitations without live research, opaque scoring, forecasts, or invented facts.
+
 ## Locked MLAI-029 sequence
 
 1. MLAI-029.1 Strategy Intelligence Foundation
@@ -50,6 +55,6 @@ support ownership.
 
 ## Next engineer action
 
-Validate and commit MLAI-029.1, then begin deterministic situation and
-opportunity synthesis. Do not add live research feeds, forecasts, Calendar,
-publishing, billing, attribution, or learning.
+Validate and commit MLAI-029.2, then begin Objectives and Strategic Choices.
+Do not add live research feeds, forecasts, Calendar, publishing, billing,
+attribution, or learning.

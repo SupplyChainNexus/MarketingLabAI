@@ -24,3 +24,16 @@ sequence. Environmental evidence will initially be user-supplied and
 time-stamped; live research feeds remain deferred.
 
 The customer pilot remains frozen and tests use synthetic evidence only.
+
+## Situation and opportunity synthesis
+
+MLAI-029.2 adds a deterministic `SituationSynthesizer`. It validates that the
+strategy references the supplied approved positioning version and rejects
+cross-tenant Product Intelligence. Recorded positioning strengths, business
+goals, capacity constraints, and user-supplied PESTLE signals become traceable
+findings, opportunities, constraints, and risks.
+
+Every environmental signal requires a factor, declared effect, source,
+observation timestamp, confidence, and verification state. Missing Company,
+Customer, Product, or PESTLE evidence becomes an explicit gap. The report is
+not a forecast, recommendation score, market validation, or learning record.

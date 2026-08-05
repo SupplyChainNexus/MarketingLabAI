@@ -8,6 +8,15 @@ from app.strategy_intelligence.models import (
 )
 from app.strategy_intelligence.repository import StrategyRepository
 from app.strategy_intelligence.service import StrategyService
+from app.strategy_intelligence.situation import (
+    EnvironmentalFactor,
+    EnvironmentalSignal,
+    SignalEffect,
+    SituationFinding,
+    SituationGap,
+    SituationReport,
+    SituationSynthesizer,
+)
 
 __all__ = [
     "StrategyDecision",
@@ -16,4 +25,11 @@ __all__ = [
     "StrategyService",
     "StrategyStatus",
     "StrategyUnknown",
+    "EnvironmentalFactor",
+    "EnvironmentalSignal",
+    "SignalEffect",
+    "SituationFinding",
+    "SituationGap",
+    "SituationReport",
+    "SituationSynthesizer",
 ]

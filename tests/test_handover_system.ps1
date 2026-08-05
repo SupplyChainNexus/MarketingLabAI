@@ -241,4 +241,12 @@ if (
     throw "Current handover does not preserve the locked Strategy sequence."
 }
 
+if (
+    ($CurrentHandoverText -notmatch "MLAI-029.2") -or
+    ($CurrentHandoverText -notmatch "user-supplied PESTLE") -or
+    ($CurrentHandoverText -notmatch "without live research")
+) {
+    throw "Current handover does not preserve Strategy synthesis boundaries."
+}
+
 Write-Host "MARKETINGLABAI HANDOVER REGRESSION TESTS PASSED" -ForegroundColor Green
