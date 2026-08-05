@@ -14,12 +14,14 @@ $RequiredFiles = @(
     "governance\pdrs\PDR-0002-secure-pilot-vertical-slice.md",
     "governance\pdrs\PDR-0003-marketing-decision-doctrine.md",
     "governance\adrs\ADR-0014-pilot-operations-release-gate.md",
+    "governance\adrs\ADR-0015-positioning-intelligence-foundation.md",
     "docs\pilot-release-gate.md",
     "docs\pilot-operations-runbook.md",
     "docs\privacy-and-data-handling.md",
     "docs\pilot-incident-response.md",
     "docs\launch-readiness-review.md",
     "backlog\MLAI-027.md",
+    "backlog\MLAI-028.md",
     "docs\engineering\continuity.md",
     "docs\handover\CURRENT_HANDOVER.md",
     "scripts\build_handover.ps1"
@@ -122,6 +124,25 @@ if ($CurrentHandoverText -notmatch "MLAI-027.1 through MLAI-027.6") {
 
 if ($CurrentHandoverText -notmatch "customer pilot remains explicitly") {
     throw "Current handover does not preserve the founder pilot freeze."
+}
+
+if ($CurrentHandoverText -notmatch "MLAI-028.1") {
+    throw "Current handover does not record the Positioning foundation."
+}
+
+$PositioningDecisionText = Get-Content -LiteralPath (
+    Join-Path $ProjectRoot "governance\adrs\ADR-0015-positioning-intelligence-foundation.md"
+) -Raw
+
+if ($PositioningDecisionText -notmatch '(?m)^Accepted\r?$') {
+    throw "ADR-0015 is not recorded as accepted."
+}
+
+if (
+    ($PositioningDecisionText -notmatch "immutable") -or
+    ($PositioningDecisionText -notmatch "customer-pilot freeze")
+) {
+    throw "ADR-0015 does not preserve lifecycle and pilot-freeze boundaries."
 }
 
 $CompositionDecisionText = Get-Content -LiteralPath (

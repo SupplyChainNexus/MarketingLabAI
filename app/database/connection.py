@@ -140,6 +140,36 @@ class SQLiteDatabase:
                         ON DELETE CASCADE
                 );
 
+                CREATE TABLE IF NOT EXISTS positioning_decisions (
+                    positioning_id TEXT NOT NULL,
+                    version INTEGER NOT NULL,
+                    tenant_id TEXT NOT NULL,
+                    brand_id TEXT NOT NULL,
+                    target_kind TEXT NOT NULL,
+                    target_id TEXT NOT NULL,
+                    product_id TEXT NOT NULL,
+                    status TEXT NOT NULL,
+                    payload_json TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    approved_at TEXT,
+                    PRIMARY KEY (tenant_id, positioning_id, version),
+                    FOREIGN KEY (tenant_id) REFERENCES tenants(tenant_id),
+                    FOREIGN KEY (brand_id) REFERENCES brands(brand_id)
+                        ON DELETE CASCADE
+                );
+
+                CREATE INDEX IF NOT EXISTS idx_positioning_tenant_brand
+                    ON positioning_decisions(tenant_id, brand_id);
+
+                CREATE INDEX IF NOT EXISTS idx_positioning_target
+                    ON positioning_decisions(
+                        tenant_id, brand_id, target_kind, target_id
+                    );
+
+                CREATE INDEX IF NOT EXISTS idx_positioning_status
+                    ON positioning_decisions(tenant_id, status);
+
                 CREATE TABLE IF NOT EXISTS tenant_memberships (
                     provider TEXT NOT NULL,
                     subject_id TEXT NOT NULL,
@@ -507,6 +537,19 @@ class SQLiteDatabase:
                 VALUES (
                     9,
                     'Add versioned campaign plans',
+                    strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+                )
+                """)
+
+            connection.execute("""
+                INSERT OR IGNORE INTO schema_migrations (
+                    version,
+                    description,
+                    applied_at
+                )
+                VALUES (
+                    14,
+                    'Add versioned Positioning Intelligence decisions',
                     strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
                 )
                 """)

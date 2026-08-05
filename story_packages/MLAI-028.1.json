@@ -1,0 +1,18 @@
+{
+  "story_id": "MLAI-028.1",
+  "slug": "positioning_intelligence_foundation",
+  "title": "Positioning Intelligence Foundation",
+  "focused_tests": [
+    "tests.test_positioning_intelligence",
+    "tests.test_positioning_repository",
+    "tests.test_positioning_migration",
+    "tests.test_sqlite_database"
+  ],
+  "import_modules": [
+    "app.positioning_intelligence",
+    "app.positioning_intelligence.models",
+    "app.positioning_intelligence.repository",
+    "app.positioning_intelligence.service"
+  ],
+  "commit_message": "feat(positioning): establish intelligence foundation"
+}

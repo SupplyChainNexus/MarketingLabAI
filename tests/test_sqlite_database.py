@@ -42,6 +42,7 @@ class SQLiteDatabaseTests(unittest.TestCase):
                 "marketing_briefs",
                 "memory_events",
                 "pilot_sessions",
+                "positioning_decisions",
                 "product_intelligence_profiles",
                 "prompt_packs",
                 "schema_migrations",

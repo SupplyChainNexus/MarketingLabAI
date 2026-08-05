@@ -2,7 +2,7 @@
 
 ## Review checkpoint
 
-Reviewed after MLAI-027.6 and PDR-0003 Marketing Decision Doctrine.
+Reviewed after MLAI-028.1 Positioning Intelligence Foundation.
 
 ## Maturity scale
 
@@ -28,7 +28,7 @@ deployment-specific identity, legal, privacy, and rehearsal evidence is absent.
 | Customer | Segments and ICPs | Defines relevant customer groups | 3 | Compose into pilot |
 | Customer | Personas, needs, motivations, triggers, objections, channels, and journeys | Improves relevance and persuasion | 3 | Compose into pilot |
 | Product | Verified product and offer context | Prevents inaccurate offers and unsupported claims | 3 | Maintain; add lifecycle evidence after pilot |
-| Positioning | Target selection, persona-product matching, differentiation, value proposition, alternatives, and proof | Establishes why a chosen customer should prefer the offer | 0 | After pilot gate; precedes Strategy |
+| Positioning | Target selection, persona-product matching, differentiation, value proposition, alternatives, and proof | Establishes why a chosen customer should prefer the offer | 1 | MLAI-028.2 target-product relevance |
 | Strategy | Situation synthesis, business objectives, coherent marketing mix, channel roles, messaging hierarchy, and measurement plan | Turns intelligence into coordinated decisions | 0 | After Positioning; pilot uses approved brief scope |
 | Environment | Evidence-backed political, economic, social, technological, legal, and environmental signals | Keeps decisions responsive to material market conditions | 0 | Define with Strategy without premature live feeds |
 | Application | Canonical SQLite composition root | Gives future interfaces one governed runtime boundary | 3 | Maintain through MLAI-027 |
@@ -58,3 +58,4 @@ deployment-specific identity, legal, privacy, and rehearsal evidence is absent.
 6. MLAI-027.6 Pilot Operations and Release Gate
 7. Founder-frozen customer-pilot checkpoint
 8. Continue the approved product sequence until a customer-facing pilot is necessary
+9. MLAI-028 Positioning Intelligence, beginning with its evidence and lifecycle foundation
