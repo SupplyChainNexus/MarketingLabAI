@@ -1,14 +1,14 @@
-# MLAI-027 — Secure Pilot Vertical Slice
+# MLAI-027 - Secure Pilot Vertical Slice
 
 ## Status
 
-Approved — not started
+In progress - MLAI-027.1 implemented
 
 ## Product authority
 
-- `governance/pdrs/PDR-0001-product-direction-ratification.md`
-- `governance/pdrs/PDR-0002-secure-pilot-vertical-slice.md`
-- `docs/launch-readiness-review.md`
+- governance/pdrs/PDR-0001-product-direction-ratification.md
+- governance/pdrs/PDR-0002-secure-pilot-vertical-slice.md
+- docs/launch-readiness-review.md
 
 ## Objective
 
@@ -23,18 +23,18 @@ limitations, and export the result with a complete audit trail.
 
 ## Delivery plan
 
-### MLAI-027.1 — Canonical Application Composition
+### MLAI-027.1 - Canonical Application Composition
 
-- [ ] Define one application composition root.
-- [ ] Select SQLite as canonical pilot persistence.
-- [ ] Compose tenant, brand, Company Brain, Customer Intelligence, Campaign
+- [x] Define one application composition root.
+- [x] Select SQLite as canonical pilot persistence.
+- [x] Compose tenant, brand, Company Brain, Customer Intelligence, Campaign
       Plan, Marketing Brief, Prompt Pack, generation, compliance, and audit.
-- [ ] Isolate legacy JSON runtime paths behind migration or compatibility
+- [x] Isolate legacy JSON runtime paths behind migration or compatibility
       boundaries.
-- [ ] Add an ADR for application-boundary and dependency direction.
-- [ ] Prove the complete slice with synthetic data and no customer interface.
+- [x] Add an ADR for application-boundary and dependency direction.
+- [x] Prove the complete slice with synthetic data and no customer interface.
 
-### MLAI-027.2 — Verified Product and Offer Context
+### MLAI-027.2 - Verified Product and Offer Context
 
 - [ ] Define minimum Product Intelligence models and validation.
 - [ ] Capture identity, features, benefits, prices, limitations, proof,
@@ -43,7 +43,7 @@ limitations, and export the result with a complete audit trail.
 - [ ] Integrate verified context through established AI context boundaries.
 - [ ] Add persistence and focused regression coverage.
 
-### MLAI-027.3 — Identity and Tenant Authorization
+### MLAI-027.3 - Identity and Tenant Authorization
 
 - [ ] Define an external identity-provider adapter boundary.
 - [ ] Derive tenant access from the authenticated principal.
@@ -51,14 +51,14 @@ limitations, and export the result with a complete audit trail.
 - [ ] Add cross-tenant denial tests for every exposed operation.
 - [ ] Audit identity, approval, generation, and export actions.
 
-### MLAI-027.4 — Pilot API and Workflow Contract
+### MLAI-027.4 - Pilot API and Workflow Contract
 
 - [ ] Expose only vertical-slice operations.
 - [ ] Keep persistence and AI-provider models outside public contracts.
 - [ ] Add lifecycle conflict and idempotency handling.
 - [ ] Add synthetic end-to-end API tests.
 
-### MLAI-027.5 — Thin Pilot Workspace
+### MLAI-027.5 - Thin Pilot Workspace
 
 - [ ] Add guided onboarding and missing-context indicators.
 - [ ] Add Campaign Plan and Marketing Brief review.
@@ -66,7 +66,7 @@ limitations, and export the result with a complete audit trail.
 - [ ] Display content, compliance findings, limitations, and audit metadata.
 - [ ] Support revision and safe export without direct publishing.
 
-### MLAI-027.6 — Pilot Operations and Release Gate
+### MLAI-027.6 - Pilot Operations and Release Gate
 
 - [ ] Add deployment and runtime configuration.
 - [ ] Add environment-managed secrets.

@@ -123,6 +123,9 @@ class AIOrchestrator:
                 "brand_id": brand_id,
                 "task": task,
                 "company_brain_included": (context.company_brain_included),
+                "customer_intelligence_included": (
+                    context.customer_intelligence_included
+                ),
                 "memory_included": (context.memory_included),
                 "memory_count": context.memory_count,
             }
@@ -161,6 +164,12 @@ class AIOrchestrator:
             PromptSection(
                 title="Company Context",
                 content=context.company_context,
+            )
+        )
+        composer.add(
+            PromptSection(
+                title="Customer Context",
+                content=context.customer_context,
             )
         )
         composer.add(

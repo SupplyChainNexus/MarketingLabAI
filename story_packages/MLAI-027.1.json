@@ -1,0 +1,19 @@
+{
+  "story_id": "MLAI-027.1",
+  "slug": "canonical_application_composition",
+  "title": "Canonical Application Composition",
+  "focused_tests": [
+    "tests.test_application_composition",
+    "tests.test_ai_context_assembler",
+    "tests.test_ai_orchestrator",
+    "tests.test_campaign_plan_repository",
+    "tests.test_marketing_brief_repository",
+    "tests.test_marketing_brief_campaign_workflow"
+  ],
+  "import_modules": [
+    "app.application",
+    "app.application.composition",
+    "app.ai.orchestrator"
+  ],
+  "commit_message": "feat(application): establish canonical pilot composition"
+}
