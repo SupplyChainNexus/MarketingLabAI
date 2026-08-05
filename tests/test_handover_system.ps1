@@ -218,4 +218,27 @@ if (
     throw "ADR-0014 does not preserve runtime and pilot-freeze boundaries."
 }
 
+$StrategyDecisionText = Get-Content -LiteralPath (
+    Join-Path $ProjectRoot "governance\adrs\ADR-0017-strategy-intelligence-foundation.md"
+) -Raw
+
+if ($StrategyDecisionText -notmatch '(?m)^Accepted\r?$') {
+    throw "ADR-0017 is not recorded as accepted."
+}
+
+if (
+    ($StrategyDecisionText -notmatch "approved positioning") -or
+    ($StrategyDecisionText -notmatch "customer pilot remains founder-frozen")
+) {
+    throw "ADR-0017 does not preserve strategy dependency and pilot boundaries."
+}
+
+if (
+    ($CurrentHandoverText -notmatch "MLAI-029.1") -or
+    ($CurrentHandoverText -notmatch "MLAI-029.6") -or
+    ($CurrentHandoverText -notmatch "Strand Auto Parts")
+) {
+    throw "Current handover does not preserve the locked Strategy sequence."
+}
+
 Write-Host "MARKETINGLABAI HANDOVER REGRESSION TESTS PASSED" -ForegroundColor Green

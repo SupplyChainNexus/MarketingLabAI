@@ -46,6 +46,7 @@ class SQLiteDatabaseTests(unittest.TestCase):
                 "product_intelligence_profiles",
                 "prompt_packs",
                 "schema_migrations",
+                "strategy_decisions",
                 "tenant_memberships",
                 "tenants",
             ],

@@ -2,7 +2,7 @@
 
 ## Review checkpoint
 
-Reviewed after MLAI-028.5 Governed Workflow Integration.
+Reviewed after MLAI-029.1 Strategy Intelligence Foundation.
 
 ## Maturity scale
 
@@ -29,7 +29,8 @@ deployment-specific identity, legal, privacy, and rehearsal evidence is absent.
 | Customer | Personas, needs, motivations, triggers, objections, channels, and journeys | Improves relevance and persuasion | 3 | Compose into pilot |
 | Product | Verified product and offer context | Prevents inaccurate offers and unsupported claims | 3 | Maintain; add lifecycle evidence after pilot |
 | Positioning | Target selection, persona-product matching, differentiation, value proposition, alternatives, proof, and governed workflow context | Establishes why a chosen customer should prefer the offer | 3 | Complete synthetic integration; validate only when pilot is unfrozen |
-| Strategy | Situation synthesis, business objectives, coherent marketing mix, channel roles, messaging hierarchy, and measurement plan | Turns intelligence into coordinated decisions | 0 | After Positioning; pilot uses approved brief scope |
+| Strategy | Tenant-owned strategy lifecycle, approved positioning dependency, evidence, assumptions, unknowns, objectives, choices, and confidence | Establishes an auditable strategic source of truth | 1 | Continue MLAI-029.2 through MLAI-029.6 |
+| Strategy | Situation synthesis, coherent marketing mix, channel roles, messaging hierarchy, and measurement plan | Turns intelligence into coordinated decisions | 0 | Deliver in dependency order after foundation |
 | Environment | Evidence-backed political, economic, social, technological, legal, and environmental signals | Keeps decisions responsive to material market conditions | 0 | Define with Strategy without premature live feeds |
 | Application | Canonical SQLite composition root | Gives future interfaces one governed runtime boundary | 3 | Maintain through MLAI-027 |
 | Campaign | Campaign Plan lifecycle and validation | Makes coordinated campaigns reviewable | 3 | Maintain |
@@ -59,3 +60,9 @@ deployment-specific identity, legal, privacy, and rehearsal evidence is absent.
 7. Founder-frozen customer-pilot checkpoint
 8. Continue the approved product sequence until a customer-facing pilot is necessary
 9. MLAI-028 Positioning Intelligence, beginning with its evidence and lifecycle foundation
+10. MLAI-029.1 Strategy Intelligence Foundation
+11. MLAI-029.2 Situation and Opportunity Synthesis
+12. MLAI-029.3 Objectives and Strategic Choices
+13. MLAI-029.4 Marketing Mix and Measurement
+14. MLAI-029.5 Governed Workflow Integration
+15. MLAI-029.6 Client-Facing Strategy Workspace and Design-Partner Readiness

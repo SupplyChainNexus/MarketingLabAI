@@ -170,6 +170,35 @@ class SQLiteDatabase:
                 CREATE INDEX IF NOT EXISTS idx_positioning_status
                     ON positioning_decisions(tenant_id, status);
 
+                CREATE TABLE IF NOT EXISTS strategy_decisions (
+                    strategy_id TEXT NOT NULL,
+                    version INTEGER NOT NULL,
+                    tenant_id TEXT NOT NULL,
+                    brand_id TEXT NOT NULL,
+                    positioning_id TEXT NOT NULL,
+                    positioning_version INTEGER NOT NULL,
+                    status TEXT NOT NULL,
+                    payload_json TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    approved_at TEXT,
+                    PRIMARY KEY (tenant_id, strategy_id, version),
+                    FOREIGN KEY (tenant_id) REFERENCES tenants(tenant_id),
+                    FOREIGN KEY (brand_id) REFERENCES brands(brand_id)
+                        ON DELETE CASCADE
+                );
+
+                CREATE INDEX IF NOT EXISTS idx_strategy_tenant_brand
+                    ON strategy_decisions(tenant_id, brand_id);
+
+                CREATE INDEX IF NOT EXISTS idx_strategy_positioning
+                    ON strategy_decisions(
+                        tenant_id, positioning_id, positioning_version
+                    );
+
+                CREATE INDEX IF NOT EXISTS idx_strategy_status
+                    ON strategy_decisions(tenant_id, status);
+
                 CREATE TABLE IF NOT EXISTS tenant_memberships (
                     provider TEXT NOT NULL,
                     subject_id TEXT NOT NULL,
@@ -416,6 +445,19 @@ class SQLiteDatabase:
                 VALUES (
                     2,
                     'Add versioned compliance rules',
+                    strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+                )
+                """)
+
+            connection.execute("""
+                INSERT OR IGNORE INTO schema_migrations (
+                    version,
+                    description,
+                    applied_at
+                )
+                VALUES (
+                    15,
+                    'Add versioned Marketing Strategy Intelligence decisions',
                     strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
                 )
                 """)

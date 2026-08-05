@@ -1,0 +1,18 @@
+{
+  "story_id": "MLAI-029.1",
+  "slug": "strategy_intelligence_foundation",
+  "title": "Strategy Intelligence Foundation",
+  "focused_tests": [
+    "tests.test_strategy_intelligence",
+    "tests.test_strategy_repository",
+    "tests.test_strategy_migration",
+    "tests.test_sqlite_database"
+  ],
+  "import_modules": [
+    "app.strategy_intelligence",
+    "app.strategy_intelligence.models",
+    "app.strategy_intelligence.repository",
+    "app.strategy_intelligence.service"
+  ],
+  "commit_message": "feat(strategy): establish intelligence foundation"
+}
