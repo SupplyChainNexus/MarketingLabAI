@@ -55,6 +55,8 @@ class AIOrchestrator:
         max_output_tokens: int | None = None,
         metadata: dict[str, Any] | None = None,
         additional_sections: Sequence[PromptSection] = (),
+        positioning_id: str = "",
+        positioning_version: int = 0,
     ) -> IntelligenceResponse:
         """Generate a provider-neutral intelligence response."""
 
@@ -108,6 +110,8 @@ class AIOrchestrator:
         context = self.context_assembler.build(
             tenant_id=tenant_id,
             brand_id=brand_id,
+            positioning_id=positioning_id,
+            positioning_version=positioning_version,
         )
 
         prompt = self._build_prompt(
@@ -132,6 +136,11 @@ class AIOrchestrator:
                 ),
                 "memory_included": (context.memory_included),
                 "memory_count": context.memory_count,
+                "positioning_intelligence_included": (
+                    context.positioning_intelligence_included
+                ),
+                "positioning_id": positioning_id,
+                "positioning_version": positioning_version,
             }
         )
 
@@ -180,6 +189,12 @@ class AIOrchestrator:
             PromptSection(
                 title="Verified Product and Offer Context",
                 content=context.product_context,
+            )
+        )
+        composer.add(
+            PromptSection(
+                title="Approved Positioning Context",
+                content=context.positioning_context,
             )
         )
         composer.add(

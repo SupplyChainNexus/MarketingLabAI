@@ -15,6 +15,7 @@ $RequiredFiles = @(
     "governance\pdrs\PDR-0003-marketing-decision-doctrine.md",
     "governance\adrs\ADR-0014-pilot-operations-release-gate.md",
     "governance\adrs\ADR-0015-positioning-intelligence-foundation.md",
+    "governance\adrs\ADR-0016-governed-positioning-workflow-integration.md",
     "docs\pilot-release-gate.md",
     "docs\pilot-operations-runbook.md",
     "docs\privacy-and-data-handling.md",
@@ -126,8 +127,23 @@ if ($CurrentHandoverText -notmatch "customer pilot remains explicitly") {
     throw "Current handover does not preserve the founder pilot freeze."
 }
 
-if ($CurrentHandoverText -notmatch "MLAI-028.4") {
-    throw "Current handover does not record value proposition decisions."
+if ($CurrentHandoverText -notmatch "MLAI-028.5") {
+    throw "Current handover does not record governed positioning integration."
+}
+
+$PositioningIntegrationText = Get-Content -LiteralPath (
+    Join-Path $ProjectRoot "governance\adrs\ADR-0016-governed-positioning-workflow-integration.md"
+) -Raw
+
+if ($PositioningIntegrationText -notmatch '(?m)^Accepted\r?$') {
+    throw "ADR-0016 is not recorded as accepted."
+}
+
+if (
+    ($PositioningIntegrationText -notmatch "same immutable\s+positioning version") -or
+    ($PositioningIntegrationText -notmatch "customer\s+pilot")
+) {
+    throw "ADR-0016 does not preserve workflow and frozen-pilot boundaries."
 }
 
 $PositioningDecisionText = Get-Content -LiteralPath (

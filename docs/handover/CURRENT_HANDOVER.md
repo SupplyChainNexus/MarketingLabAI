@@ -3,13 +3,13 @@
 ## Checkpoint
 
 - Branch: `feature/tenant-architecture`
-- Installation baseline: `90872f2`
+- Installation baseline: `990f104`
 - Remote state before this story: synchronized with
   `origin/feature/tenant-architecture`
 - Last completed epic: MLAI-027 Secure Pilot Vertical Slice
 - Active epic: MLAI-028 Positioning Intelligence
-- Active story: MLAI-028.4 Value Proposition and Positioning Decisions
-- Validation target: candidate readiness, lifecycle boundaries, continuity, and full regression
+- Active story: MLAI-028.5 Governed Workflow Integration
+- Validation target: approved positioning integration, tenant-safe generation, continuity, and full regression
 
 ## Product direction
 
@@ -44,6 +44,13 @@ relevance, differentiation, proof, and verified evidence. Incomplete inputs
 produce no claim. Human review remains separate from approval, retirement adds
 an immutable version, and replacement begins a new draft identity.
 
+MLAI-028.5 composes Positioning Intelligence through the canonical application,
+adds a provider-neutral approved-positioning context section, records immutable
+positioning references on Campaign Plans and Marketing Briefs, and requires
+matching current approved references before governed generation. The authorized
+API and thin workspace expose safe positioning readiness without adding a
+positioning mutation path.
+
 ## Architectural boundary
 
 Positioning is a decision domain, not a Campaign Plan field or prompt-writing
@@ -65,8 +72,8 @@ decision. Remind the founder at that point, as requested.
 
 ## Remaining constraints
 
-- Canonical application and generation integration remain future MLAI-028.5
-  work; incomplete or draft positioning must not flow downstream.
+- Marketing Strategy Intelligence remains the next unimplemented intelligence
+  layer; it must consume approved positioning without copying its authority.
 - Alternative evidence has no canonical repository or expiry lifecycle yet;
   synthetic fixtures must not be represented as market truth.
 - Product use cases are not yet a governed Product Intelligence field and are
@@ -77,6 +84,6 @@ decision. Remind the founder at that point, as requested.
 
 ## Next engineer's first action
 
-Run the complete MLAI-028.4 validator. Then begin MLAI-028.5 by composing only
-approved positioning through CanonicalApplication and provider-neutral context
-without unfreezing the customer pilot.
+Run the complete MLAI-028.5 validator. Then perform the next-epic readiness
+review before activating Marketing Strategy work. Do not unfreeze the customer
+pilot without a new founder-approved decision.

@@ -121,6 +121,9 @@ class AIOrchestratorTests(unittest.TestCase):
                 "product_intelligence_included": False,
                 "memory_included": False,
                 "memory_count": 0,
+                "positioning_intelligence_included": False,
+                "positioning_id": "",
+                "positioning_version": 0,
             },
         )
 

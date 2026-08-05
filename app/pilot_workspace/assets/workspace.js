@@ -47,8 +47,10 @@ function renderReview(data) {
   });
   byId("campaignStatus").textContent = `Version ${data.campaign_plan.version} · ${data.campaign_plan.status}`;
   byId("briefStatus").textContent = `Version ${data.marketing_brief.version} · ${data.marketing_brief.status}`;
+  byId("positioningStatus").textContent = data.positioning.ready ? "Approved positioning ready" : data.positioning.reason;
   renderDefinitionList(byId("campaignSummary"), data.campaign_plan);
   renderDefinitionList(byId("briefSummary"), data.marketing_brief);
+  renderDefinitionList(byId("positioningSummary"), data.positioning);
   byId("campaignNotes").value = data.campaign_plan.notes || "";
   byId("briefNotes").value = data.marketing_brief.notes || "";
   byId("generateAsset").disabled = !data.generation_ready;
@@ -57,7 +59,7 @@ function renderReview(data) {
 async function loadWorkflow() {
   try {
     const data = await api("/v1/pilot/workflow-review", { brand_id:value("brandId"), campaign_id:value("campaignId"), brief_id:value("briefId") });
-    renderReview(data); message(data.generation_ready ? "Workflow is approved and ready." : "Review and approve both governance artifacts before generation.");
+    renderReview(data); message(data.generation_ready ? "Positioning, plan, and brief are approved and ready." : "Approved positioning, Campaign Plan, and Marketing Brief are required before generation.");
   } catch (error) { message(error.message, true); }
 }
 

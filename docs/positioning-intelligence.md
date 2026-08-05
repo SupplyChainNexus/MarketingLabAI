@@ -82,9 +82,28 @@ and can then pass the existing approval boundary. Retirement creates another
 immutable version. Replacement starts a new draft positioning identity for the
 same tenant and brand, preserving the retired history.
 
-## Next increment
+## Governed workflow integration
 
-MLAI-028.5 will compose approved positioning through the canonical application
-boundary and provider-neutral context adapters. It must not expose incomplete
-or draft positioning to Strategy or generation and does not unfreeze the
-customer pilot.
+MLAI-028.5 composes the Positioning repository, lifecycle service, and
+provider-neutral context adapter through `CanonicalApplication`. Campaign Plans
+and Marketing Briefs can reference one immutable positioning identity and
+version while they are drafted. Governed generation requires both artifacts to
+carry the same reference.
+
+At generation time the referenced decision must belong to the authenticated
+tenant and requested brand, be the latest version, and remain approved. Missing,
+mismatched, stale, draft, and retired references stop before any AI provider is
+called. The context adapter renders the reviewed value proposition, verified
+evidence, proof, assumptions, and unknowns as a distinct prompt section.
+
+The authorized API and thin workspace expose a transport-safe positioning
+summary and readiness reason. They do not permit positioning mutation or bypass
+its human approval lifecycle. Generation audit metadata records the immutable
+positioning reference.
+
+## Completion boundary
+
+Positioning Intelligence is now integrated for governed generation. Marketing
+Strategy Intelligence remains a separate, future domain and may consume this
+approved context in its own story. The customer pilot remains explicitly
+founder-frozen and all fixtures remain synthetic.

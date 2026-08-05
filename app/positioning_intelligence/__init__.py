@@ -1,5 +1,6 @@
 """Public Positioning Intelligence API."""
 
+from app.positioning_intelligence.context import PositioningContextProvider
 from app.positioning_intelligence.differentiation import (
     AlternativeEvidence,
     DifferentiationGap,
@@ -32,6 +33,7 @@ from app.positioning_intelligence.value_proposition import (
 )
 
 __all__ = [
+    "PositioningContextProvider",
     "AlternativeEvidence",
     "CandidateStatus",
     "DifferentiationGap",

@@ -126,14 +126,45 @@ class PilotApiService:
                 "lifecycle_conflict",
                 "Campaign Plan and Marketing Brief must belong to the requested brand.",
             )
+        positioning = None
+        positioning_ready = False
+        positioning_reason = "A shared positioning reference is required."
+        plan_reference = (plan.positioning_id, plan.positioning_version)
+        brief_reference = (brief.positioning_id, brief.positioning_version)
+        if plan.positioning_id and plan_reference == brief_reference:
+            try:
+                positioning = session.review_positioning(
+                    plan.positioning_id, version=plan.positioning_version
+                )
+                latest = self.application.positioning_intelligence.latest(
+                    tenant_id=tenant_id,
+                    positioning_id=plan.positioning_id,
+                )
+                positioning_ready = (
+                    positioning.brand_id == request.brand_id
+                    and positioning.status.value == "approved"
+                    and positioning.version == latest.version
+                )
+                positioning_reason = (
+                    "Current approved positioning is available."
+                    if positioning_ready
+                    else "Positioning is not current, approved, and brand-aligned."
+                )
+            except (FileNotFoundError, AuthorizationDeniedError):
+                positioning_reason = "Positioning is unavailable for this tenant."
         return ApiResponse(
             200,
             {
                 "context": self._context_summary(request.brand_id, context),
                 "campaign_plan": self._plan_summary(plan),
                 "marketing_brief": self._brief_summary(brief),
+                "positioning": self._positioning_summary(
+                    positioning, positioning_ready, positioning_reason
+                ),
                 "generation_ready": (
-                    plan.status.value == "approved" and brief.status.value == "approved"
+                    plan.status.value == "approved"
+                    and brief.status.value == "approved"
+                    and positioning_ready
                 ),
             },
         )
@@ -350,6 +381,11 @@ class PilotApiService:
             task=request.task,
             instructions=request.instructions,
         )
+        plan = self.application.campaign_plans.get(
+            request.campaign_id,
+            tenant_id=session.tenant_id,
+            version=request.campaign_version,
+        )
 
         subject_id = str(uuid4())
         compliance = ComplianceEngine(self.application.compliance_rules).evaluate(
@@ -377,6 +413,8 @@ class PilotApiService:
                     "campaign_version": request.campaign_version,
                     "brief_id": request.brief_id,
                     "brief_version": request.brief_version,
+                    "positioning_id": plan.positioning_id,
+                    "positioning_version": plan.positioning_version,
                     "provider": response.provider,
                     "model": response.model,
                     "generated_at": datetime.now(UTC).isoformat(),
@@ -428,6 +466,23 @@ class PilotApiService:
             "owner": plan.owner,
             "status": plan.status.value,
             "notes": plan.notes,
+            "positioning_id": plan.positioning_id,
+            "positioning_version": plan.positioning_version,
+        }
+
+    @staticmethod
+    def _positioning_summary(positioning, ready: bool, reason: str):
+        if positioning is None:
+            return {"ready": False, "reason": reason}
+        return {
+            "positioning_id": positioning.positioning_id,
+            "version": positioning.version,
+            "status": positioning.status.value,
+            "value_proposition": positioning.value_proposition,
+            "limitations": list(positioning.assumptions)
+            + [item.reason for item in positioning.unknowns],
+            "ready": ready,
+            "reason": reason,
         }
 
     @staticmethod

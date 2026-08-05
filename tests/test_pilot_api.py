@@ -27,6 +27,12 @@ from app.identity.provider import IdentityProviderAdapter
 from app.marketing_brief import BriefStatus, MarketingBrief, MarketingBriefEvidence
 from app.pilot_api import PilotApiService, PilotWsgiApplication
 from app.pilot_api.contracts import GenerationRequest
+from app.positioning_intelligence import (
+    PositioningDecision,
+    PositioningEvidence,
+    PositioningStatus,
+    TargetKind,
+)
 from app.tenants.models import Tenant
 
 
@@ -79,6 +85,28 @@ class PilotApiTests(unittest.TestCase):
         self.temporary_directory.cleanup()
 
     def _save_approved_governance(self) -> None:
+        self.application.positioning_intelligence.save(
+            PositioningDecision(
+                positioning_id="positioning-one",
+                version=1,
+                tenant_id="default",
+                brand_id="brand-one",
+                target_kind=TargetKind.SEGMENT,
+                target_id="segment-one",
+                product_id="product-one",
+                value_proposition="Verified synthetic value proposition.",
+                evidence=[
+                    PositioningEvidence(
+                        "Synthetic evidence",
+                        "Verified for workflow tests.",
+                        1.0,
+                        verified=True,
+                    )
+                ],
+                status=PositioningStatus.APPROVED,
+                approved_at="2026-08-06T00:00:00+00:00",
+            )
+        )
         self.application.campaign_plans.save(
             CampaignPlan(
                 campaign_id="campaign-one",
@@ -96,6 +124,8 @@ class PilotApiTests(unittest.TestCase):
                 ),
                 owner="Pilot Team",
                 status=CampaignStatus.APPROVED,
+                positioning_id="positioning-one",
+                positioning_version=1,
             )
         )
         self.application.marketing_briefs.save(
@@ -116,6 +146,8 @@ class PilotApiTests(unittest.TestCase):
                     )
                 ],
                 status=BriefStatus.APPROVED,
+                positioning_id="positioning-one",
+                positioning_version=1,
             )
         )
 
@@ -187,6 +219,7 @@ class PilotApiTests(unittest.TestCase):
         metadata = self.provider.requests[0].metadata
         self.assertEqual(metadata["approved_campaign_id"], "campaign-one")
         self.assertEqual(metadata["approved_brief_id"], "brief-one")
+        self.assertEqual(metadata["approved_positioning_id"], "positioning-one")
         self.assertEqual(metadata["authenticated_subject_id"], "pilot-user")
 
     def test_same_key_with_changed_request_is_a_conflict(self) -> None:

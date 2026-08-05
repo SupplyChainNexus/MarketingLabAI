@@ -115,7 +115,9 @@ class CampaignRevisionRequest:
 
     def __post_init__(self) -> None:
         _revision_values(
-            self.expected_version, self.changes, {"name", "owner", "notes"}
+            self.expected_version,
+            self.changes,
+            {"name", "owner", "notes", "positioning_id", "positioning_version"},
         )
 
 
@@ -141,6 +143,8 @@ class BriefRevisionRequest:
                 "success_metrics",
                 "assumptions",
                 "notes",
+                "positioning_id",
+                "positioning_version",
             },
         )
 

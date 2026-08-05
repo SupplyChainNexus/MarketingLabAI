@@ -2,7 +2,7 @@
 
 ## Review checkpoint
 
-Reviewed after MLAI-028.4 Value Proposition and Positioning Decisions.
+Reviewed after MLAI-028.5 Governed Workflow Integration.
 
 ## Maturity scale
 
@@ -28,7 +28,7 @@ deployment-specific identity, legal, privacy, and rehearsal evidence is absent.
 | Customer | Segments and ICPs | Defines relevant customer groups | 3 | Compose into pilot |
 | Customer | Personas, needs, motivations, triggers, objections, channels, and journeys | Improves relevance and persuasion | 3 | Compose into pilot |
 | Product | Verified product and offer context | Prevents inaccurate offers and unsupported claims | 3 | Maintain; add lifecycle evidence after pilot |
-| Positioning | Target selection, persona-product matching, differentiation, value proposition, alternatives, and proof | Establishes why a chosen customer should prefer the offer | 3 | MLAI-028.5 governed workflow integration |
+| Positioning | Target selection, persona-product matching, differentiation, value proposition, alternatives, proof, and governed workflow context | Establishes why a chosen customer should prefer the offer | 3 | Complete synthetic integration; validate only when pilot is unfrozen |
 | Strategy | Situation synthesis, business objectives, coherent marketing mix, channel roles, messaging hierarchy, and measurement plan | Turns intelligence into coordinated decisions | 0 | After Positioning; pilot uses approved brief scope |
 | Environment | Evidence-backed political, economic, social, technological, legal, and environmental signals | Keeps decisions responsive to material market conditions | 0 | Define with Strategy without premature live feeds |
 | Application | Canonical SQLite composition root | Gives future interfaces one governed runtime boundary | 3 | Maintain through MLAI-027 |

@@ -62,13 +62,18 @@
 
     <section class="review-grid" id="reviewPanel" hidden>
       <article class="panel">
-        <div class="section-heading"><span class="step">3</span><div><h2>Campaign Plan review</h2><p id="campaignStatus"></p></div></div>
+        <div class="section-heading"><span class="step">3</span><div><h2>Positioning review</h2><p id="positioningStatus"></p></div></div>
+        <dl id="positioningSummary"></dl>
+        <p class="muted">Positioning approval is a separate human decision and cannot be changed from this execution workspace.</p>
+      </article>
+      <article class="panel">
+        <div class="section-heading"><span class="step">4</span><div><h2>Campaign Plan review</h2><p id="campaignStatus"></p></div></div>
         <dl id="campaignSummary"></dl>
         <label>Revision note<textarea id="campaignNotes" rows="3"></textarea></label>
         <div class="actions"><button id="reviseCampaign">Save revision</button><button id="approveCampaign" class="primary">Approve plan</button></div>
       </article>
       <article class="panel">
-        <div class="section-heading"><span class="step">4</span><div><h2>Marketing Brief review</h2><p id="briefStatus"></p></div></div>
+        <div class="section-heading"><span class="step">5</span><div><h2>Marketing Brief review</h2><p id="briefStatus"></p></div></div>
         <dl id="briefSummary"></dl>
         <label>Revision note<textarea id="briefNotes" rows="3"></textarea></label>
         <div class="actions"><button id="reviseBrief">Save revision</button><button id="approveBrief" class="primary">Approve brief</button></div>
@@ -76,14 +81,14 @@
     </section>
 
     <section class="panel" id="generationPanel" hidden>
-      <div class="section-heading"><span class="step">5</span><div><h2>Governed generation</h2><p>Generation unlocks only after both reviewed versions are approved.</p></div></div>
+      <div class="section-heading"><span class="step">6</span><div><h2>Governed generation</h2><p>Generation unlocks only when approved positioning, plan, and brief references agree.</p></div></div>
       <label>Asset task<input id="generationTask" value="Create a synthetic campaign asset"></label>
       <label>Human instructions<textarea id="generationInstructions" rows="3">Use only approved facts and clearly preserve limitations.</textarea></label>
       <button id="generateAsset" class="primary" disabled>Generate approved asset</button>
     </section>
 
     <section class="panel" id="resultPanel" hidden>
-      <div class="section-heading"><span class="step">6</span><div><h2>Review result</h2><p>Content and compliance are separate review outcomes.</p></div></div>
+      <div class="section-heading"><span class="step">7</span><div><h2>Review result</h2><p>Content and compliance are separate review outcomes.</p></div></div>
       <h3>Generated content</h3><pre id="generatedContent"></pre>
       <h3>Independent compliance review</h3><div id="complianceResult"></div>
       <h3>Limitations</h3><ul id="limitations"></ul>

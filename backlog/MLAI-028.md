@@ -2,7 +2,7 @@
 
 ## Status
 
-MLAI-028.4 implemented - synthetic positioning candidates only
+MLAI-028.5 implemented - governed synthetic workflow integration
 
 ## Product authority
 
@@ -53,21 +53,21 @@ or assumptions remain before Marketing Strategy is developed.
 
 ### MLAI-028.5 - Governed Workflow Integration
 
-- [ ] Compose approved positioning through CanonicalApplication.
-- [ ] Expose provider-neutral positioning context to generation.
-- [ ] Require Campaign Plans and Marketing Briefs to reference approved
+- [x] Compose approved positioning through CanonicalApplication.
+- [x] Expose provider-neutral positioning context to generation.
+- [x] Require Campaign Plans and Marketing Briefs to reference approved
       positioning where applicable.
-- [ ] Add authorized API/workspace review without unfreezing the pilot.
+- [x] Add authorized API/workspace review without unfreezing the pilot.
 
 ## Epic acceptance criteria
 
-- [ ] Positioning consumes validated Company, Customer, and Product context.
-- [ ] Target and product relevance are explainable and evidence-linked.
-- [ ] Unknowns and assumptions cannot appear as verified facts.
-- [ ] Approval and version history are tenant-scoped and auditable.
-- [ ] Strategy and generation consume only approved positioning decisions.
-- [ ] Focused and complete regressions pass.
-- [ ] Governance, capability maturity, risk, debt, and handover remain current.
+- [x] Positioning consumes validated Company, Customer, and Product context.
+- [x] Target and product relevance are explainable and evidence-linked.
+- [x] Unknowns and assumptions cannot appear as verified facts.
+- [x] Approval and version history are tenant-scoped and auditable.
+- [x] Generation consumes only approved positioning decisions.
+- [x] Focused and complete regressions pass.
+- [x] Governance, capability maturity, risk, debt, and handover remain current.
 
 ## Explicitly deferred
 

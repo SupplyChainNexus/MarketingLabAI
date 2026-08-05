@@ -242,6 +242,8 @@ class CampaignPlan:
     version: int = 1
     status: CampaignStatus = CampaignStatus.DRAFT
     notes: str = ""
+    positioning_id: str = ""
+    positioning_version: int = 0
     created_at: datetime = field(default_factory=_utc_now)
     updated_at: datetime = field(default_factory=_utc_now)
 
@@ -252,6 +254,15 @@ class CampaignPlan:
         self.owner = _required_text("owner", self.owner)
         self.campaign_id = _required_text("campaign_id", self.campaign_id)
         self.notes = _optional_text("notes", self.notes)
+        self.positioning_id = _optional_text("positioning_id", self.positioning_id)
+        if isinstance(self.positioning_version, bool) or not isinstance(
+            self.positioning_version, int
+        ):
+            raise TypeError("positioning_version must be an integer.")
+        if bool(self.positioning_id) != (self.positioning_version >= 1):
+            raise ValueError(
+                "positioning_id and positioning_version must be provided together."
+            )
 
         if isinstance(self.version, bool) or not isinstance(self.version, int):
             raise TypeError("version must be an integer.")
@@ -338,6 +349,8 @@ class CampaignPlan:
             "owner": self.owner,
             "status": self.status.value,
             "notes": self.notes,
+            "positioning_id": self.positioning_id,
+            "positioning_version": self.positioning_version,
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
         }
@@ -364,6 +377,8 @@ class CampaignPlan:
             owner=data["owner"],
             status=CampaignStatus(data["status"]),
             notes=data.get("notes", ""),
+            positioning_id=data.get("positioning_id", ""),
+            positioning_version=data.get("positioning_version", 0),
             created_at=datetime.fromisoformat(data["created_at"]),
             updated_at=datetime.fromisoformat(data["updated_at"]),
         )

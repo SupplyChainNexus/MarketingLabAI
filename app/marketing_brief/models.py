@@ -163,6 +163,8 @@ class MarketingBrief:
     evidence: list[MarketingBriefEvidence] = field(default_factory=list)
     assumptions: list[str] = field(default_factory=list)
     notes: str = ""
+    positioning_id: str = ""
+    positioning_version: int = 0
     status: BriefStatus = BriefStatus.DRAFT
     version: int = 1
     created_at: str = field(default_factory=current_utc_timestamp)
@@ -200,6 +202,15 @@ class MarketingBrief:
         self.key_message = _optional_text(self.key_message)
         self.call_to_action = _optional_text(self.call_to_action)
         self.notes = _optional_text(self.notes)
+        self.positioning_id = _optional_text(self.positioning_id)
+        if isinstance(self.positioning_version, bool) or not isinstance(
+            self.positioning_version, int
+        ):
+            raise TypeError("positioning_version must be an integer.")
+        if bool(self.positioning_id) != (self.positioning_version >= 1):
+            raise ValueError(
+                "positioning_id and positioning_version must be provided together."
+            )
 
         self.channels = _clean_text_list(
             "channels",
@@ -360,6 +371,8 @@ class MarketingBrief:
             "evidence": [evidence_item.to_dict() for evidence_item in self.evidence],
             "assumptions": list(self.assumptions),
             "notes": self.notes,
+            "positioning_id": self.positioning_id,
+            "positioning_version": self.positioning_version,
             "status": self.status.value,
             "version": self.version,
             "created_at": self.created_at,

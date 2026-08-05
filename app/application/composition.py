@@ -30,6 +30,11 @@ from app.marketing_brief.campaign_workflow import MarketingBriefCampaignWorkflow
 from app.marketing_brief.prompt_pack import MarketingBriefPromptPackService
 from app.marketing_brief.repository import MarketingBriefRepository
 from app.marketing_brief.service import MarketingBriefService
+from app.positioning_intelligence import (
+    PositioningContextProvider,
+    PositioningRepository,
+    PositioningService,
+)
 from app.product_intelligence import (
     ProductContextProvider,
     ProductIntelligenceRepository,
@@ -49,6 +54,7 @@ class CanonicalApplication:
     business_intelligence: BusinessIntelligenceRepository
     customer_intelligence: CustomerIntelligenceRepository
     product_intelligence: ProductIntelligenceRepository
+    positioning_intelligence: PositioningRepository
     memory: MemoryRepository
     campaign_plans: CampaignPlanRepository
     marketing_briefs: MarketingBriefRepository
@@ -75,6 +81,7 @@ class CanonicalApplication:
             business_intelligence=BusinessIntelligenceRepository(selected_database),
             customer_intelligence=CustomerIntelligenceRepository(selected_database),
             product_intelligence=ProductIntelligenceRepository(selected_database),
+            positioning_intelligence=PositioningRepository(selected_database),
             memory=MemoryRepository(selected_database),
             campaign_plans=CampaignPlanRepository(selected_database),
             marketing_briefs=MarketingBriefRepository(selected_database),
@@ -121,8 +128,16 @@ class CanonicalApplication:
             product_context_provider=ProductContextProvider(
                 repository=self.product_intelligence,
             ),
+            positioning_context_provider=PositioningContextProvider(
+                repository=self.positioning_intelligence,
+            ),
             memory_repository=self.memory,
         )
+
+    def build_positioning_service(self) -> PositioningService:
+        """Return the canonical immutable Positioning Intelligence service."""
+
+        return PositioningService(self.positioning_intelligence)
 
     def build_marketing_brief_service(self) -> MarketingBriefService:
         """Return the canonical immutable Marketing Brief service."""

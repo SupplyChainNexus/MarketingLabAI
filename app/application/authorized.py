@@ -47,11 +47,19 @@ class AuthorizedTenantApplication:
     tenant_id: str
     authorization: TenantAuthorizationService
 
-    def build_context(self, *, brand_id: str):
+    def build_context(
+        self,
+        *,
+        brand_id: str,
+        positioning_id: str = "",
+        positioning_version: int = 0,
+    ):
         self._authorize_brand(Permission.VIEW, brand_id)
         return self.application.build_context_assembler().build(
             tenant_id=self.tenant_id,
             brand_id=brand_id,
+            positioning_id=positioning_id,
+            positioning_version=positioning_version,
         )
 
     def save_onboarding_context(
@@ -174,6 +182,38 @@ class AuthorizedTenantApplication:
             raise LifecycleConflictError("Campaign Plan version is not approved.")
         if brief.status is not BriefStatus.APPROVED:
             raise LifecycleConflictError("Marketing Brief version is not approved.")
+        plan_reference = (plan.positioning_id, plan.positioning_version)
+        brief_reference = (brief.positioning_id, brief.positioning_version)
+        if not plan.positioning_id or plan_reference != brief_reference:
+            raise LifecycleConflictError(
+                "Campaign Plan and Marketing Brief require the same approved "
+                "positioning reference."
+            )
+        try:
+            positioning = self.application.positioning_intelligence.get(
+                tenant_id=self.tenant_id,
+                positioning_id=plan.positioning_id,
+                version=plan.positioning_version,
+            )
+            latest_positioning = self.application.positioning_intelligence.latest(
+                tenant_id=self.tenant_id,
+                positioning_id=plan.positioning_id,
+            )
+        except FileNotFoundError as error:
+            raise LifecycleConflictError(
+                "Referenced positioning was not found for this tenant."
+            ) from error
+        if positioning.brand_id != brand_id:
+            raise LifecycleConflictError(
+                "Referenced positioning belongs to another brand."
+            )
+        if (
+            positioning.status.value != "approved"
+            or latest_positioning.version != positioning.version
+        ):
+            raise LifecycleConflictError(
+                "Referenced positioning is not the current approved version."
+            )
         return self.application.build_ai_orchestrator(registry).generate(
             tenant_id=self.tenant_id,
             brand_id=brand_id,
@@ -186,7 +226,11 @@ class AuthorizedTenantApplication:
                 "approved_campaign_version": plan.version,
                 "approved_brief_id": brief.brief_id,
                 "approved_brief_version": brief.version,
+                "approved_positioning_id": positioning.positioning_id,
+                "approved_positioning_version": positioning.version,
             },
+            positioning_id=positioning.positioning_id,
+            positioning_version=positioning.version,
             **options,
         )
 
@@ -220,6 +264,17 @@ class AuthorizedTenantApplication:
         return self.application.campaign_plans.get(
             campaign_id, tenant_id=self.tenant_id, version=version
         )
+
+    def review_positioning(self, positioning_id: str, *, version: int):
+        """Return one authorized, tenant-scoped positioning decision."""
+
+        decision = self.application.positioning_intelligence.get(
+            tenant_id=self.tenant_id,
+            positioning_id=positioning_id,
+            version=version,
+        )
+        self._authorize_brand(Permission.VIEW, decision.brand_id)
+        return decision
 
     def revise_campaign_plan(
         self,

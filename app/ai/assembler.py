@@ -11,6 +11,7 @@ from app.database.repositories import (
     BusinessIntelligenceRepository,
     MemoryRepository,
 )
+from app.positioning_intelligence.context import PositioningContextProvider
 from app.product_intelligence.provider import ProductContextProvider
 
 
@@ -23,6 +24,7 @@ class AIContext:
     memory_count: int = 0
     customer_context: str = ""
     product_context: str = ""
+    positioning_context: str = ""
 
     @property
     def company_brain_included(self) -> bool:
@@ -48,6 +50,12 @@ class AIContext:
 
         return bool(self.product_context)
 
+    @property
+    def positioning_intelligence_included(self) -> bool:
+        """Return whether approved Positioning Intelligence is available."""
+
+        return bool(self.positioning_context)
+
 
 class AIContextAssembler:
     """Load and format context required by AI orchestration."""
@@ -59,6 +67,7 @@ class AIContextAssembler:
         memory_repository: MemoryRepository | None = None,
         customer_context_provider: CustomerContextProvider | None = None,
         product_context_provider: ProductContextProvider | None = None,
+        positioning_context_provider: PositioningContextProvider | None = None,
         company_brain_prompt_builder: CompanyBrainPromptBuilder | None = None,
         memory_prompt_builder: MemoryPromptBuilder | None = None,
         memory_limit: int = 10,
@@ -92,6 +101,12 @@ class AIContextAssembler:
             raise TypeError(
                 "product_context_provider must be a ProductContextProvider."
             )
+        if positioning_context_provider is not None and not isinstance(
+            positioning_context_provider, PositioningContextProvider
+        ):
+            raise TypeError(
+                "positioning_context_provider must be a PositioningContextProvider."
+            )
 
         if company_brain_prompt_builder is not None and not isinstance(
             company_brain_prompt_builder,
@@ -114,6 +129,7 @@ class AIContextAssembler:
         self.memory_repository = memory_repository
         self.customer_context_provider = customer_context_provider
         self.product_context_provider = product_context_provider
+        self.positioning_context_provider = positioning_context_provider
         self.company_brain_prompt_builder = (
             company_brain_prompt_builder or CompanyBrainPromptBuilder()
         )
@@ -125,6 +141,8 @@ class AIContextAssembler:
         *,
         brand_id: str,
         tenant_id: str = "default",
+        positioning_id: str = "",
+        positioning_version: int = 0,
     ) -> AIContext:
         """Assemble available context for one brand."""
 
@@ -142,6 +160,9 @@ class AIContextAssembler:
         company_context = self._load_company_context(brand_id)
         customer_context = self._load_customer_context(brand_id)
         product_context = self._load_product_context(tenant_id, brand_id)
+        positioning_context = self._load_positioning_context(
+            tenant_id, brand_id, positioning_id, positioning_version
+        )
         memory_context = self._load_memory_context(brand_id)
         memory_count = len(memory_context.splitlines()) if memory_context else 0
 
@@ -151,6 +172,28 @@ class AIContextAssembler:
             memory_count=memory_count,
             customer_context=customer_context,
             product_context=product_context,
+            positioning_context=positioning_context,
+        )
+
+    def _load_positioning_context(
+        self,
+        tenant_id: str,
+        brand_id: str,
+        positioning_id: str,
+        positioning_version: int,
+    ) -> str:
+        if not positioning_id and positioning_version == 0:
+            return ""
+        if not positioning_id or positioning_version < 1:
+            raise ValueError("positioning_id and positioning_version must be paired.")
+        provider = self.positioning_context_provider
+        if provider is None:
+            raise ValueError("Positioning context is not configured.")
+        return provider.build(
+            tenant_id=tenant_id,
+            brand_id=brand_id,
+            positioning_id=positioning_id,
+            positioning_version=positioning_version,
         )
 
     def _load_product_context(self, tenant_id: str, brand_id: str) -> str:

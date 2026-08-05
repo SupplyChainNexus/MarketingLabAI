@@ -1,0 +1,21 @@
+{
+  "story_id": "MLAI-028.5",
+  "slug": "governed_workflow_integration",
+  "title": "Governed Workflow Integration",
+  "focused_tests": [
+    "tests.test_positioning_workflow_integration",
+    "tests.test_positioning_value_proposition",
+    "tests.test_application_composition",
+    "tests.test_ai_context_assembler",
+    "tests.test_ai_orchestrator",
+    "tests.test_authorized_application",
+    "tests.test_pilot_api",
+    "tests.test_pilot_workspace"
+  ],
+  "import_modules": [
+    "app.positioning_intelligence.context",
+    "app.application.composition",
+    "app.pilot_api.service"
+  ],
+  "commit_message": "feat(positioning): integrate governed workflow context"
+}
