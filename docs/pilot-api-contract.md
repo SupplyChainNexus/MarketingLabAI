@@ -23,9 +23,13 @@ require `Idempotency-Key`.
 | Method and path | Purpose |
 |---|---|
 | `POST /v1/pilot/context` | Read tenant-authorized context and explicit missing indicators. |
+| `POST /v1/pilot/onboarding/context` | Save minimum verified Company, Customer, and Product context. |
+| `POST /v1/pilot/workflow-review` | Read transport-safe current plan, brief, context, and readiness views. |
 | `POST /v1/pilot/generate` | Generate from named approved Campaign Plan and Marketing Brief versions. |
 | `POST /v1/pilot/campaign-plans/{id}/approve` | Approve the expected current plan version. |
 | `POST /v1/pilot/marketing-briefs/{id}/approve` | Approve the expected current brief version. |
+| `POST /v1/pilot/campaign-plans/{id}/revise` | Create a planned immutable successor from safe revision fields. |
+| `POST /v1/pilot/marketing-briefs/{id}/revise` | Create a draft immutable successor from safe revision fields. |
 | `POST /v1/pilot/exports/authorize` | Authorize and audit a safe export boundary. |
 
 Generation requires `brand_id`, `campaign_id`, `campaign_version`, `brief_id`,
@@ -41,6 +45,10 @@ versions, unapproved governance, and idempotency-key reuse are `409`.
 Idempotency records are scoped by tenant, identity provider, subject,
 operation, and key. An exact replay returns the stored response with
 `replayed: true`; the operation and AI provider are not invoked again.
+
+Successful generation includes independent compliance results, explicit pilot
+limitations, and provider, model, Campaign Plan, Marketing Brief, and timestamp
+audit metadata for workspace review.
 
 ## Security boundary
 

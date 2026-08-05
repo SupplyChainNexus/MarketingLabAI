@@ -13,3 +13,4 @@
 | TD-009 | Product Intelligence | Current Product/Offer profiles are mutable snapshots without offer expiry or approval history. | Low | Define version, review, and expiry lifecycle from pilot evidence after MLAI-027.2 |
 | TD-010 | Identity operations | Live identity provider selection, membership bootstrap, credential transport, and secret rotation are not implemented. | High | Complete in MLAI-027.6 before real customer data |
 | TD-011 | API operations | The pilot contract has a standard-library WSGI adapter but no hardened server, concurrency policy, rate limiting, or deployment configuration. | High | Complete in MLAI-027.6 before real customer data |
+| TD-012 | Workspace identity | The synthetic workspace accepts a temporary credential in page memory and has no live identity redirect or hardened server session. | Critical | Replace and security-test in MLAI-027.6 before real customer data |

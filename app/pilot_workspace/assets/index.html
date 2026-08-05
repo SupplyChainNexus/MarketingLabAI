@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MarketingLabAI Secure Pilot</title>
+  <link rel="stylesheet" href="/pilot/workspace.css">
+  <script src="/pilot/workspace.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">Marketing Intelligence Operating System</p>
+      <h1>Secure Pilot Workspace</h1>
+    </div>
+    <span class="pilot-badge">Synthetic pilot only</span>
+  </header>
+
+  <main>
+    <section class="notice" aria-label="Pilot limitation">
+      <strong>No real customer data.</strong> This workspace is for synthetic
+      pilot validation until the MLAI-027.6 release gates pass.
+    </section>
+
+    <section class="panel" id="onboarding">
+      <div class="section-heading">
+        <span class="step">1</span>
+        <div><h2>Connect your pilot workspace</h2><p>Enter the synthetic pilot references supplied by the operator.</p></div>
+      </div>
+      <div class="form-grid">
+        <label>Temporary pilot credential<input id="credential" type="password" autocomplete="off"></label>
+        <label>Tenant ID<input id="tenantId" value="default"></label>
+        <label>Brand ID<input id="brandId" value="brand-one"></label>
+        <label>Campaign Plan ID<input id="campaignId" value="campaign-one"></label>
+        <label>Marketing Brief ID<input id="briefId" value="brief-one"></label>
+      </div>
+      <details>
+        <summary>Add or refresh verified synthetic context</summary>
+        <div class="form-grid">
+          <label>Revenue model<input id="revenueModel" value="Synthetic service sales"></label>
+          <label>Geographic market<input id="market" value="Synthetic pilot market"></label>
+          <label>Business goal<input id="businessGoal" value="Validate the pilot workflow"></label>
+          <label>Customer segment ID<input id="segmentId" value="segment-one"></label>
+          <label>Customer segment name<input id="segmentName" value="Synthetic pilot customers"></label>
+          <label>Customer summary<input id="customerSummary" value="Customers require a verified synthetic solution."></label>
+          <label>Customer evidence source<input id="customerEvidence" value="Synthetic customer interview"></label>
+          <label>Product ID<input id="productId" value="product-one"></label>
+          <label>Product or service name<input id="productName" value="Synthetic pilot service"></label>
+          <label>Type<select id="productType"><option value="service">Service</option><option value="product">Product</option></select></label>
+          <label>Product evidence source<input id="productEvidence" value="Synthetic approved catalogue"></label>
+        </div>
+        <button id="saveOnboarding">Save verified context</button>
+      </details>
+      <button id="loadWorkflow" class="primary">Load governed workflow</button>
+      <p id="workspaceMessage" class="message" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="panel" id="contextPanel" hidden>
+      <div class="section-heading"><span class="step">2</span><div><h2>Context readiness</h2><p>Missing intelligence stays visible and is never silently invented.</p></div></div>
+      <div id="contextIndicators" class="indicator-grid"></div>
+    </section>
+
+    <section class="review-grid" id="reviewPanel" hidden>
+      <article class="panel">
+        <div class="section-heading"><span class="step">3</span><div><h2>Campaign Plan review</h2><p id="campaignStatus"></p></div></div>
+        <dl id="campaignSummary"></dl>
+        <label>Revision note<textarea id="campaignNotes" rows="3"></textarea></label>
+        <div class="actions"><button id="reviseCampaign">Save revision</button><button id="approveCampaign" class="primary">Approve plan</button></div>
+      </article>
+      <article class="panel">
+        <div class="section-heading"><span class="step">4</span><div><h2>Marketing Brief review</h2><p id="briefStatus"></p></div></div>
+        <dl id="briefSummary"></dl>
+        <label>Revision note<textarea id="briefNotes" rows="3"></textarea></label>
+        <div class="actions"><button id="reviseBrief">Save revision</button><button id="approveBrief" class="primary">Approve brief</button></div>
+      </article>
+    </section>
+
+    <section class="panel" id="generationPanel" hidden>
+      <div class="section-heading"><span class="step">5</span><div><h2>Governed generation</h2><p>Generation unlocks only after both reviewed versions are approved.</p></div></div>
+      <label>Asset task<input id="generationTask" value="Create a synthetic campaign asset"></label>
+      <label>Human instructions<textarea id="generationInstructions" rows="3">Use only approved facts and clearly preserve limitations.</textarea></label>
+      <button id="generateAsset" class="primary" disabled>Generate approved asset</button>
+    </section>
+
+    <section class="panel" id="resultPanel" hidden>
+      <div class="section-heading"><span class="step">6</span><div><h2>Review result</h2><p>Content and compliance are separate review outcomes.</p></div></div>
+      <h3>Generated content</h3><pre id="generatedContent"></pre>
+      <h3>Independent compliance review</h3><div id="complianceResult"></div>
+      <h3>Limitations</h3><ul id="limitations"></ul>
+      <h3>Audit metadata</h3><dl id="auditMetadata"></dl>
+      <div class="actions"><button id="reviseGeneration">Revise instructions</button><button id="safeExport" class="primary">Authorize safe export</button></div>
+      <p class="muted">Safe export downloads a review record. It never publishes to an external channel.</p>
+    </section>
+  </main>
+</body>
+</html>

@@ -9,13 +9,25 @@ from app.ai.models import IntelligenceResponse
 from app.ai.registry import IntelligenceProviderRegistry
 from app.campaign_planner.models import CampaignStatus
 from app.campaign_planner.service import CampaignPlanningService
+from app.customer_intelligence import (
+    CustomerEvidence,
+    CustomerIntelligenceProfile,
+    CustomerSegment,
+)
 from app.identity import (
     AuthenticatedPrincipal,
     Permission,
     TenantAuthorizationService,
     TenantMembership,
 )
+from app.intelligence.models import BusinessIntelligenceProfile
 from app.marketing_brief.models import BriefStatus, MarketingBrief
+from app.product_intelligence import (
+    ProductEvidence,
+    ProductIntelligenceProfile,
+    ProductRecord,
+    ProductType,
+)
 
 
 class LifecycleConflictError(RuntimeError):
@@ -40,6 +52,70 @@ class AuthorizedTenantApplication:
         return self.application.build_context_assembler().build(
             tenant_id=self.tenant_id,
             brand_id=brand_id,
+        )
+
+    def save_onboarding_context(
+        self,
+        *,
+        brand_id: str,
+        business: dict[str, Any],
+        customer: dict[str, Any],
+        product: dict[str, Any],
+    ) -> None:
+        """Persist the minimum verified context collected by pilot onboarding."""
+
+        self._authorize_brand(Permission.APPROVE, brand_id)
+        source = str(product["evidence_source"]).strip()
+        customer_source = str(customer["evidence_source"]).strip()
+        self.application.business_intelligence.save(
+            BusinessIntelligenceProfile(
+                brand_id=brand_id,
+                revenue_model=str(business.get("revenue_model", "")),
+                geographic_markets=list(business.get("geographic_markets", [])),
+                business_goals=list(business.get("business_goals", [])),
+            )
+        )
+        segment_id = str(customer["segment_id"])
+        self.application.customer_intelligence.save(
+            CustomerIntelligenceProfile(
+                brand_id=brand_id,
+                summary=str(customer.get("summary", "")),
+                primary_segment_id=segment_id,
+                segments=[
+                    CustomerSegment(
+                        segment_id=segment_id,
+                        name=str(customer["name"]),
+                        description=str(customer.get("description", "")),
+                        evidence=[
+                            CustomerEvidence(
+                                source=customer_source,
+                                confidence=1.0,
+                                summary="Verified during synthetic pilot onboarding.",
+                                verified=True,
+                            )
+                        ],
+                    )
+                ],
+            )
+        )
+        self.application.product_intelligence.save(
+            ProductIntelligenceProfile(
+                tenant_id=self.tenant_id,
+                brand_id=brand_id,
+                products=[
+                    ProductRecord(
+                        product_id=str(product["product_id"]),
+                        name=str(product["name"]),
+                        product_type=ProductType(str(product["product_type"])),
+                        description=str(product.get("description", "")),
+                        evidence=[ProductEvidence(source)],
+                        features=list(product.get("features", [])),
+                        benefits=list(product.get("benefits", [])),
+                        limitations=list(product.get("limitations", [])),
+                        prohibited_claims=list(product.get("prohibited_claims", [])),
+                    )
+                ],
+            )
         )
 
     def generate(
@@ -133,6 +209,42 @@ class AuthorizedTenantApplication:
         self.application.campaign_plans.save(successor)
         return successor
 
+    def review_campaign_plan(self, campaign_id: str, *, version: int | None = None):
+        owner = self._resource_tenant("campaign_plans", "campaign_id", campaign_id)
+        self._authorize(
+            Permission.VIEW,
+            "campaign_plan",
+            campaign_id,
+            resource_tenant_id=owner,
+        )
+        return self.application.campaign_plans.get(
+            campaign_id, tenant_id=self.tenant_id, version=version
+        )
+
+    def revise_campaign_plan(
+        self,
+        campaign_id: str,
+        *,
+        expected_version: int,
+        changes: dict[str, Any],
+    ):
+        owner = self._resource_tenant("campaign_plans", "campaign_id", campaign_id)
+        self._authorize(
+            Permission.APPROVE,
+            "campaign_plan",
+            campaign_id,
+            resource_tenant_id=owner,
+            audit_action="revise",
+        )
+        current = self.application.campaign_plans.get(
+            campaign_id, tenant_id=self.tenant_id
+        )
+        self._require_expected_version(current.version, expected_version)
+        successor = CampaignPlanningService().create_next_version(current, **changes)
+        CampaignPlanningService().mark_planned(successor)
+        self.application.campaign_plans.save(successor)
+        return successor
+
     def approve_marketing_brief(
         self, brief_id: str, *, expected_version: int | None = None
     ) -> MarketingBrief:
@@ -149,6 +261,43 @@ class AuthorizedTenantApplication:
         self._require_expected_version(current.version, expected_version)
         return self.application.build_marketing_brief_service().save_next_version(
             current, status=BriefStatus.APPROVED
+        )
+
+    def review_marketing_brief(
+        self, brief_id: str, *, version: int | None = None
+    ) -> MarketingBrief:
+        owner = self._resource_tenant("marketing_briefs", "brief_id", brief_id)
+        self._authorize(
+            Permission.VIEW,
+            "marketing_brief",
+            brief_id,
+            resource_tenant_id=owner,
+        )
+        return self.application.marketing_briefs.get(
+            brief_id, tenant_id=self.tenant_id, version=version
+        )
+
+    def revise_marketing_brief(
+        self,
+        brief_id: str,
+        *,
+        expected_version: int,
+        changes: dict[str, Any],
+    ) -> MarketingBrief:
+        owner = self._resource_tenant("marketing_briefs", "brief_id", brief_id)
+        self._authorize(
+            Permission.APPROVE,
+            "marketing_brief",
+            brief_id,
+            resource_tenant_id=owner,
+            audit_action="revise",
+        )
+        current = self.application.marketing_briefs.get(
+            brief_id, tenant_id=self.tenant_id
+        )
+        self._require_expected_version(current.version, expected_version)
+        return self.application.build_marketing_brief_service().save_next_version(
+            current, status=BriefStatus.DRAFT, **changes
         )
 
     @staticmethod
@@ -211,6 +360,7 @@ class AuthorizedTenantApplication:
         resource_id: str,
         *,
         resource_tenant_id: str | None = None,
+        audit_action: str | None = None,
     ) -> None:
         self.authorization.authorize(
             self.principal,
@@ -219,6 +369,7 @@ class AuthorizedTenantApplication:
             resource_type=resource_type,
             resource_id=resource_id,
             resource_tenant_id=resource_tenant_id,
+            audit_action=audit_action,
         )
 
     def _resource_tenant(self, table: str, id_column: str, resource_id: str) -> str:

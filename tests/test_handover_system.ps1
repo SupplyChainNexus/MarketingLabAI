@@ -83,12 +83,12 @@ $CurrentHandoverText = Get-Content -LiteralPath (
     Join-Path $ProjectRoot "docs\handover\CURRENT_HANDOVER.md"
 ) -Raw
 
-if ($CurrentHandoverText -notmatch "MLAI-027.1 through MLAI-027.4") {
-    throw "Current handover does not record MLAI-027.4 completion."
+if ($CurrentHandoverText -notmatch "MLAI-027.1 through MLAI-027.5") {
+    throw "Current handover does not record MLAI-027.5 completion."
 }
 
-if ($CurrentHandoverText -notmatch "Start with \*\*MLAI-027.5") {
-    throw "Current handover does not identify MLAI-027.5 as the next story."
+if ($CurrentHandoverText -notmatch "Start with \*\*MLAI-027.6") {
+    throw "Current handover does not identify MLAI-027.6 as the next story."
 }
 
 $CompositionDecisionText = Get-Content -LiteralPath (
@@ -116,6 +116,21 @@ if (
     ($ApiDecisionText -notmatch "idempotency")
 ) {
     throw "ADR-0012 does not preserve the authorized retry-safe API boundary."
+}
+
+$WorkspaceDecisionText = Get-Content -LiteralPath (
+    Join-Path $ProjectRoot "governance\adrs\ADR-0013-thin-pilot-workspace.md"
+) -Raw
+
+if ($WorkspaceDecisionText -notmatch '(?m)^Accepted\r?$') {
+    throw "ADR-0013 is not recorded as accepted."
+}
+
+if (
+    ($WorkspaceDecisionText -notmatch "PilotApiService") -or
+    ($WorkspaceDecisionText -notmatch "Real customer data")
+) {
+    throw "ADR-0013 does not preserve the thin synthetic workspace boundary."
 }
 
 Write-Host "MARKETINGLABAI HANDOVER REGRESSION TESTS PASSED" -ForegroundColor Green

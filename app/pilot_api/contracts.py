@@ -24,6 +24,50 @@ class ContextRequest:
 
 
 @dataclass(slots=True, frozen=True)
+class WorkflowReviewRequest:
+    brand_id: str
+    campaign_id: str
+    brief_id: str
+
+    def __post_init__(self) -> None:
+        for name in ("brand_id", "campaign_id", "brief_id"):
+            object.__setattr__(self, name, required_text(getattr(self, name), name))
+
+
+@dataclass(slots=True, frozen=True)
+class OnboardingRequest:
+    brand_id: str
+    business: dict[str, Any]
+    customer: dict[str, Any]
+    product: dict[str, Any]
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "brand_id", required_text(self.brand_id, "brand_id"))
+        for name in ("business", "customer", "product"):
+            if not isinstance(getattr(self, name), dict):
+                raise TypeError(f"{name} must be an object.")
+        for name in ("segment_id", "name", "evidence_source"):
+            required_text(self.customer.get(name, ""), f"customer.{name}")
+        for name in ("product_id", "name", "product_type", "evidence_source"):
+            required_text(self.product.get(name, ""), f"product.{name}")
+        if self.product["product_type"] not in {"product", "service"}:
+            raise ValueError("product.product_type must be product or service.")
+        for section, names in (
+            (self.business, ("geographic_markets", "business_goals")),
+            (
+                self.product,
+                ("features", "benefits", "limitations", "prohibited_claims"),
+            ),
+        ):
+            for name in names:
+                if name in section and (
+                    not isinstance(section[name], list)
+                    or any(not isinstance(item, str) for item in section[name])
+                ):
+                    raise TypeError(f"{name} must be a list of strings.")
+
+
+@dataclass(slots=True, frozen=True)
 class GenerationRequest:
     brand_id: str
     campaign_id: str
@@ -62,6 +106,56 @@ class ApprovalRequest:
             raise TypeError("expected_version must be an integer.")
         if self.expected_version < 1:
             raise ValueError("expected_version must be at least 1.")
+
+
+@dataclass(slots=True, frozen=True)
+class CampaignRevisionRequest:
+    expected_version: int
+    changes: dict[str, Any]
+
+    def __post_init__(self) -> None:
+        _revision_values(
+            self.expected_version, self.changes, {"name", "owner", "notes"}
+        )
+
+
+@dataclass(slots=True, frozen=True)
+class BriefRevisionRequest:
+    expected_version: int
+    changes: dict[str, Any]
+
+    def __post_init__(self) -> None:
+        _revision_values(
+            self.expected_version,
+            self.changes,
+            {
+                "name",
+                "objective",
+                "audience",
+                "offer",
+                "key_message",
+                "call_to_action",
+                "channels",
+                "deliverables",
+                "constraints",
+                "success_metrics",
+                "assumptions",
+                "notes",
+            },
+        )
+
+
+def _revision_values(expected_version: int, changes: dict, allowed: set[str]) -> None:
+    ApprovalRequest(expected_version)
+    if not isinstance(changes, dict):
+        raise TypeError("changes must be an object.")
+    if not changes:
+        raise ValueError("changes must include at least one revision.")
+    unsupported = set(changes) - allowed
+    if unsupported:
+        raise ValueError(
+            f"Unsupported revision fields: {', '.join(sorted(unsupported))}."
+        )
 
 
 @dataclass(slots=True, frozen=True)

@@ -3,59 +3,64 @@
 ## Checkpoint
 
 - Branch: `feature/tenant-architecture`
-- Installation baseline: `229001a`
+- Installation baseline: `e1eafaa`
 - Remote state before this story: synchronized with `origin/feature/tenant-architecture`
 - Last completed product epic: MLAI-025 Campaign Planning Platform
-- Last completed story: MLAI-027.4 Pilot API and Workflow Contract
-- Validation target: focused API/security and complete regressions
+- Last completed story: MLAI-027.5 Thin Pilot Workspace
+- Validation target: focused workspace/API/security and complete regressions
 
 ## Product direction
 
 MarketingLabAI is a Marketing Intelligence Operating System and the AI
 Marketing Department for growing businesses. AI is the engine, not the
-headline. PDR-0001 is the founder-ratified product direction. PDR-0002 keeps
-MLAI-026 deferred while the secure private-pilot vertical slice is completed.
+headline. PDR-0001 and PDR-0002 remain authoritative. MLAI-026 remains deferred
+until the private-pilot release gate is complete and evidence has been reviewed.
 
 ## Current implementation
 
-MLAI-027.1 through MLAI-027.4 compose one canonical SQLite application,
-verified Company, Customer, Product, and memory context, versioned Campaign
-Plans and Marketing Briefs, provider-neutral generation, independent
-compliance, trusted identity, default-deny tenant authorization, and an
-authenticated pilot API contract.
+MLAI-027.1 through MLAI-027.5 now form one guided synthetic pilot journey over
+the canonical SQLite application, trusted identity, tenant authorization, and
+retry-safe pilot API.
 
-The API exposes only context, approved generation, plan approval, brief
-approval, and export authorization. Generation requires approved plan and
-brief versions for the same tenant and brand. Identity-scoped idempotency makes
-retries safe and stale lifecycle versions return explicit conflicts. Public
-contracts do not expose repositories or provider request models.
+The framework-neutral workspace supports minimum verified Company, Customer,
+and Product onboarding; explicit missing-context indicators; Campaign Plan and
+Marketing Brief review, revision, and approval; approval-gated provider-neutral
+generation; independent compliance results; limitations and audit metadata;
+and authorized local JSON export without publishing. Presentation code depends
+only on the pilot API contract and never on raw repositories.
 
-Start with **MLAI-027.5 - Thin Pilot Workspace**.
+Start with **MLAI-027.6 - Pilot Operations and Release Gate**.
 
-## MLAI-027.5 constraints
+## MLAI-027.6 constraints
 
-- Build the workspace only over the pilot API contract; do not import raw
-  repositories or `CanonicalApplication` into presentation code.
-- Guide onboarding and show missing context explicitly.
-- Support Campaign Plan and Marketing Brief review and explicit approval.
-- Never offer generation without approved governance references.
-- Display output, compliance findings, limitations, and audit metadata.
-- Support revision and safe export; do not add direct publishing.
-- Use synthetic data only. Real customer data remains prohibited until all
-  MLAI-027.6 private-pilot gates pass.
-- Preserve tenant isolation, lifecycle separation, provider neutrality, and
-  deterministic-first reasoning.
+- Select and configure a hardened service runtime without changing domain or
+  workspace dependency direction.
+- Replace temporary synthetic credential entry with a live identity flow,
+  hardened sessions, controlled membership bootstrap, and secret rotation.
+- Add environment-managed secrets, TLS-aware configuration, rate limits, and
+  privacy-safe structured logs.
+- Add tested SQLite backup, restore, integrity, and migration procedures.
+- Add readiness, monitoring, incident, and support runbooks.
+- Add CI gates for regression, formatting, static analysis, migrations,
+  continuity, and package validation.
+- Complete the synthetic-pilot security test before proposing any real data.
+- Keep direct publishing, billing, and public self-service deferred.
+
+## Release prohibition
+
+Real customer data remains prohibited. The workspace is not production-ready,
+despite being functionally usable with synthetic data. Only the explicit
+MLAI-027.6 private-pilot security and operational gates may change that status.
 
 ## Current risks and debt
 
-The major remaining gaps are the guided workspace, live identity-provider and
-membership operations, hardened API deployment, privacy-safe logging, backup
-and restore, monitoring, CI, and incident procedures. See the risk and
-technical-debt registers for the controlled list.
+The major remaining gaps are live identity and membership operations, hardened
+hosting, privacy-safe logging, monitoring, rate limits, backup/restore, CI,
+incident response, data handling, and support procedures. See the risk and
+technical-debt registers.
 
 ## Next engineer's first action
 
-Review ADR-0009 through ADR-0012 and design the thinnest guided workspace that
-depends exclusively on `PilotApiService` or its JSON contract. Do not select a
-publishing connector, admit real customer data, or bypass approval and
-authorization boundaries.
+Review ADR-0009 through ADR-0013, the risk and debt registers, and the
+MLAI-027.6 acceptance criteria. Begin with a release-gate matrix before choosing
+hosting or identity vendors. Do not admit real customer data or add publishing.

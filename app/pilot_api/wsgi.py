@@ -5,9 +5,13 @@ import re
 
 from app.pilot_api.contracts import (
     ApprovalRequest,
+    BriefRevisionRequest,
+    CampaignRevisionRequest,
     ContextRequest,
     ExportRequest,
     GenerationRequest,
+    OnboardingRequest,
+    WorkflowReviewRequest,
 )
 from app.pilot_api.service import PilotApiError, PilotApiService
 
@@ -69,6 +73,14 @@ class PilotWsgiApplication:
             return self.service.generate(
                 request=GenerationRequest(**body), idempotency_key=key, **common
             )
+        if path == "/v1/pilot/workflow-review":
+            return self.service.workflow_review(
+                request=WorkflowReviewRequest(**body), **common
+            )
+        if path == "/v1/pilot/onboarding/context":
+            return self.service.save_onboarding_context(
+                request=OnboardingRequest(**body), idempotency_key=key, **common
+            )
         match = re.fullmatch(r"/v1/pilot/campaign-plans/([^/]+)/approve", path)
         if match:
             return self.service.approve_campaign_plan(
@@ -77,11 +89,27 @@ class PilotWsgiApplication:
                 idempotency_key=key,
                 **common,
             )
+        match = re.fullmatch(r"/v1/pilot/campaign-plans/([^/]+)/revise", path)
+        if match:
+            return self.service.revise_campaign_plan(
+                campaign_id=match.group(1),
+                request=CampaignRevisionRequest(**body),
+                idempotency_key=key,
+                **common,
+            )
         match = re.fullmatch(r"/v1/pilot/marketing-briefs/([^/]+)/approve", path)
         if match:
             return self.service.approve_marketing_brief(
                 brief_id=match.group(1),
                 request=ApprovalRequest(**body),
+                idempotency_key=key,
+                **common,
+            )
+        match = re.fullmatch(r"/v1/pilot/marketing-briefs/([^/]+)/revise", path)
+        if match:
+            return self.service.revise_marketing_brief(
+                brief_id=match.group(1),
+                request=BriefRevisionRequest(**body),
                 idempotency_key=key,
                 **common,
             )

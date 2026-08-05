@@ -1,0 +1,21 @@
+{
+  "story_id": "MLAI-027.5",
+  "slug": "thin_pilot_workspace",
+  "title": "Thin Pilot Workspace",
+  "focused_tests": [
+    "tests.test_pilot_workspace",
+    "tests.test_pilot_api",
+    "tests.test_authorized_application",
+    "tests.test_application_composition",
+    "tests.test_sqlite_database"
+  ],
+  "import_modules": [
+    "app.pilot_workspace",
+    "app.pilot_workspace.wsgi",
+    "app.pilot_api",
+    "app.pilot_api.contracts",
+    "app.pilot_api.service",
+    "app.pilot_api.wsgi"
+  ],
+  "commit_message": "feat(workspace): add guided secure pilot journey"
+}

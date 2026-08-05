@@ -2,7 +2,7 @@
 
 ## Status
 
-In progress - MLAI-027.4 implemented
+In progress - MLAI-027.5 implemented
 
 ## Product authority
 
@@ -60,11 +60,11 @@ limitations, and export the result with a complete audit trail.
 
 ### MLAI-027.5 - Thin Pilot Workspace
 
-- [ ] Add guided onboarding and missing-context indicators.
-- [ ] Add Campaign Plan and Marketing Brief review.
-- [ ] Require explicit approval before generation.
-- [ ] Display content, compliance findings, limitations, and audit metadata.
-- [ ] Support revision and safe export without direct publishing.
+- [x] Add guided onboarding and missing-context indicators.
+- [x] Add Campaign Plan and Marketing Brief review.
+- [x] Require explicit approval before generation.
+- [x] Display content, compliance findings, limitations, and audit metadata.
+- [x] Support revision and safe export without direct publishing.
 
 ### MLAI-027.6 - Pilot Operations and Release Gate
 
@@ -77,16 +77,16 @@ limitations, and export the result with a complete audit trail.
 
 ## Epic acceptance criteria
 
-- [ ] The pilot uses one canonical application and persistence path.
+- [x] The pilot uses one canonical application and persistence path.
 - [x] Tenant authorization is derived from trusted identity.
 - [x] Cross-tenant access is denied and tested.
 - [x] Missing context remains explicit.
 - [x] Only approved plans and briefs govern generation.
-- [ ] Compliance evaluation remains independent from prompt guidance.
-- [ ] Provider, model, approval, and export audit metadata are preserved.
-- [ ] Real customer data is prohibited until all private-pilot gates pass.
-- [ ] Focused and complete regressions pass.
-- [ ] Risks, debt, capability maturity, ADRs, and handover are current.
+- [x] Compliance evaluation remains independent from prompt guidance.
+- [x] Provider, model, approval, and export audit metadata are preserved.
+- [x] Real customer data is prohibited until all private-pilot gates pass.
+- [x] Focused and complete regressions pass.
+- [x] Risks, debt, capability maturity, ADRs, and handover are current.
 
 ## Explicitly deferred
 
