@@ -3,13 +3,13 @@
 ## Checkpoint
 
 - Branch: `feature/tenant-architecture`
-- Installation baseline: `5c89dc0`
+- Installation baseline: `0861f90`
 - Remote state before this story: synchronized with
   `origin/feature/tenant-architecture`
 - Last completed epic: MLAI-027 Secure Pilot Vertical Slice
 - Active epic: MLAI-028 Positioning Intelligence
-- Active story: MLAI-028.1 Positioning Intelligence Foundation
-- Validation target: positioning, persistence, continuity, and full regression
+- Active story: MLAI-028.2 Target-Product Relevance
+- Validation target: relevance, reference boundaries, continuity, and full regression
 
 ## Product direction
 
@@ -28,6 +28,11 @@ MLAI-028.1 adds a provider-neutral Positioning Intelligence foundation with
 tenant- and brand-owned decisions, explicit target and product references,
 separate evidence, assumptions, and unknowns, immutable versions, controlled
 approval, and SQLite migration 14.
+
+MLAI-028.2 validates target, product, and offer references against the canonical
+Customer and tenant-scoped Product Intelligence repositories. It produces
+transparent lexical relevance matches, explicit evidence gaps, limitations,
+and prohibited claims without inventing a score or missing research.
 
 ## Architectural boundary
 
@@ -50,16 +55,16 @@ decision. Remind the founder at that point, as requested.
 
 ## Remaining constraints
 
-- Positioning references are structurally explicit but not yet checked against
-  Customer and Product Intelligence repositories.
-- Relevance, differentiation, proof selection, and value-proposition builders
-  remain future MLAI-028 increments.
+- Differentiation, proof selection, and value-proposition builders remain
+  future MLAI-028 increments.
+- Product use cases are not yet a governed Product Intelligence field and are
+  reported as an explicit relevance gap.
 - Marketing Strategy must not begin until the Positioning dependency is ready.
 - Direct publishing, billing, public self-service, learning, attribution,
   Calendar, and Executive Intelligence remain deferred.
 
 ## Next engineer's first action
 
-Run the complete MLAI-028.1 validator. Then begin MLAI-028.2 by validating
-target and product references and producing evidence-grounded deterministic
-relevance explanations without silently generating missing research.
+Run the complete MLAI-028.2 validator. Then begin MLAI-028.3 by modelling
+relevant alternatives and selecting defensible differentiators and proof while
+preserving evidence provenance and prohibited-claim boundaries.

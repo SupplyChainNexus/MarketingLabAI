@@ -1,0 +1,17 @@
+{
+  "story_id": "MLAI-028.2",
+  "slug": "target_product_relevance",
+  "title": "Target-Product Relevance",
+  "focused_tests": [
+    "tests.test_positioning_relevance",
+    "tests.test_positioning_intelligence",
+    "tests.test_positioning_repository",
+    "tests.test_product_intelligence",
+    "tests.test_customer_intelligence"
+  ],
+  "import_modules": [
+    "app.positioning_intelligence",
+    "app.positioning_intelligence.relevance"
+  ],
+  "commit_message": "feat(positioning): add target-product relevance"
+}

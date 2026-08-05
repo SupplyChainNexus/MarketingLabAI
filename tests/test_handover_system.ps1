@@ -126,8 +126,8 @@ if ($CurrentHandoverText -notmatch "customer pilot remains explicitly") {
     throw "Current handover does not preserve the founder pilot freeze."
 }
 
-if ($CurrentHandoverText -notmatch "MLAI-028.1") {
-    throw "Current handover does not record the Positioning foundation."
+if ($CurrentHandoverText -notmatch "MLAI-028.2") {
+    throw "Current handover does not record target-product relevance."
 }
 
 $PositioningDecisionText = Get-Content -LiteralPath (

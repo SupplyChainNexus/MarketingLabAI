@@ -14,4 +14,5 @@
 | TD-010 | Identity operations | Provider-neutral live adapter factories and hardened sessions exist; the actual identity vendor and controlled bootstrap deployment remain unselected. | High | Select and rehearse only when customer pilot is unfrozen |
 | TD-011 | API operations | Waitress, TLS-aware config, single-process rate limiting, health and logs exist. Distributed rate limiting is intentionally absent. | Low | Revisit only if deployment becomes multi-instance |
 | TD-012 | Workspace identity | Temporary credential entry was removed and browser operations require server session plus CSRF. | Critical | Resolved by MLAI-027.6 |
-| TD-013 | Positioning references | Positioning target, product, and offer identifiers are explicit but not yet validated against Customer and Product Intelligence repositories. | High | Open — MLAI-028.2 |
+| TD-013 | Positioning references | Positioning target, product, and offer identifiers are validated against Customer and Product Intelligence repositories. | High | Resolved by MLAI-028.2 |
+| TD-014 | Product use cases | Product Intelligence has no governed use-case field, so relevance reports the gap rather than inferring use cases. | Medium | Open — review with MLAI-028.3 evidence design |

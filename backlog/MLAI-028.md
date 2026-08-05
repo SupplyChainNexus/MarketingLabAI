@@ -2,7 +2,7 @@
 
 ## Status
 
-MLAI-028.1 implemented - synthetic foundation only
+MLAI-028.2 implemented - synthetic relevance evaluation only
 
 ## Product authority
 
@@ -32,10 +32,11 @@ or assumptions remain before Marketing Strategy is developed.
 
 ### MLAI-028.2 - Target-Product Relevance
 
-- [ ] Validate target references against Customer Intelligence.
-- [ ] Validate product and offer references against Product Intelligence.
-- [ ] Map needs, outcomes, objections, benefits, and use cases.
-- [ ] Produce deterministic relevance explanations and explicit gaps.
+- [x] Validate target references against Customer Intelligence.
+- [x] Validate product and offer references against Product Intelligence.
+- [x] Map recorded needs, outcomes, decision criteria, features, and benefits.
+- [x] Produce deterministic relevance explanations and explicit gaps.
+- [x] Preserve limitations, prohibited claims, and the unmodelled use-case gap.
 
 ### MLAI-028.3 - Differentiation and Proof
 

@@ -1,8 +1,9 @@
 # Positioning Intelligence
 
 MLAI-028.1 establishes the trustworthy storage and lifecycle boundary for
-Positioning Intelligence. It does not yet calculate customer-product fit or
-generate positioning automatically.
+Positioning Intelligence. MLAI-028.2 adds deterministic target-product
+reference validation and relevance explanations. It does not generate final
+positioning automatically.
 
 ## Domain boundary
 
@@ -37,8 +38,21 @@ tenant identifier, saves verify brand ownership, and cross-tenant reads return
 no decision. This story does not expose a new interface and authorizes no real
 customer data.
 
+## Target-product relevance
+
+MLAI-028.2 resolves a segment, persona, or ICP from Customer Intelligence and a
+product and optional offer from tenant-scoped Product Intelligence. It compares
+recorded customer needs, outcomes, or criteria with recorded features and
+benefits using transparent normalized term intersections. Each match preserves
+both original statements and the shared terms; no opaque relevance score is
+invented.
+
+Missing target context, missing product value, absent proof, no supported
+intersection, and the currently unmodelled product-use-case field remain
+explicit gaps. Product and offer limitations and prohibited claims flow into
+the result without being interpreted as benefits.
+
 ## Next increment
 
-MLAI-028.2 will validate target and product references against established
-Customer and Product Intelligence and produce deterministic relevance
-explanations before differentiation or value-proposition automation begins.
+MLAI-028.3 will add governed differentiation and proof selection. Relevance
+matches are candidate evidence, not approved positioning or market validation.

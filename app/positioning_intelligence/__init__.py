@@ -7,6 +7,12 @@ from app.positioning_intelligence.models import (
     PositioningUnknown,
     TargetKind,
 )
+from app.positioning_intelligence.relevance import (
+    RelevanceGap,
+    RelevanceMatch,
+    TargetProductRelevance,
+    TargetProductRelevanceEvaluator,
+)
 from app.positioning_intelligence.repository import PositioningRepository
 from app.positioning_intelligence.service import PositioningService
 
@@ -17,5 +23,9 @@ __all__ = [
     "PositioningService",
     "PositioningStatus",
     "PositioningUnknown",
+    "RelevanceGap",
+    "RelevanceMatch",
     "TargetKind",
+    "TargetProductRelevance",
+    "TargetProductRelevanceEvaluator",
 ]
