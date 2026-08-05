@@ -20,6 +20,12 @@ from app.database.repositories import (
     CustomerIntelligenceRepository,
     MemoryRepository,
 )
+from app.identity import (
+    AuthenticatedPrincipal,
+    IdentityRepository,
+    Permission,
+    TenantAuthorizationService,
+)
 from app.marketing_brief.campaign_workflow import MarketingBriefCampaignWorkflow
 from app.marketing_brief.prompt_pack import MarketingBriefPromptPackService
 from app.marketing_brief.repository import MarketingBriefRepository
@@ -48,6 +54,8 @@ class CanonicalApplication:
     marketing_briefs: MarketingBriefRepository
     prompt_packs: PromptPackRepository
     compliance_rules: BrandRuleRepository
+    identities: IdentityRepository
+    authorization: TenantAuthorizationService
 
     @classmethod
     def build(
@@ -59,6 +67,7 @@ class CanonicalApplication:
         selected_database = database or SQLiteDatabase()
         selected_database.initialise()
 
+        identities = IdentityRepository(selected_database)
         return cls(
             database=selected_database,
             tenants=TenantRepository(selected_database),
@@ -71,6 +80,34 @@ class CanonicalApplication:
             marketing_briefs=MarketingBriefRepository(selected_database),
             prompt_packs=PromptPackRepository(selected_database),
             compliance_rules=BrandRuleRepository(selected_database),
+            identities=identities,
+            authorization=TenantAuthorizationService(identities),
+        )
+
+    def authorize(
+        self,
+        principal: AuthenticatedPrincipal,
+        *,
+        tenant_id: str,
+    ):
+        """Return a tenant-bound facade only after trusted membership checks."""
+
+        from app.application.authorized import AuthorizedTenantApplication
+
+        self.authorization.authorize(
+            principal,
+            tenant_id=tenant_id,
+            permission=Permission.VIEW,
+            resource_type="tenant_session",
+            resource_id=tenant_id,
+            resource_tenant_id=tenant_id,
+            audit_action="identity",
+        )
+        return AuthorizedTenantApplication(
+            application=self,
+            principal=principal,
+            tenant_id=tenant_id,
+            authorization=self.authorization,
         )
 
     def build_context_assembler(self) -> AIContextAssembler:

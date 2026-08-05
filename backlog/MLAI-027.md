@@ -2,7 +2,7 @@
 
 ## Status
 
-In progress - MLAI-027.2 implemented
+In progress - MLAI-027.3 implemented
 
 ## Product authority
 
@@ -45,11 +45,11 @@ limitations, and export the result with a complete audit trail.
 
 ### MLAI-027.3 - Identity and Tenant Authorization
 
-- [ ] Define an external identity-provider adapter boundary.
-- [ ] Derive tenant access from the authenticated principal.
-- [ ] Enforce authorization in application services.
-- [ ] Add cross-tenant denial tests for every exposed operation.
-- [ ] Audit identity, approval, generation, and export actions.
+- [x] Define an external identity-provider adapter boundary.
+- [x] Derive tenant access from the authenticated principal.
+- [x] Enforce authorization in application services.
+- [x] Add cross-tenant denial tests for every exposed operation.
+- [x] Audit identity, approval, generation, and export actions.
 
 ### MLAI-027.4 - Pilot API and Workflow Contract
 
@@ -78,8 +78,8 @@ limitations, and export the result with a complete audit trail.
 ## Epic acceptance criteria
 
 - [ ] The pilot uses one canonical application and persistence path.
-- [ ] Tenant authorization is derived from trusted identity.
-- [ ] Cross-tenant access is denied and tested.
+- [x] Tenant authorization is derived from trusted identity.
+- [x] Cross-tenant access is denied and tested.
 - [ ] Missing context remains explicit.
 - [ ] Only approved plans and briefs govern generation.
 - [ ] Compliance evaluation remains independent from prompt guidance.

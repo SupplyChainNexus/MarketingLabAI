@@ -2,7 +2,7 @@
 
 ## Review checkpoint
 
-Reviewed for MLAI-027.2 Verified Product and Offer Context.
+Reviewed for MLAI-027.3 Identity and Tenant Authorization.
 
 ## Maturity scale
 
@@ -37,7 +37,7 @@ secure deployed customer workflow.
 | Generation | Provider-neutral orchestration and Company, Customer, Product, and memory context assembly | Produces governed marketing assets | 3 | Maintain through secure pilot |
 | Compliance | Preventative guidance and independent evaluation | Reduces brand and policy risk | 3 | Expose in pilot |
 | Memory | Provider, model, workflow, and event audit context | Preserves traceability | 2 | Extend in pilot |
-| Identity | User authentication and tenant authorization | Protects customer data and actions | 0 | MLAI-027.3 |
+| Identity | External identity boundary and tenant authorization | Protects customer data and actions | 3 | Connect live provider in MLAI-027.4/027.6 |
 | Interface | Pilot API and guided workspace | Makes capability usable without an engineer | 0 | MLAI-027.4/027.5 |
 | Operations | Deployment, monitoring, backup, restore, and incident process | Makes private pilot safe and supportable | 0 | MLAI-027.6 |
 | Calendar | International Marketing Calendar | Coordinates time-based activity | 0 | Deferred MLAI-026 |

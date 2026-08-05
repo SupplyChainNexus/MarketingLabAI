@@ -140,6 +140,38 @@ class SQLiteDatabase:
                         ON DELETE CASCADE
                 );
 
+                CREATE TABLE IF NOT EXISTS tenant_memberships (
+                    provider TEXT NOT NULL,
+                    subject_id TEXT NOT NULL,
+                    tenant_id TEXT NOT NULL,
+                    role TEXT NOT NULL,
+                    active INTEGER NOT NULL DEFAULT 1,
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    PRIMARY KEY (provider, subject_id, tenant_id),
+                    FOREIGN KEY (tenant_id) REFERENCES tenants(tenant_id)
+                        ON DELETE CASCADE
+                );
+
+                CREATE INDEX IF NOT EXISTS idx_tenant_memberships_tenant
+                    ON tenant_memberships(tenant_id, active);
+
+                CREATE TABLE IF NOT EXISTS authorization_audit_events (
+                    event_id TEXT PRIMARY KEY,
+                    tenant_id TEXT NOT NULL,
+                    subject_id TEXT NOT NULL,
+                    provider TEXT NOT NULL,
+                    action TEXT NOT NULL,
+                    resource_type TEXT NOT NULL,
+                    resource_id TEXT NOT NULL,
+                    outcome TEXT NOT NULL,
+                    occurred_at TEXT NOT NULL,
+                    metadata_json TEXT NOT NULL DEFAULT '{}'
+                );
+
+                CREATE INDEX IF NOT EXISTS idx_authorization_audit_tenant
+                    ON authorization_audit_events(tenant_id, occurred_at);
+
                 CREATE TABLE IF NOT EXISTS compliance_rules (
                     rule_id TEXT NOT NULL,
                     version INTEGER NOT NULL,
@@ -375,8 +407,7 @@ class SQLiteDatabase:
                 )
                 """)
 
-            connection.execute(
-                """
+            connection.execute("""
                 INSERT OR IGNORE INTO schema_migrations (
                     version,
                     description,
@@ -387,11 +418,19 @@ class SQLiteDatabase:
                     'Add versioned marketing briefs',
                     strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
                 )
-                """
-            )
+                """)
 
-            connection.execute(
-                """
+            connection.execute("""
+                INSERT OR IGNORE INTO schema_migrations (
+                    version, description, applied_at
+                ) VALUES (
+                    11,
+                    'Add identity memberships and authorization audit',
+                    strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+                )
+                """)
+
+            connection.execute("""
                 INSERT OR IGNORE INTO schema_migrations (
                     version,
                     description,
@@ -402,11 +441,9 @@ class SQLiteDatabase:
                     'Add verified Product Intelligence profiles',
                     strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
                 )
-                """
-            )
+                """)
 
-            connection.execute(
-                """
+            connection.execute("""
                 INSERT OR IGNORE INTO schema_migrations (
                     version,
                     description,
@@ -417,8 +454,7 @@ class SQLiteDatabase:
                     'Add versioned campaign plans',
                     strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
                 )
-                """
-            )
+                """)
 
     def table_names(self) -> list[str]:
         """Return application table names."""

@@ -113,6 +113,7 @@ class CanonicalApplicationTests(unittest.TestCase):
             self.application.marketing_briefs,
             self.application.prompt_packs,
             self.application.compliance_rules,
+            self.application.identities,
         )
 
         for repository in repositories:

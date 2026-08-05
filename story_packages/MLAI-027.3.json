@@ -1,0 +1,21 @@
+{
+  "story_id": "MLAI-027.3",
+  "slug": "identity_tenant_authorization",
+  "title": "Identity and Tenant Authorization",
+  "focused_tests": [
+    "tests.test_identity_models",
+    "tests.test_identity_repository",
+    "tests.test_identity_migration",
+    "tests.test_authorized_application",
+    "tests.test_application_composition",
+    "tests.test_sqlite_database"
+  ],
+  "import_modules": [
+    "app.identity",
+    "app.identity.provider",
+    "app.identity.service",
+    "app.application",
+    "app.application.authorized"
+  ],
+  "commit_message": "feat(security): enforce tenant authorization"
+}

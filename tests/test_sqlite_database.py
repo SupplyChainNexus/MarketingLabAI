@@ -31,6 +31,7 @@ class SQLiteDatabaseTests(unittest.TestCase):
         self.assertEqual(
             self.database.table_names(),
             [
+                "authorization_audit_events",
                 "brands",
                 "business_intelligence_profiles",
                 "campaign_plans",
@@ -42,6 +43,7 @@ class SQLiteDatabaseTests(unittest.TestCase):
                 "product_intelligence_profiles",
                 "prompt_packs",
                 "schema_migrations",
+                "tenant_memberships",
                 "tenants",
             ],
         )
