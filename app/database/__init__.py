@@ -5,6 +5,8 @@ from __future__ import annotations
 from typing import Any
 
 from app.database.connection import SQLiteDatabase
+from app.database.factory import create_database
+from app.database.postgresql import PostgreSQLDatabase
 from app.database.repositories import (
     BrandRepository,
     BusinessIntelligenceRepository,
@@ -13,6 +15,8 @@ from app.database.repositories import (
 
 __all__ = [
     "SQLiteDatabase",
+    "PostgreSQLDatabase",
+    "create_database",
     "JsonToSQLiteMigrator",
     "BrandRepository",
     "BusinessIntelligenceRepository",
@@ -28,6 +32,4 @@ def __getattr__(name: str) -> Any:
 
         return JsonToSQLiteMigrator
 
-    raise AttributeError(
-        f"module 'app.database' has no attribute {name!r}"
-    )
+    raise AttributeError(f"module 'app.database' has no attribute {name!r}")

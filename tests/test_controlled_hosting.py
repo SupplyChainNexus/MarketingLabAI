@@ -36,6 +36,9 @@ class ControlledHostingTests(unittest.TestCase):
                 '"projects/p/secrets/invitation-hashes"}'
             ),
             "MLAI_DURABLE_ADAPTER_VERIFIED": "true",
+            "MLAI_DURABLE_ADAPTER_EVIDENCE_REFERENCE": (
+                "evidence://synthetic-postgresql-rehearsal/commit"
+            ),
         }
 
     def test_complete_configuration_is_engineering_ready_but_never_authorizes(self):
@@ -73,6 +76,14 @@ class ControlledHostingTests(unittest.TestCase):
             require_cloud_deployment_authorization(
                 report, founder_decision_recorded=True
             )
+
+    def test_adapter_boolean_without_traceable_evidence_is_refused(self):
+        values = self.values()
+        values["MLAI_DURABLE_ADAPTER_EVIDENCE_REFERENCE"] = ""
+
+        report = ControlledHostingConfiguration.from_environment(values).evaluate()
+
+        self.assertFalse(report.engineering_ready)
 
     def test_founder_decision_is_required_after_engineering_passes(self):
         report = ControlledHostingConfiguration.from_environment(

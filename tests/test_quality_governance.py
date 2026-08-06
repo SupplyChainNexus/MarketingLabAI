@@ -143,6 +143,21 @@ class QualityGovernanceTests(unittest.TestCase):
         ):
             self.assertIn(required, normalized)
 
+    def test_postgresql_compatibility_requires_live_evidence(self):
+        decision = self.read(
+            "governance/adrs/ADR-0031-repository-wide-postgresql-compatibility.md"
+        )
+        normalized = " ".join(decision.split())
+        for required in (
+            "21-table schema",
+            "preserves and hashes the source",
+            "Any mismatch rolls back",
+            "cannot substitute for a live PostgreSQL rehearsal",
+            "does not delete or mutate the SQLite source",
+            "No Google API",
+        ):
+            self.assertIn(required, normalized)
+
 
 if __name__ == "__main__":
     unittest.main()

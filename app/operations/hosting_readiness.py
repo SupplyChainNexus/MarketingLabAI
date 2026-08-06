@@ -60,6 +60,7 @@ class ControlledHostingConfiguration:
     monthly_budget_zar: int
     secret_bindings: dict[str, str]
     durable_adapter_verified: bool
+    durable_adapter_evidence_reference: str
 
     REQUIRED_SECRETS = frozenset(
         {
@@ -132,6 +133,9 @@ class ControlledHostingConfiguration:
             monthly_budget_zar=bounded_integer("MLAI_MONTHLY_BUDGET_ZAR", 1, 1000),
             secret_bindings=secret_bindings,
             durable_adapter_verified=verified == "true",
+            durable_adapter_evidence_reference=str(
+                values.get("MLAI_DURABLE_ADAPTER_EVIDENCE_REFERENCE", "")
+            ).strip(),
         )
 
     def evaluate(self) -> ControlledHostingReport:
@@ -165,8 +169,14 @@ class ControlledHostingConfiguration:
             ),
             HostingCheck(
                 "durable_adapter",
-                self.durable_adapter_verified,
-                "complete repository compatibility must be evidenced",
+                self.durable_adapter_verified
+                and bool(self.durable_adapter_evidence_reference)
+                and not re.search(
+                    r"(?:password|secret|token|postgresql://)",
+                    self.durable_adapter_evidence_reference,
+                    re.I,
+                ),
+                "traceable live compatibility, migration and restore evidence required",
             ),
             HostingCheck(
                 "cloud_sql_instance",

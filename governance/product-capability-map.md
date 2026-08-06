@@ -45,6 +45,7 @@ deployment-specific identity, legal, privacy, and rehearsal evidence is absent.
 | Interface | Guided session-protected workspace with Positioning, Strategy, workflow, and design-partner readiness | Makes the governed vertical slice understandable and usable | 3 | Keep real-data activation founder-controlled |
 | Operations | Deployment, health, safe logs, signal alerts, backup, restore, rollback, immutable rehearsal evidence, support ownership and incident process | Makes a future private pilot supportable | 3 | Execute controlled synthetic rehearsals before acceptance |
 | Hosting | Default-deny Cloud Run target, bounded resources and costs, external secret references, and durable-persistence gate | Prevents unsafe or self-authorizing pilot deployment | 2 | Complete PostgreSQL compatibility before any cloud build |
+| Persistence | Canonical PostgreSQL adapter, dependency-ordered schema and source-preserving transactional synthetic migration | Enables durable hosted state without weakening tenant or activation boundaries | 2 | Complete live PostgreSQL migration and isolated restore evidence before cloud build |
 | Calendar | International Marketing Calendar | Coordinates time-based activity | 0 | Deferred MLAI-026 |
 | Publishing | Connector-controlled execution | Reduces manual channel work | 0 | Post-pilot |
 | Learning | Actual results, evidence-grounded campaign learning, adaptation, and experiments | Closes the marketing control loop | 0 | Post-real outcomes; never infer synthetic learning |
@@ -76,3 +77,4 @@ deployment-specific identity, legal, privacy, and rehearsal evidence is absent.
 21. MLAI-030.6 Design-Partner Acceptance Rehearsal
 22. MLAI-030.7 Controlled Real-Data Activation
 23. MLAI-031.1 Controlled Hosting and Durable Pilot Persistence
+24. MLAI-031.2 Repository-Wide PostgreSQL Compatibility and Migration

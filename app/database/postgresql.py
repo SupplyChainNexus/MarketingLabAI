@@ -1,0 +1,337 @@
+"""PostgreSQL compatibility boundary for the canonical pilot repositories."""
+
+from __future__ import annotations
+
+import re
+import tempfile
+from collections.abc import Iterator, Mapping, Sequence
+from contextlib import contextmanager
+from pathlib import Path
+from typing import Any
+
+from app.database.connection import SQLiteDatabase
+
+
+class PostgreSQLConfigurationError(ValueError):
+    """Raised when a PostgreSQL connection value is unsafe or incomplete."""
+
+
+class HybridRow(Mapping[str, Any]):
+    """Expose PostgreSQL rows through SQLite-compatible key and index access."""
+
+    def __init__(self, columns: Sequence[str], values: Sequence[Any]) -> None:
+        self._columns = tuple(columns)
+        self._values = tuple(values)
+        self._mapping = dict(zip(self._columns, self._values, strict=True))
+
+    def __getitem__(self, key: str | int) -> Any:
+        if isinstance(key, int):
+            return self._values[key]
+        return self._mapping[key]
+
+    def __iter__(self):
+        return iter(self._columns)
+
+    def __len__(self) -> int:
+        return len(self._columns)
+
+
+def _replace_qmark_placeholders(sql: str) -> str:
+    output: list[str] = []
+    quoted = False
+    index = 0
+    while index < len(sql):
+        character = sql[index]
+        if character == "'":
+            output.append(character)
+            if quoted and index + 1 < len(sql) and sql[index + 1] == "'":
+                output.append("'")
+                index += 2
+                continue
+            quoted = not quoted
+        elif character == "?" and not quoted:
+            output.append("%s")
+        else:
+            output.append(character)
+        index += 1
+    if quoted:
+        raise ValueError("SQL contains an unterminated string literal.")
+    return "".join(output)
+
+
+def compile_postgresql_sql(sql: str) -> str:
+    """Translate the repository's bounded SQLite SQL subset to PostgreSQL."""
+
+    compiled = re.sub(
+        r"strftime\('%Y-%m-%dT%H:%M:%fZ',\s*'now'\)",
+        "to_char(clock_timestamp() at time zone 'UTC', "
+        '\'YYYY-MM-DD"T"HH24:MI:SS.US"Z"\')',
+        sql,
+        flags=re.IGNORECASE,
+    )
+    ignore_insert = bool(re.search(r"\bINSERT\s+OR\s+IGNORE\s+INTO\b", compiled, re.I))
+    compiled = re.sub(
+        r"\bINSERT\s+OR\s+IGNORE\s+INTO\b",
+        "INSERT INTO",
+        compiled,
+        flags=re.IGNORECASE,
+    )
+    compiled = _replace_qmark_placeholders(compiled)
+    if ignore_insert:
+        stripped = compiled.rstrip()
+        terminator = ";" if stripped.endswith(";") else ""
+        if terminator:
+            stripped = stripped[:-1].rstrip()
+        compiled = f"{stripped} ON CONFLICT DO NOTHING{terminator}"
+    return compiled
+
+
+class PostgreSQLCursorAdapter:
+    def __init__(self, cursor) -> None:
+        self._cursor = cursor
+
+    @property
+    def rowcount(self) -> int:
+        return int(self._cursor.rowcount)
+
+    def _columns(self) -> tuple[str, ...]:
+        if self._cursor.description is None:
+            return ()
+        columns = []
+        for item in self._cursor.description:
+            name = getattr(item, "name", None)
+            columns.append(str(name if name is not None else item[0]))
+        return tuple(columns)
+
+    def fetchone(self) -> HybridRow | None:
+        row = self._cursor.fetchone()
+        return None if row is None else HybridRow(self._columns(), row)
+
+    def fetchall(self) -> list[HybridRow]:
+        columns = self._columns()
+        return [HybridRow(columns, row) for row in self._cursor.fetchall()]
+
+    def __iter__(self):
+        columns = self._columns()
+        for row in self._cursor:
+            yield HybridRow(columns, row)
+
+
+class PostgreSQLConnectionAdapter:
+    def __init__(self, connection) -> None:
+        self._connection = connection
+
+    def execute(
+        self, sql: str, parameters: Sequence[Any] = ()
+    ) -> PostgreSQLCursorAdapter:
+        try:
+            cursor = self._connection.execute(
+                compile_postgresql_sql(sql), tuple(parameters)
+            )
+        except Exception as error:
+            try:
+                import psycopg
+            except ImportError:
+                raise
+            if isinstance(error, psycopg.IntegrityError):
+                import sqlite3
+
+                raise sqlite3.IntegrityError(str(error)) from error
+            raise
+        return PostgreSQLCursorAdapter(cursor)
+
+    def executescript(self, script: str) -> None:
+        for statement in (part.strip() for part in script.split(";")):
+            if statement:
+                self.execute(statement)
+
+    def commit(self) -> None:
+        self._connection.commit()
+
+    def rollback(self) -> None:
+        self._connection.rollback()
+
+    def close(self) -> None:
+        self._connection.close()
+
+
+def _postgresql_table_sql(name: str, sql: str) -> str:
+    translated = re.sub(
+        r"INTEGER\s+PRIMARY\s+KEY\s+AUTOINCREMENT",
+        "BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY",
+        sql,
+        flags=re.IGNORECASE,
+    )
+    translated = re.sub(
+        r"^CREATE\s+TABLE\s+",
+        "CREATE TABLE IF NOT EXISTS ",
+        translated,
+        count=1,
+        flags=re.IGNORECASE,
+    )
+    if (
+        name == "brands"
+        and "tenant_id" in translated
+        and not re.search(r"REFERENCES\s+tenants\b", translated, re.I)
+    ):
+        closing = translated.rfind(")")
+        translated = (
+            translated[:closing]
+            + ", FOREIGN KEY (tenant_id) REFERENCES tenants(tenant_id)"
+            + translated[closing:]
+        )
+    return translated
+
+
+def build_postgresql_schema() -> tuple[str, ...]:
+    """Derive a deterministic PostgreSQL schema from the canonical SQLite schema."""
+
+    with tempfile.TemporaryDirectory() as directory:
+        database = SQLiteDatabase(Path(directory) / "schema.sqlite3")
+        database.initialise()
+        with database.connection() as connection:
+            rows = connection.execute("""
+                SELECT type, name, sql
+                FROM sqlite_master
+                WHERE type IN ('table', 'index')
+                  AND sql IS NOT NULL
+                  AND name NOT LIKE 'sqlite_%'
+                ORDER BY CASE type WHEN 'table' THEN 0 ELSE 1 END, name
+                """).fetchall()
+
+    tables = {
+        str(row["name"]): _postgresql_table_sql(str(row["name"]), str(row["sql"]))
+        for row in rows
+        if row["type"] == "table"
+    }
+    indexes = [str(row["sql"]) for row in rows if row["type"] == "index"]
+    dependencies = {
+        name: {
+            dependency
+            for dependency in re.findall(r"REFERENCES\s+([A-Za-z_][\w]*)", sql, re.I)
+            if dependency in tables and dependency != name
+        }
+        for name, sql in tables.items()
+    }
+    ordered: list[str] = []
+    pending = set(tables)
+    while pending:
+        ready = sorted(name for name in pending if dependencies[name].issubset(ordered))
+        if not ready:
+            raise RuntimeError(
+                "PostgreSQL schema contains unresolved dependencies: "
+                + ", ".join(sorted(pending))
+            )
+        ordered.extend(ready)
+        pending.difference_update(ready)
+
+    statements = [tables[name] for name in ordered]
+    statements.extend(indexes)
+    return tuple(statements)
+
+
+def build_postgresql_seed_rows() -> dict[str, tuple[tuple[Any, ...], ...]]:
+    """Return canonical non-secret migration and default-tenant seed rows."""
+
+    with tempfile.TemporaryDirectory() as directory:
+        database = SQLiteDatabase(Path(directory) / "seed.sqlite3")
+        database.initialise()
+        with database.connection() as connection:
+            migrations = connection.execute("""
+                SELECT version, description, applied_at
+                FROM schema_migrations ORDER BY version
+                """).fetchall()
+            tenants = connection.execute("""
+                SELECT tenant_id, name, status, created_at, updated_at
+                FROM tenants WHERE tenant_id = 'default'
+                """).fetchall()
+    return {
+        "schema_migrations": tuple(tuple(row) for row in migrations),
+        "tenants": tuple(tuple(row) for row in tenants),
+    }
+
+
+class PostgreSQLDatabase(SQLiteDatabase):
+    """Run existing canonical repositories over PostgreSQL via psycopg."""
+
+    def __init__(self, database_url: str) -> None:
+        selected = str(database_url).strip()
+        if not selected.startswith(("postgresql://", "postgresql+psycopg://")):
+            raise PostgreSQLConfigurationError(
+                "MLAI_DATABASE_URL must be a PostgreSQL URL."
+            )
+        self.database_url = selected.replace(
+            "postgresql+psycopg://", "postgresql://", 1
+        )
+        self.database_path = Path("postgresql-managed")
+
+    def connect(self) -> PostgreSQLConnectionAdapter:
+        try:
+            import psycopg
+        except ImportError as error:
+            raise RuntimeError(
+                "psycopg is required for PostgreSQL persistence."
+            ) from error
+        connection = psycopg.connect(self.database_url)
+        return PostgreSQLConnectionAdapter(connection)
+
+    @contextmanager
+    def connection(self) -> Iterator[PostgreSQLConnectionAdapter]:
+        connection = self.connect()
+        try:
+            yield connection
+        finally:
+            connection.close()
+
+    @contextmanager
+    def transaction(self) -> Iterator[PostgreSQLConnectionAdapter]:
+        connection = self.connect()
+        try:
+            yield connection
+            connection.commit()
+        except Exception:
+            connection.rollback()
+            raise
+        finally:
+            connection.close()
+
+    def initialise(self) -> None:
+        with self.transaction() as connection:
+            for statement in build_postgresql_schema():
+                connection.execute(statement)
+            seeds = build_postgresql_seed_rows()
+            for row in seeds["schema_migrations"]:
+                connection.execute(
+                    """
+                    INSERT INTO schema_migrations (version, description, applied_at)
+                    VALUES (?, ?, ?) ON CONFLICT (version) DO NOTHING
+                    """,
+                    row,
+                )
+            for row in seeds["tenants"]:
+                connection.execute(
+                    """
+                    INSERT INTO tenants
+                        (tenant_id, name, status, created_at, updated_at)
+                    VALUES (?, ?, ?, ?, ?) ON CONFLICT (tenant_id) DO NOTHING
+                    """,
+                    row,
+                )
+
+    def table_names(self) -> list[str]:
+        with self.connection() as connection:
+            rows = connection.execute("""
+                SELECT table_name AS name
+                FROM information_schema.tables
+                WHERE table_schema = 'public'
+                ORDER BY table_name
+                """).fetchall()
+        return [str(row["name"]) for row in rows]
+
+    def integrity_check(self) -> str:
+        with self.connection() as connection:
+            row = connection.execute("SELECT 1 AS healthy").fetchone()
+        return "ok" if row is not None and int(row["healthy"]) == 1 else "failed"
+
+    def checkpoint(self) -> None:
+        return None

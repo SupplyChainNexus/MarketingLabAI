@@ -3,12 +3,12 @@
 ## Checkpoint
 
 - Branch: `feature/tenant-architecture`
-- Installation baseline: `646aeae`
+- Installation baseline: `dfbee77`
 - Remote state before this story: synchronized
 - Last completed epic: MLAI-029 Marketing Strategy Intelligence
 - Active epic: MLAI-031 Controlled Pilot Hosting
-- Last completed story: MLAI-030.7 Controlled Real-Data Activation
-- Active story: MLAI-031.1 Controlled Hosting and Durable Pilot Persistence
+- Last completed story: MLAI-031.1 Controlled Hosting and Durable Pilot Persistence
+- Active story: MLAI-031.2 Repository-Wide PostgreSQL Compatibility and Migration
 
 ## Product direction
 
@@ -149,6 +149,14 @@ Manager remain disabled. The audit also found 144 SQLite persistence references.
 Because Cloud Run local storage is replaceable, MLAI-031.1 refuses SQLite cloud
 deployment and requires complete PostgreSQL migration and recovery evidence.
 
+MLAI-031.2 adds runtime database selection, a PostgreSQL adapter compatible with
+the canonical repository contract, deterministic dependency-ordered generation of
+all 21 tables, and source-preserving transactional synthetic migration with exact
+per-table parity. PostgreSQL backup and restore are explicitly refused by the
+SQLite recovery CLI. Local compatibility evidence passes, but no live PostgreSQL
+server or managed restore target was available; the durable-adapter gate therefore
+remains false pending commit-bound live migration, isolation and restore evidence.
+
 ADR-0024 authorizes engineering and quality development and controlled
 synthetic design-partner rehearsal, including approved Google test identities,
 synthetic invitation claiming and browser, accessibility, recovery, revocation,
@@ -163,7 +171,8 @@ decision and the applicable privacy, recovery, support and data boundaries.
 
 ## Next engineer action
 
-Install MLAI-031.1 only on verified baseline `646aeae`. Complete repository-wide
-PostgreSQL compatibility and synthetic migration/restore evidence before
-enabling Google deployment APIs or building an image. Do not deploy SQLite to
-Cloud Run, publish the OAuth app, send external invitations or enable real data.
+Install MLAI-031.2 only on verified baseline `dfbee77`. Run the unchanged complete
+local gates, then perform a separately approved live synthetic PostgreSQL migration
+and isolated restore rehearsal before enabling Google deployment APIs or building
+an image. Do not deploy SQLite to Cloud Run, publish the OAuth app, send external
+invitations or enable real data.

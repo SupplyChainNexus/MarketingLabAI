@@ -66,7 +66,7 @@ class PilotReleaseGate:
             GateCheck(
                 "database_integrity",
                 self.database.integrity_check() == "ok",
-                "PRAGMA integrity_check",
+                f"{self.config.persistence_backend} integrity check",
             ),
             GateCheck(
                 "session_schema", 13 in migration_versions, "schema migration 13"

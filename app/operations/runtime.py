@@ -5,7 +5,7 @@ from __future__ import annotations
 from importlib import import_module
 
 from app.application import CanonicalApplication
-from app.database.connection import SQLiteDatabase
+from app.database.factory import create_database
 from app.design_partner import DesignPartnerAcceptanceEvaluator
 from app.identity import IdentityProviderAdapter
 from app.operations.configuration import PilotConfiguration
@@ -29,7 +29,13 @@ def create_application() -> OperationalPilotApplication:
     """Compose the deployable WSGI application exclusively from environment."""
 
     config = PilotConfiguration.from_environment()
-    canonical = CanonicalApplication.build(SQLiteDatabase(config.database_path))
+    canonical = CanonicalApplication.build(
+        create_database(
+            backend=config.persistence_backend,
+            database_path=config.database_path,
+            database_url=config.database_url,
+        )
+    )
     upstream = _factory(config.identity_adapter_factory)(config)
     if not isinstance(upstream, IdentityProviderAdapter):
         raise TypeError("Identity factory must return IdentityProviderAdapter.")

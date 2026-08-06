@@ -44,6 +44,8 @@ class PilotConfiguration:
     google_auth_domain: str = ""
     allow_real_customer_data: bool = False
     deployment_commit: str = "unrecorded"
+    persistence_backend: str = "sqlite"
+    database_url: str = ""
 
     @classmethod
     def from_environment(
@@ -185,6 +187,18 @@ class PilotConfiguration:
             raise ValueError(
                 "MLAI_DEPLOYMENT_COMMIT must be a 7 to 40 character Git SHA."
             )
+        persistence_backend = (
+            str(env.get("MLAI_PERSISTENCE_BACKEND", "sqlite")).strip().lower()
+        )
+        if persistence_backend not in {"sqlite", "postgresql"}:
+            raise ValueError("MLAI_PERSISTENCE_BACKEND must be sqlite or postgresql.")
+        database_url = str(env.get("MLAI_DATABASE_URL", "")).strip()
+        if persistence_backend == "postgresql" and not database_url.startswith(
+            ("postgresql://", "postgresql+psycopg://")
+        ):
+            raise ValueError(
+                "MLAI_DATABASE_URL must be configured for PostgreSQL persistence."
+            )
         return cls(
             environment=environment,
             database_path=Path(required("MLAI_DATABASE_PATH")),
@@ -209,6 +223,8 @@ class PilotConfiguration:
             google_auth_domain=google_auth_domain,
             allow_real_customer_data=False,
             deployment_commit=deployment_commit,
+            persistence_backend=persistence_backend,
+            database_url=database_url,
         )
 
     def public_summary(self) -> dict[str, object]:
@@ -225,6 +241,7 @@ class PilotConfiguration:
             "google_max_auth_age_seconds": self.google_max_auth_age_seconds,
             "security_evidence_items": len(self.security_evidence or {}),
             "deployment_commit_recorded": self.deployment_commit != "unrecorded",
+            "persistence_backend": self.persistence_backend,
             "real_customer_data_allowed": False,
             "engineering_development_authorized": True,
             "synthetic_rehearsal_authorized": True,

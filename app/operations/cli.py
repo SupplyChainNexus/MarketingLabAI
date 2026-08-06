@@ -6,7 +6,8 @@ import argparse
 import json
 from datetime import UTC, datetime, timedelta
 
-from app.database.connection import SQLiteDatabase
+from app.database.factory import create_database
+from app.database.postgresql import PostgreSQLDatabase
 from app.operations.configuration import PilotConfiguration
 from app.operations.readiness_evidence import (
     ReadinessEvidence,
@@ -34,8 +35,11 @@ def main() -> int:
     evidence.add_argument("--remediation", default="")
     arguments = parser.parse_args()
     config = PilotConfiguration.from_environment()
-    database = SQLiteDatabase(config.database_path)
-    recovery = SQLiteRecoveryService(database, config.backup_directory)
+    database = create_database(
+        backend=config.persistence_backend,
+        database_path=config.database_path,
+        database_url=config.database_url,
+    )
     if arguments.command == "record-evidence":
         if config.deployment_commit == "unrecorded":
             raise ValueError("MLAI_DEPLOYMENT_COMMIT must be recorded first.")
@@ -70,6 +74,11 @@ def main() -> int:
         )
         return 0
     if arguments.command == "backup":
+        if isinstance(database, PostgreSQLDatabase):
+            raise RuntimeError(
+                "PostgreSQL backup must use the approved managed-database backup runbook."
+            )
+        recovery = SQLiteRecoveryService(database, config.backup_directory)
         evidence = recovery.create_backup()
         print(
             json.dumps(
@@ -83,6 +92,11 @@ def main() -> int:
         )
         return 0
     if arguments.command == "restore":
+        if isinstance(database, PostgreSQLDatabase):
+            raise RuntimeError(
+                "PostgreSQL restore must use an isolated approved managed-database target."
+            )
+        recovery = SQLiteRecoveryService(database, config.backup_directory)
         restored = recovery.restore_to(arguments.backup_path, arguments.destination)
         print(
             json.dumps({"restored": str(restored), "integrity": "ok"}, sort_keys=True)
