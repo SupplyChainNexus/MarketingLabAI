@@ -59,6 +59,28 @@ issuer and audience, mandatory time and subject claims, a verified email, and
 MarketingLabAI tenant: invitation claiming and tenant authorization remain
 separate application decisions.
 
+`MLAI_GOOGLE_MAX_AUTH_AGE_SECONDS` bounds authentication age from 300 to 3600
+seconds. The backend rejects missing, malformed, stale, or materially future
+`auth_time` claims. Every MarketingLabAI session use rechecks the requested
+tenant and current active membership; removing a membership therefore blocks
+an otherwise unexpired session.
+
+Logout uses `DELETE /v1/pilot/session`, requires the session tenant and CSRF
+token, revokes the server-side session, audits the decision, and expires both
+browser cookies. Operator-driven identity-and-tenant revocation invalidates all
+matching sessions and is audited separately.
+
+## Production-security evidence
+
+Set `MLAI_SECURITY_EVIDENCE_JSON` only from recorded controlled rehearsal. It
+is a JSON object of boolean values for the exact checks in ADR-0026. Missing or
+false items remain blockers. Never store tokens, credentials, invitation codes,
+customer records, or submitted content in this value.
+
+A complete security report permits founder activation assessment only. It does
+not authorize an OAuth production audience, external invitations, public
+signup, customer data, billing, publishing, or production activation.
+
 Login availability depends on the hosted Google Identity Services client.
 Google may delete an OAuth client after six months of inactivity. An
 administrative configuration response also exposed the unused SCRYPT signer

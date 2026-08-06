@@ -7,9 +7,14 @@ import hmac
 import secrets
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
+from uuid import uuid4
 
 from app.application import CanonicalApplication
-from app.identity import AuthenticatedPrincipal, IdentityProviderAdapter
+from app.identity import (
+    AuthenticatedPrincipal,
+    AuthorizationAuditEvent,
+    IdentityProviderAdapter,
+)
 
 
 @dataclass(slots=True, frozen=True)
@@ -67,17 +72,32 @@ class PilotSessionProvider(IdentityProviderAdapter):
         return PilotSession(token, csrf, tenant_id, expires.isoformat())
 
     def authenticate(self, credential: str) -> AuthenticatedPrincipal:
+        return self.authenticate_for_tenant(credential)
+
+    def authenticate_for_tenant(
+        self, credential: str, tenant_id: str | None = None
+    ) -> AuthenticatedPrincipal:
         now = datetime.now(UTC).isoformat()
         with self.application.database.connection() as connection:
             row = connection.execute(
                 """
-                SELECT provider, subject_id FROM pilot_sessions
+                SELECT provider, subject_id, tenant_id FROM pilot_sessions
                 WHERE token_hash = ? AND revoked_at IS NULL AND expires_at > ?
                 """,
                 (self._hash(credential), now),
             ).fetchone()
         if row is None:
             raise PermissionError("Session is invalid or expired.")
+        session_tenant = str(row["tenant_id"])
+        if tenant_id is not None and session_tenant != tenant_id:
+            raise PermissionError("Session is not valid for the requested tenant.")
+        membership = self.application.identities.get_membership(
+            provider=str(row["provider"]),
+            subject_id=str(row["subject_id"]),
+            tenant_id=session_tenant,
+        )
+        if membership is None or not membership.active:
+            raise PermissionError("Session membership is inactive.")
         return AuthenticatedPrincipal(
             provider=str(row["provider"]), subject_id=str(row["subject_id"])
         )
@@ -101,12 +121,71 @@ class PilotSessionProvider(IdentityProviderAdapter):
 
     def revoke(self, token: str) -> None:
         with self.application.database.transaction() as connection:
+            row = connection.execute(
+                """
+                SELECT provider, subject_id, tenant_id FROM pilot_sessions
+                WHERE token_hash = ? AND revoked_at IS NULL
+                """,
+                (self._hash(token),),
+            ).fetchone()
             connection.execute(
                 "UPDATE pilot_sessions SET revoked_at = ? WHERE token_hash = ?",
                 (datetime.now(UTC).isoformat(), self._hash(token)),
             )
+        if row is not None:
+            self._audit_revocation(
+                provider=str(row["provider"]),
+                subject_id=str(row["subject_id"]),
+                tenant_id=str(row["tenant_id"]),
+                scope="current_session",
+            )
+
+    def revoke_all(self, *, provider: str, subject_id: str, tenant_id: str) -> int:
+        with self.application.database.transaction() as connection:
+            cursor = connection.execute(
+                """
+                UPDATE pilot_sessions SET revoked_at = ?
+                WHERE provider = ? AND subject_id = ? AND tenant_id = ?
+                  AND revoked_at IS NULL
+                """,
+                (datetime.now(UTC).isoformat(), provider, subject_id, tenant_id),
+            )
+        count = int(cursor.rowcount)
+        if count:
+            self._audit_revocation(
+                provider=provider,
+                subject_id=subject_id,
+                tenant_id=tenant_id,
+                scope="all_identity_tenant_sessions",
+            )
+        return count
+
+    def purge_expired(self) -> int:
+        with self.application.database.transaction() as connection:
+            cursor = connection.execute(
+                "DELETE FROM pilot_sessions WHERE expires_at <= ?",
+                (datetime.now(UTC).isoformat(),),
+            )
+        return int(cursor.rowcount)
 
     def _hash(self, value: str) -> str:
         if not isinstance(value, str) or not value:
             return ""
         return hmac.new(self.secret, value.encode(), hashlib.sha256).hexdigest()
+
+    def _audit_revocation(
+        self, *, provider: str, subject_id: str, tenant_id: str, scope: str
+    ) -> None:
+        self.application.identities.save_audit_event(
+            AuthorizationAuditEvent(
+                event_id=str(uuid4()),
+                tenant_id=tenant_id,
+                subject_id=subject_id,
+                provider=provider,
+                action="session_revoke",
+                resource_type="pilot_session",
+                resource_id=tenant_id,
+                outcome="allowed",
+                metadata={"scope": scope},
+            )
+        )

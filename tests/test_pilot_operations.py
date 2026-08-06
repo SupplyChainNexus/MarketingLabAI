@@ -126,6 +126,44 @@ class PilotOperationsTests(unittest.TestCase):
         self.sessions.revoke(session.token)
         with self.assertRaises(PermissionError):
             self.sessions.authenticate(session.token)
+        events = self.application.identities.list_audit_events(tenant_id="tenant-one")
+        self.assertEqual(events[-1].action, "session_revoke")
+
+    def test_session_rechecks_tenant_and_active_membership(self):
+        session = self.sessions.create("upstream-proof", "tenant-one")
+        with self.assertRaisesRegex(PermissionError, "requested tenant"):
+            self.sessions.authenticate_for_tenant(session.token, "tenant-two")
+        self.application.identities.save_membership(
+            TenantMembership(
+                subject_id="operator-one",
+                provider="oidc-test",
+                tenant_id="tenant-one",
+                role=TenantRole.ADMIN,
+                active=False,
+            )
+        )
+        with self.assertRaisesRegex(PermissionError, "inactive"):
+            self.sessions.authenticate(session.token)
+
+    def test_bulk_revocation_and_expired_session_purge(self):
+        first = self.sessions.create("upstream-proof", "tenant-one")
+        second = self.sessions.create("upstream-proof", "tenant-one")
+        self.assertEqual(
+            self.sessions.revoke_all(
+                provider="oidc-test",
+                subject_id="operator-one",
+                tenant_id="tenant-one",
+            ),
+            2,
+        )
+        for session in (first, second):
+            with self.assertRaises(PermissionError):
+                self.sessions.authenticate(session.token)
+        with self.database.transaction() as connection:
+            connection.execute(
+                "UPDATE pilot_sessions SET expires_at = '2000-01-01T00:00:00+00:00'"
+            )
+        self.assertEqual(self.sessions.purge_expired(), 2)
 
     def test_backup_restore_is_verified_and_source_remains_unchanged(self):
         recovery = SQLiteRecoveryService(
@@ -206,6 +244,76 @@ class PilotOperationsTests(unittest.TestCase):
         self.assertIn("HttpOnly", cookies[0])
         self.assertIn("Secure", cookies[0])
         self.assertIn("csrf_token", payload)
+        response_headers = dict(headers)
+        self.assertEqual(response_headers["Cache-Control"], "no-store")
+        self.assertEqual(response_headers["X-Frame-Options"], "DENY")
+
+    def test_logout_requires_csrf_revokes_session_and_expires_cookies(self):
+        session = self.sessions.create("upstream-proof", "tenant-one")
+        runtime = OperationalPilotApplication(
+            StubWsgiApplication(),
+            self.sessions,
+            self.config,
+            logger=PrivacySafeJsonLogger(lambda _: None),
+        )
+        captured = {}
+
+        def start_response(status, headers):
+            captured["status"] = status
+            captured["headers"] = headers
+
+        payload = json.loads(
+            b"".join(
+                runtime(
+                    {
+                        "REQUEST_METHOD": "DELETE",
+                        "PATH_INFO": "/v1/pilot/session",
+                        "HTTP_COOKIE": f"mlai_session={session.token}",
+                        "HTTP_X_TENANT_ID": "tenant-one",
+                        "HTTP_X_CSRF_TOKEN": session.csrf_token,
+                        "REMOTE_ADDR": "127.0.0.1",
+                        "wsgi.input": io.BytesIO(b""),
+                    },
+                    start_response,
+                )
+            )
+        )
+        self.assertEqual(captured["status"], "200 OK")
+        self.assertTrue(payload["revoked"])
+        cookies = [value for name, value in captured["headers"] if name == "Set-Cookie"]
+        self.assertEqual(len(cookies), 2)
+        self.assertTrue(all("Max-Age=0" in value for value in cookies))
+        with self.assertRaises(PermissionError):
+            self.sessions.authenticate(session.token)
+
+    def test_request_body_limit_rejects_before_downstream(self):
+        runtime = OperationalPilotApplication(
+            StubWsgiApplication(),
+            self.sessions,
+            self.config,
+            logger=PrivacySafeJsonLogger(lambda _: None),
+        )
+        captured = {}
+
+        def start_response(status, headers):
+            captured["status"] = status
+
+        payload = json.loads(
+            b"".join(
+                runtime(
+                    {
+                        "REQUEST_METHOD": "POST",
+                        "PATH_INFO": "/v1/pilot/context",
+                        "CONTENT_LENGTH": str(self.config.max_request_bytes + 1),
+                        "REMOTE_ADDR": "127.0.0.1",
+                        "wsgi.input": io.BytesIO(b""),
+                    },
+                    start_response,
+                )
+            )
+        )
+        self.assertEqual(captured["status"], "413 Content Too Large")
+        self.assertEqual(payload["error"]["code"], "request_too_large")
 
     def test_migration_thirteen_is_idempotent(self):
         self.database.initialise()

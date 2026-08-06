@@ -2,7 +2,7 @@
 
 ## Review checkpoint
 
-Reviewed for MLAI-030.3 Pilot Privacy and Data Boundaries.
+Reviewed for MLAI-030.4 Production Identity and Security Readiness.
 
 ## Maturity scale
 
@@ -38,7 +38,7 @@ deployment-specific identity, legal, privacy, and rehearsal evidence is absent.
 | Generation | Provider-neutral orchestration and Company, Customer, Product, and memory context assembly | Produces governed marketing assets | 3 | Maintain through secure pilot |
 | Compliance | Preventative guidance and independent evaluation | Reduces brand and policy risk | 3 | Expose in pilot |
 | Memory | Provider, model, workflow, and event audit context | Preserves traceability | 2 | Extend in pilot |
-| Identity | Google Cloud Identity Platform adapter, tenant authorization, and revocable sessions | Protects customer data and actions | 3 | Create and rehearse a controlled Google Cloud project after local validation |
+| Identity | Google Cloud Identity Platform adapter, fresh-token enforcement, tenant-revalidated authorization, and audited revocable sessions | Protects customer data and actions | 3 | Complete controlled deployment evidence before founder assessment |
 | Identity | Invitation-controlled Founder Design Partner tenant claiming | Lets approved owners create isolated free accounts without fabricated identities | 3 | Rehearse browser signup before invitations are sent |
 | Privacy | Versioned synthetic policy, atomic acceptance evidence, classification, and default-deny tenant decisions | Prevents synthetic rehearsal from silently becoming real-data processing | 3 | Complete partner-specific legal choices before real-data activation |
 | Interface | Authenticated pilot API contract | Gives the workspace one governed, retry-safe boundary | 3 | Maintain through MLAI-027.5/027.6 |
@@ -70,3 +70,4 @@ deployment-specific identity, legal, privacy, and rehearsal evidence is absent.
 16. MLAI-030.1 Founder Design Partner Signup and Tenant Provisioning
 17. MLAI-030.2 External Identity Deployment and Signup Experience
 18. MLAI-030.3 Pilot Privacy and Data Boundaries
+19. MLAI-030.4 Production Identity and Security Readiness

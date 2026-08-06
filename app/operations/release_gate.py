@@ -6,6 +6,7 @@ from dataclasses import dataclass
 
 from app.database.connection import SQLiteDatabase
 from app.operations.configuration import PilotConfiguration
+from app.operations.security import ProductionSecurityEvaluator
 
 
 @dataclass(slots=True, frozen=True)
@@ -20,6 +21,7 @@ class ReleaseGateReport:
     checks: tuple[GateCheck, ...]
     synthetic_pilot_ready: bool
     private_customer_pilot_authorized: bool
+    security: dict
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -33,6 +35,7 @@ class ReleaseGateReport:
             "private_customer_pilot_authorized": False,
             "real_data_activation_authorized": False,
             "customer_pilot_status": "real_data_activation_frozen",
+            "production_security": self.security,
         }
 
 
@@ -88,10 +91,34 @@ class PilotReleaseGate:
                 "real-data activation freeze retained",
             ),
         )
-        return ReleaseGateReport(
+        security = (
+            ProductionSecurityEvaluator(
+                self.config,
+                self.database,
+                external_evidence=self.config.security_evidence or {},
+            )
+            .evaluate()
+            .to_dict()
+        )
+        report = ReleaseGateReport(
             checks=checks,
             synthetic_pilot_ready=all(item.passed for item in checks),
             private_customer_pilot_authorized=False,
+            security=security,
+        )
+        return report
+
+    def security_evidence(self) -> dict:
+        """Return production-security evidence without changing activation."""
+
+        return (
+            ProductionSecurityEvaluator(
+                self.config,
+                self.database,
+                external_evidence=self.config.security_evidence or {},
+            )
+            .evaluate()
+            .to_dict()
         )
 
     def _migration_versions(self) -> set[int]:

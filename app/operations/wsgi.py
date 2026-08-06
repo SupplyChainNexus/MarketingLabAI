@@ -37,6 +37,9 @@ class OperationalPilotApplication:
         request_id = str(environ.get("HTTP_X_REQUEST_ID", ""))[:64]
         try:
             self.rate_limiter.check(self._client_key(environ))
+            size_error = self._request_size_error(environ)
+            if size_error is not None:
+                return self._json(start_response, size_error[0], size_error[1])
             if path == "/health/live" and method == "GET":
                 return self._json(start_response, 200, {"status": "alive"})
             if path == "/health/ready" and method == "GET":
@@ -56,6 +59,8 @@ class OperationalPilotApplication:
                 return self._create_session(environ, start_response)
             if path == "/v1/pilot/session" and method == "GET":
                 return self._session_status(environ, start_response)
+            if path == "/v1/pilot/session" and method == "DELETE":
+                return self._delete_session(environ, start_response)
             if (
                 path.startswith("/v1/pilot/")
                 and path != "/v1/pilot/design-partner/signup"
@@ -71,6 +76,12 @@ class OperationalPilotApplication:
             )
             return response
         except RateLimitExceeded:
+            self.logger.emit(
+                "pilot_request_denied",
+                request_id=request_id,
+                path=path,
+                outcome="rate_limited",
+            )
             return self._json(
                 start_response,
                 429,
@@ -82,6 +93,12 @@ class OperationalPilotApplication:
                 },
             )
         except PermissionError:
+            self.logger.emit(
+                "pilot_request_denied",
+                request_id=request_id,
+                path=path,
+                outcome="unauthenticated",
+            )
             return self._json(
                 start_response,
                 401,
@@ -134,18 +151,38 @@ class OperationalPilotApplication:
 
     def _session_status(self, environ, start_response):
         token = self._cookie(environ)
-        self.sessions.authenticate(token)
         tenant_id = str(environ.get("HTTP_X_TENANT_ID", "")).strip()
+        self.sessions.authenticate_for_tenant(token, tenant_id)
         csrf = str(environ.get("HTTP_X_CSRF_TOKEN", ""))
         valid = self.sessions.verify_csrf(token, csrf, tenant_id)
         return self._json(
             start_response, 200, {"authenticated": True, "csrf_valid": valid}
         )
 
+    def _delete_session(self, environ, start_response):
+        token = self._cookie(environ)
+        tenant_id = str(environ.get("HTTP_X_TENANT_ID", "")).strip()
+        self.sessions.authenticate_for_tenant(token, tenant_id)
+        csrf = str(environ.get("HTTP_X_CSRF_TOKEN", ""))
+        if not self.sessions.verify_csrf(token, csrf, tenant_id):
+            raise PermissionError
+        self.sessions.revoke(token)
+        secure = "; Secure" if self.configuration.secure_cookies else ""
+        expired_session = (
+            f"mlai_session=; Path=/; HttpOnly{secure}; SameSite=Strict; Max-Age=0"
+        )
+        expired_csrf = f"mlai_csrf=; Path=/{secure}; SameSite=Strict; Max-Age=0"
+        return self._json(
+            start_response,
+            200,
+            {"revoked": True},
+            [("Set-Cookie", expired_session), ("Set-Cookie", expired_csrf)],
+        )
+
     def _bind_session(self, environ) -> None:
         token = self._cookie(environ)
-        self.sessions.authenticate(token)
         tenant_id = str(environ.get("HTTP_X_TENANT_ID", "")).strip()
+        self.sessions.authenticate_for_tenant(token, tenant_id)
         if str(environ.get("REQUEST_METHOD", "GET")).upper() != "GET":
             csrf = str(environ.get("HTTP_X_CSRF_TOKEN", ""))
             if not self.sessions.verify_csrf(token, csrf, tenant_id):
@@ -165,6 +202,33 @@ class OperationalPilotApplication:
     def _client_key(environ) -> str:
         return str(environ.get("REMOTE_ADDR", "unknown"))[:128]
 
+    def _request_size_error(self, environ):
+        raw = str(environ.get("CONTENT_LENGTH", "") or "0")
+        try:
+            length = int(raw)
+        except ValueError:
+            return 400, {
+                "error": {
+                    "code": "invalid_length",
+                    "message": "Content-Length is invalid.",
+                }
+            }
+        if length < 0:
+            return 400, {
+                "error": {
+                    "code": "invalid_length",
+                    "message": "Content-Length is invalid.",
+                }
+            }
+        if length > self.configuration.max_request_bytes:
+            return 413, {
+                "error": {
+                    "code": "request_too_large",
+                    "message": "Request body is too large.",
+                }
+            }
+        return None
+
     @staticmethod
     def _json(start_response, status, payload, extra_headers=None):
         body = json.dumps(payload, sort_keys=True).encode()
@@ -173,6 +237,7 @@ class OperationalPilotApplication:
             201: "Created",
             400: "Bad Request",
             401: "Unauthorized",
+            413: "Content Too Large",
             429: "Too Many Requests",
             503: "Service Unavailable",
         }.get(status, "Error")
@@ -180,6 +245,9 @@ class OperationalPilotApplication:
             ("Content-Type", "application/json; charset=utf-8"),
             ("Content-Length", str(len(body))),
             ("X-Content-Type-Options", "nosniff"),
+            ("Cache-Control", "no-store"),
+            ("Referrer-Policy", "no-referrer"),
+            ("X-Frame-Options", "DENY"),
         ]
         headers.extend(extra_headers or [])
         start_response(f"{status} {phrase}", headers)

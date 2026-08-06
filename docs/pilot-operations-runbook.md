@@ -2,9 +2,10 @@
 
 ## Release state
 
-MLAI-027.6 supports synthetic operational validation only. The founder has
-frozen the customer pilot. Do not load real customer data until a later
-founder-approved PDR changes that state.
+MLAI-030.4 supports production-security validation with approved test identities
+and invented records only. Customer activation remains frozen. Do not load real
+customer data until every later gate passes and the founder records an explicit
+activation decision.
 
 ## Runtime
 
@@ -21,6 +22,24 @@ founder-approved PDR changes that state.
 The identity integration exchanges a verified external credential at
 `POST /v1/pilot/session`. The response issues a Secure, HttpOnly, SameSite
 session cookie and a separate CSRF token. Workspace mutations require both.
+`DELETE /v1/pilot/session` requires both, revokes the session, writes a
+privacy-safe audit event, and expires both cookies.
+
+## Security readiness rehearsal
+
+1. Keep `MLAI_SECURITY_EVIDENCE_JSON={}` before rehearsal.
+2. Verify the browser key restrictions, OAuth testing audience, authorized
+   domains, and identity audit logging in the controlled Google project.
+3. Rehearse invalid-token rejection, logout/session revocation, and cross-tenant
+   isolation using approved test identities and invented data.
+4. Record only successful checks as boolean `true`; retain failure evidence and
+   remediate before rerunning the unchanged check.
+5. Evaluate the release gate. Any missing or false item must block
+   `production_identity_security_ready`.
+
+The evidence setting must contain no secrets, tokens, invitation codes, email
+addresses, submitted content, or customer records. A passing report permits a
+founder assessment; it never changes the real-data freeze.
 
 ## Backup and restore
 

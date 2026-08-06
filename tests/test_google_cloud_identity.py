@@ -20,7 +20,7 @@ class GoogleCloudIdentityTests(unittest.TestCase):
         self.jwk = Mock()
         self.jwk.get_signing_key_from_jwt.return_value.key = "public-key"
         self.adapter = GoogleCloudIdentityAdapter(
-            self.settings, jwk_client_factory=lambda _: self.jwk
+            self.settings, jwk_client_factory=lambda _: self.jwk, clock=lambda: 10000
         )
 
     def test_valid_token_maps_only_verified_claims(self) -> None:
@@ -29,6 +29,7 @@ class GoogleCloudIdentityTests(unittest.TestCase):
             "email": "owner@example.test",
             "email_verified": True,
             "firebase": {"sign_in_provider": "google.com"},
+            "auth_time": 9990,
         }
         with patch("app.identity.google_cloud.jwt.decode", return_value=claims) as call:
             principal = self.adapter.authenticate("signed-token")
@@ -69,6 +70,7 @@ class GoogleCloudIdentityTests(unittest.TestCase):
             "email": "owner@example.test",
             "email_verified": True,
             "firebase": {"sign_in_provider": "google.com"},
+            "auth_time": 9990,
         }
         invalid = (
             {**claims, "email_verified": False},
@@ -83,12 +85,29 @@ class GoogleCloudIdentityTests(unittest.TestCase):
                     with self.assertRaises(GoogleCloudAuthenticationError):
                         self.adapter.authenticate("signed-token")
 
+    def test_stale_future_or_invalid_authentication_time_is_denied(self) -> None:
+        claims = {
+            "sub": "subject",
+            "email": "owner@example.test",
+            "email_verified": True,
+            "firebase": {"sign_in_provider": "google.com"},
+        }
+        for auth_time in (6399, 10061, True, "9990"):
+            with self.subTest(auth_time=auth_time):
+                with patch(
+                    "app.identity.google_cloud.jwt.decode",
+                    return_value={**claims, "auth_time": auth_time},
+                ):
+                    with self.assertRaises(GoogleCloudAuthenticationError):
+                        self.adapter.authenticate("signed-token")
+
     def test_settings_pin_google_project_endpoints(self) -> None:
         self.assertEqual(
             self.settings.issuer,
             "https://securetoken.google.com/marketinglabai-dev",
         )
         self.assertIn("googleapis.com", self.settings.jwks_uri)
+        self.assertEqual(self.settings.max_auth_age_seconds, 3600)
 
 
 if __name__ == "__main__":

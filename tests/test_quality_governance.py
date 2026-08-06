@@ -87,6 +87,20 @@ class QualityGovernanceTests(unittest.TestCase):
         self.assertIn("Real-data retention and deletion periods", handling)
         self.assertIn("must approve jurisdiction", handling)
 
+    def test_production_security_readiness_requires_evidence_without_activation(self):
+        decision = self.read(
+            "governance/adrs/ADR-0026-production-identity-security-readiness.md"
+        )
+
+        for required in (
+            "fresh Google authentication",
+            "Missing or false evidence is a blocker",
+            "permits founder activation assessment only",
+            "real customer data",
+        ):
+            self.assertIn(required, decision)
+        self.assertRegex(decision, r"active\s+tenant membership")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -3,12 +3,12 @@
 ## Checkpoint
 
 - Branch: `feature/tenant-architecture`
-- Installation baseline: `3fc25dc`
+- Installation baseline: `b03e996`
 - Remote state before this story: synchronized
 - Last completed epic: MLAI-029 Marketing Strategy Intelligence
 - Active epic: MLAI-030 Founder Design Partner Onboarding
-- Last completed story: MLAI-030.2 External Identity Deployment and Signup Experience
-- Active story: MLAI-030.3 Pilot Privacy and Data Boundaries
+- Last completed story: MLAI-030.3 Pilot Privacy and Data Boundaries
+- Active story: MLAI-030.4 Production Identity and Security Readiness
 
 ## Product direction
 
@@ -92,6 +92,14 @@ category decisions. Only enumerated invented synthetic categories are allowed.
 Real-data retention and deletion periods remain unset, and every privacy
 response keeps real-data activation false.
 
+MLAI-030.4 adds bounded Google authentication age, current tenant-membership
+revalidation for every session use, audited current-session and identity-wide
+revocation, CSRF-protected logout, bounded request bodies, defensive response
+headers, and deterministic production-security checks. Deployment and rehearsal
+claims are accepted only as explicit boolean evidence. Missing evidence blocks
+production-security readiness, and every report keeps real-data activation
+false even when all checks pass.
+
 The Repository Integrity Protocol is now locked for every future story:
 baseline and scope verification, tracked/untracked/staged reporting, failure
 classification, complete applicable quality gates, no remaining intended paths,
@@ -137,8 +145,9 @@ decision and the applicable privacy, recovery, support and data boundaries.
 
 ## Next engineer action
 
-Complete MLAI-030.3 validation and install it only on verified baseline
-`c91bbf7`. Then begin MLAI-030.4 Production Identity and Security Readiness.
-Rehearse only with approved test identities and invented synthetic records. Do
-not publish the OAuth app, send external invitations, enable real customer data,
-or fill the unset real-data privacy choices without a new founder decision.
+Complete MLAI-030.4 validation and install it only on verified baseline
+`b03e996`. Record each production-security evidence item only after its
+controlled rehearsal succeeds, then begin MLAI-030.5 Recovery, Monitoring and
+Support Readiness. Use approved test identities and invented records only. Do
+not publish the OAuth app, send external invitations, enable customer data, or
+fill unset privacy choices without a new founder decision.
