@@ -2,7 +2,7 @@
 
 ## Review checkpoint
 
-Reviewed for the MLAI-030.2 Google Cloud identity-provider reconciliation.
+Reviewed for MLAI-030.3 Pilot Privacy and Data Boundaries.
 
 ## Maturity scale
 
@@ -40,6 +40,7 @@ deployment-specific identity, legal, privacy, and rehearsal evidence is absent.
 | Memory | Provider, model, workflow, and event audit context | Preserves traceability | 2 | Extend in pilot |
 | Identity | Google Cloud Identity Platform adapter, tenant authorization, and revocable sessions | Protects customer data and actions | 3 | Create and rehearse a controlled Google Cloud project after local validation |
 | Identity | Invitation-controlled Founder Design Partner tenant claiming | Lets approved owners create isolated free accounts without fabricated identities | 3 | Rehearse browser signup before invitations are sent |
+| Privacy | Versioned synthetic policy, atomic acceptance evidence, classification, and default-deny tenant decisions | Prevents synthetic rehearsal from silently becoming real-data processing | 3 | Complete partner-specific legal choices before real-data activation |
 | Interface | Authenticated pilot API contract | Gives the workspace one governed, retry-safe boundary | 3 | Maintain through MLAI-027.5/027.6 |
 | Interface | Guided session-protected workspace with Positioning, Strategy, workflow, and design-partner readiness | Makes the governed vertical slice understandable and usable | 3 | Keep real-data activation founder-controlled |
 | Operations | Deployment, health, safe logs, rate limits, backup, restore, CI, and incident process | Makes a future private pilot supportable | 3 | Rehearse only when pilot is unfrozen |
@@ -68,3 +69,4 @@ deployment-specific identity, legal, privacy, and rehearsal evidence is absent.
 15. MLAI-029.6 Client-Facing Strategy Workspace and Design-Partner Readiness
 16. MLAI-030.1 Founder Design Partner Signup and Tenant Provisioning
 17. MLAI-030.2 External Identity Deployment and Signup Experience
+18. MLAI-030.3 Pilot Privacy and Data Boundaries

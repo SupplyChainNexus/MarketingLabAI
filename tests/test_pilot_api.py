@@ -22,7 +22,7 @@ from app.campaign_planner import (
     CampaignTimeline,
 )
 from app.database.connection import SQLiteDatabase
-from app.design_partner import FounderDesignPartnerSignupService
+from app.design_partner import FounderDesignPartnerSignupService, PilotPrivacyPolicy
 from app.identity import AuthenticatedPrincipal, TenantMembership, TenantRole
 from app.identity.provider import IdentityProviderAdapter
 from app.marketing_brief import BriefStatus, MarketingBrief, MarketingBriefEvidence
@@ -249,6 +249,51 @@ class PilotApiTests(unittest.TestCase):
             tenant_id="velani-wholesale-pilot",
         )
         self.assertEqual(membership.role, TenantRole.ADMIN)
+        self.assertFalse(payload["data"]["real_data_activation_authorized"])
+        self.assertEqual(
+            payload["data"]["privacy_notice_version"],
+            PilotPrivacyPolicy.NOTICE_VERSION,
+        )
+
+    def test_privacy_pack_is_identity_and_tenant_bound(self) -> None:
+        signup_status, _ = self.request(
+            "/v1/pilot/design-partner/signup",
+            {
+                "partner_name": "Velani Wholesale",
+                "invitation_code": "velani-invitation",
+                "privacy_notice_accepted": True,
+                "synthetic_data_boundary_accepted": True,
+            },
+            tenant_id="",
+        )
+        self.assertEqual(signup_status, 201)
+        status, payload = self.request(
+            "/v1/pilot/privacy/pack",
+            {},
+            tenant_id="velani-wholesale-pilot",
+        )
+        self.assertEqual(status, 200)
+        self.assertTrue(payload["data"]["acceptance"]["current"])
+        self.assertFalse(payload["data"]["real_data_activation_authorized"])
+
+    def test_data_boundary_api_denies_real_customer_records(self) -> None:
+        self.request(
+            "/v1/pilot/design-partner/signup",
+            {
+                "partner_name": "Strand Auto Parts",
+                "invitation_code": "strand-invitation",
+                "privacy_notice_accepted": True,
+                "synthetic_data_boundary_accepted": True,
+            },
+            tenant_id="",
+        )
+        status, payload = self.request(
+            "/v1/pilot/privacy/authorize",
+            {"category": "customer_records"},
+            tenant_id="strand-auto-parts-pilot",
+        )
+        self.assertEqual(status, 200)
+        self.assertFalse(payload["data"]["allowed"])
         self.assertFalse(payload["data"]["real_data_activation_authorized"])
 
     def test_generation_contract_requires_approved_governance_versions(self) -> None:

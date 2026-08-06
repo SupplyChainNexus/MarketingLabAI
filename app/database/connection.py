@@ -266,6 +266,24 @@ class SQLiteDatabase:
                 CREATE INDEX IF NOT EXISTS idx_pilot_sessions_expiry
                     ON pilot_sessions(expires_at, revoked_at);
 
+                CREATE TABLE IF NOT EXISTS pilot_privacy_acceptances (
+                    tenant_id TEXT NOT NULL,
+                    provider TEXT NOT NULL,
+                    subject_id TEXT NOT NULL,
+                    notice_version TEXT NOT NULL,
+                    boundary_version TEXT NOT NULL,
+                    accepted_at TEXT NOT NULL,
+                    PRIMARY KEY (
+                        tenant_id, provider, subject_id,
+                        notice_version, boundary_version
+                    ),
+                    FOREIGN KEY (tenant_id) REFERENCES tenants(tenant_id)
+                        ON DELETE CASCADE
+                );
+
+                CREATE INDEX IF NOT EXISTS idx_privacy_acceptance_tenant
+                    ON pilot_privacy_acceptances(tenant_id, accepted_at);
+
                 CREATE TABLE IF NOT EXISTS compliance_rules (
                     rule_id TEXT NOT NULL,
                     version INTEGER NOT NULL,
@@ -445,6 +463,16 @@ class SQLiteDatabase:
                 VALUES (
                     2,
                     'Add versioned compliance rules',
+                    strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+                )
+                """)
+
+            connection.execute("""
+                INSERT OR IGNORE INTO schema_migrations (
+                    version, description, applied_at
+                ) VALUES (
+                    16,
+                    'Add versioned pilot privacy acceptance evidence',
                     strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
                 )
                 """)

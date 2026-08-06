@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from typing import Mapping
 
 from app.database.connection import SQLiteDatabase
+from app.design_partner.privacy import PilotPrivacyPolicy
 from app.design_partner.registry import FounderDesignPartnerRegistry
 from app.identity import AuthenticatedPrincipal, IdentityProviderAdapter
 
@@ -23,6 +24,8 @@ class FounderSignupResult:
     owner_subject_id: str
     owner_provider: str
     replayed: bool
+    privacy_notice_version: str
+    data_boundary_version: str
 
     def to_dict(self) -> dict:
         return {
@@ -34,9 +37,12 @@ class FounderSignupResult:
             "commercial_tier": "founder_design_partner_free",
             "full_feature_access": True,
             "billing_enabled": False,
-            "pilot_status": "founder_frozen",
+            "pilot_status": "real_data_activation_frozen",
             "synthetic_only": True,
             "real_data_activation_authorized": False,
+            "privacy_acceptance_recorded": True,
+            "privacy_notice_version": self.privacy_notice_version,
+            "data_boundary_version": self.data_boundary_version,
             "replayed": self.replayed,
         }
 
@@ -66,24 +72,38 @@ class FounderDesignPartnerSignupService:
         invitation_code: str,
         privacy_notice_accepted: bool,
         synthetic_data_boundary_accepted: bool,
+        privacy_notice_version: str = PilotPrivacyPolicy.NOTICE_VERSION,
+        data_boundary_version: str = PilotPrivacyPolicy.BOUNDARY_VERSION,
     ) -> FounderSignupResult:
         if privacy_notice_accepted is not True:
             raise ValueError("The privacy notice must be accepted.")
         if synthetic_data_boundary_accepted is not True:
             raise ValueError("The synthetic-data boundary must be accepted.")
+        if privacy_notice_version != PilotPrivacyPolicy.NOTICE_VERSION:
+            raise ValueError("The current privacy notice version must be accepted.")
+        if data_boundary_version != PilotPrivacyPolicy.BOUNDARY_VERSION:
+            raise ValueError("The current synthetic-data boundary must be accepted.")
         partner = FounderDesignPartnerRegistry().get_by_name(partner_name)
         expected = self.invitation_hashes.get(partner.tenant_id, "")
         supplied = self.hash_invitation(invitation_code)
         if not expected or not hmac.compare_digest(expected, supplied):
             raise PermissionError("The Founder Design Partner invitation is invalid.")
         principal = self.identity_provider.authenticate(credential)
-        return self._claim(partner.partner_name, partner.tenant_id, principal)
+        return self._claim(
+            partner.partner_name,
+            partner.tenant_id,
+            principal,
+            privacy_notice_version,
+            data_boundary_version,
+        )
 
     def _claim(
         self,
         partner_name: str,
         tenant_id: str,
         principal: AuthenticatedPrincipal,
+        privacy_notice_version: str,
+        data_boundary_version: str,
     ) -> FounderSignupResult:
         with self.database.transaction() as connection:
             owner = connection.execute(
@@ -103,7 +123,21 @@ class FounderDesignPartnerSignupService:
                     raise SignupConflictError(
                         "The Founder Design Partner invitation was already claimed."
                     )
-                return self._result(partner_name, tenant_id, principal, replayed=True)
+                self._record_acceptance(
+                    connection,
+                    tenant_id,
+                    principal,
+                    privacy_notice_version,
+                    data_boundary_version,
+                )
+                return self._result(
+                    partner_name,
+                    tenant_id,
+                    principal,
+                    privacy_notice_version,
+                    data_boundary_version,
+                    replayed=True,
+                )
             connection.execute(
                 """
                 INSERT INTO tenants (tenant_id, name, status, created_at, updated_at)
@@ -124,7 +158,45 @@ class FounderDesignPartnerSignupService:
                 """,
                 (principal.provider, principal.subject_id, tenant_id),
             )
-        return self._result(partner_name, tenant_id, principal, replayed=False)
+            self._record_acceptance(
+                connection,
+                tenant_id,
+                principal,
+                privacy_notice_version,
+                data_boundary_version,
+            )
+        return self._result(
+            partner_name,
+            tenant_id,
+            principal,
+            privacy_notice_version,
+            data_boundary_version,
+            replayed=False,
+        )
+
+    @staticmethod
+    def _record_acceptance(
+        connection,
+        tenant_id: str,
+        principal: AuthenticatedPrincipal,
+        privacy_notice_version: str,
+        data_boundary_version: str,
+    ) -> None:
+        connection.execute(
+            """
+            INSERT OR IGNORE INTO pilot_privacy_acceptances
+                (tenant_id, provider, subject_id, notice_version,
+                 boundary_version, accepted_at)
+            VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+            """,
+            (
+                tenant_id,
+                principal.provider,
+                principal.subject_id,
+                privacy_notice_version,
+                data_boundary_version,
+            ),
+        )
 
     @staticmethod
     def hash_invitation(value: str) -> str:
@@ -137,6 +209,8 @@ class FounderDesignPartnerSignupService:
         partner_name: str,
         tenant_id: str,
         principal: AuthenticatedPrincipal,
+        privacy_notice_version: str,
+        data_boundary_version: str,
         *,
         replayed: bool,
     ) -> FounderSignupResult:
@@ -145,5 +219,7 @@ class FounderDesignPartnerSignupService:
             tenant_id=tenant_id,
             owner_subject_id=principal.subject_id,
             owner_provider=principal.provider,
+            privacy_notice_version=privacy_notice_version,
+            data_boundary_version=data_boundary_version,
             replayed=replayed,
         )

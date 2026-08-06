@@ -2,38 +2,31 @@
 
 ## Purpose
 
-Evaluate signup and onboarding rather than bypassing them with manually created accounts.
+Evaluate signup, privacy, security, recovery, support, and acceptance before a
+founder decides whether either design partner may use real business data.
 
-## Locked sequence
+## Current sequence
 
-1. MLAI-030.1 — Founder Design Partner Signup and Tenant Provisioning
-2. MLAI-030.2 — External Identity Deployment and Signup Experience
-3. MLAI-030.3 — Guided Business Onboarding and Consent Evidence
-4. MLAI-030.4 — Founder Activation Review and Operational Rehearsal
+1. MLAI-030.1 — Founder Design Partner Signup and Tenant Provisioning — complete
+2. MLAI-030.2 — External Identity Deployment and Signup Experience — complete
+3. MLAI-030.3 — Pilot Privacy and Data Boundaries — active
+4. MLAI-030.4 — Production Identity and Security Readiness
+5. MLAI-030.5 — Recovery, Monitoring and Support Readiness
+6. MLAI-030.6 — Design-Partner Acceptance Rehearsal
+7. MLAI-030.7 — Controlled Real-Data Activation
 
-MLAI-030.1 approves Strand Auto Parts and Velani Wholesale as the only candidates.
-Each must authenticate and claim a separate invitation. Tenant and owner creation
-must be atomic and retry-safe. Both receive free full access with billing disabled,
-while real customer data remains founder-frozen.
+MLAI-030.3 delivers a versioned synthetic privacy pack, explicit data
+classification, default-deny tenant-specific decisions, atomic acceptance
+evidence, and synthetic retention/deletion controls. It permits privacy-safe
+synthetic acceptance rehearsal only. Real-data periods and permissions remain
+unset.
 
-ADR-0024 supersedes that broad phrase: engineering development and controlled
-synthetic design-partner rehearsal are authorized. Only real-customer
-activation and its reserved external, commercial and data actions remain
-frozen.
+Strand Auto Parts and Velani Wholesale remain the only approved candidates.
+Each has an isolated tenant and must pass every readiness gate independently.
+Free full-feature entitlement keeps billing disabled and never grants real-data
+permission.
 
-MLAI-030.2 initially selected Microsoft Entra External ID, then reconciled the
-decision before live deployment. Google Cloud Identity Platform is the current
-selection because its free allowance, TOTP support, custom-domain route, and
-fit with the existing Google Workspace administration better match the
-free-first SME strategy. Strict issuer, project audience, RS256 signature,
-expiry, issued-at, authentication-time, and subject validation remain behind
-the provider-neutral adapter. SMS, enterprise federation, paid extensions,
-live invitations, and real customer data remain disabled.
-
-The application-side completion serves browser-safe Google identifiers from a
-no-store endpoint, obtains a Google credential through Google Identity Services,
-exchanges it for a project-audience Firebase ID token, and clears that token
-after creating a tenant-bound session. Only verified Google email identities
-are accepted. Local HTTP is permitted solely for the exact synthetic
-`127.0.0.1` origin; deployed environments still require HTTPS. The OAuth secret
-never enters browser configuration.
+Engineering and controlled synthetic rehearsal are authorized under ADR-0024.
+Actual business data, external invitations, public or production activation,
+external publishing, real-data learning, billing, unapproved paid services,
+and destructive production changes remain frozen.

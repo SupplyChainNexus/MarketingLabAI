@@ -8,6 +8,7 @@ from app.pilot_api.contracts import (
     BriefRevisionRequest,
     CampaignRevisionRequest,
     ContextRequest,
+    DataBoundaryRequest,
     DesignPartnerReadinessRequest,
     DesignPartnerSignupRequest,
     ExportRequest,
@@ -74,6 +75,12 @@ class PilotWsgiApplication:
         if not tenant_id:
             raise PilotApiError(400, "tenant_required", "X-Tenant-ID is required.")
         common = {"credential": credential, "tenant_id": tenant_id}
+        if path == "/v1/pilot/privacy/pack":
+            return self.service.privacy_pack(**common)
+        if path == "/v1/pilot/privacy/authorize":
+            return self.service.authorize_data_boundary(
+                request=DataBoundaryRequest(**body), **common
+            )
         if path == "/v1/pilot/context":
             return self.service.context(request=ContextRequest(**body), **common)
         if path == "/v1/pilot/generate":

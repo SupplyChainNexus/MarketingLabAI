@@ -1,33 +1,68 @@
 # Pilot Privacy and Data Handling
 
-## Current authority
+## Authority and status
 
-Only synthetic data is permitted. The customer pilot remains frozen. This
-document defines controls for operational validation; it does not grant
-permission to process customer data.
+MLAI-030.3 defines the versioned privacy and data-boundary controls used for
+controlled synthetic rehearsal. It does not grant permission to process real
+customer data. `real_data_activation_authorized` remains false and readiness
+never self-authorizes activation.
 
-## Data classes
+## Versioned acceptance pack
 
-- Secrets: identity/provider credentials, session material, signing secrets.
-- Customer content: Company, Customer, Product, plan, brief, prompt, generated
-  asset, compliance evidence, and exports.
-- Operational metadata: request ID, time, route, result, tenant/subject
-  identifiers, provider/model identifiers, and integrity evidence.
+- Privacy notice: `pilot-privacy-notice-v1`
+- Data boundary: `synthetic-data-boundary-v1`
+- Acceptance is bound to tenant, identity provider, subject, both versions,
+  and an immutable timestamp.
+- Acceptance is recorded atomically with invitation claiming and initial owner
+  membership. A stale version is rejected before tenant creation.
 
-Secrets live only in the deployment secret service and process environment.
-Customer content stays in tenant-scoped SQLite persistence and authorized
-exports. Operational logs use an allowlisted schema and redact sensitive keys.
+The acceptance proves that a controlled test identity accepted the synthetic
+rehearsal terms. It is not consent for real-data processing.
+
+## Allowed synthetic categories
+
+- Invented business profiles
+- Invented customer personas
+- Invented product catalogues
+- Invented campaign material
+- Synthetic operational metadata
+
+Synthetic records must be invented and must not be copied, lightly altered, or
+derived from actual Strand Auto Parts or Velani Wholesale records.
+
+## Prohibited categories
+
+- Personal data
+- Employee data
+- Customer records
+- Supplier records
+- Transaction data
+- Confidential business data
+- Credentials and secrets in customer workflows
+- External publishing payloads
+- Real-outcome learning
+
+Unknown categories are denied. Both approved design-partner tenants are checked
+independently; an unapproved tenant cannot obtain a policy decision.
 
 ## Retention and deletion
 
-Synthetic pilot records are retained only for the active validation cycle.
-Expired and revoked sessions must be purged during maintenance. Backups follow
-the same classification and deletion decision as their source. Deletion must
-cover the live database, approved exports, backups when their retention window
-ends, and any support copies. Authorization and provider/model audit evidence
-is retained long enough to explain the test result without retaining prompt or
-generated content in logs.
+Synthetic rehearsal records have a 30-day maximum validation-cycle retention
+and a seven-day deletion target after an approved synthetic deletion request.
+Deletion scope includes live SQLite data, approved exports, temporary support
+copies, and backups as their retention window expires. Authorization and audit
+evidence may retain identifiers and decisions without retaining prompt or
+generated customer content in logs.
 
-Before any customer pilot, the founder must approve jurisdiction, controller/
-processor roles, customer notice and consent, retention periods, deletion SLA,
-subprocessors, data location, support access, and breach notification terms.
+Real-data retention and deletion periods are intentionally unset. Before any
+real-data activation, the founder must approve jurisdiction, controller and
+processor roles, notice, lawful basis or consent mechanism, permitted data,
+retention, deletion SLA, subprocessors, data location, support access, breach
+notification, rollback, and partner-specific acceptance.
+
+## Runtime evidence
+
+`POST /v1/pilot/privacy/pack` returns the authenticated tenant's policy and
+identity-bound acceptance status. `POST /v1/pilot/privacy/authorize` evaluates
+one named data category with a default-deny decision. Neither endpoint can set
+real-data authorization.

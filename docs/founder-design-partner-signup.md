@@ -3,6 +3,9 @@
 MLAI-030.1 introduces provider-neutral signup for Strand Auto Parts and Velani
 Wholesale. Accounts are not pre-created. An authenticated owner presents the
 business invitation and accepts the privacy notice and synthetic-data boundary.
+Acceptance records the exact `pilot-privacy-notice-v1` and
+`synthetic-data-boundary-v1` versions with tenant, provider, subject, and time.
+It authorizes synthetic rehearsal only and is not real-data consent.
 
 The claim transaction creates the tenant and first `admin` membership together.
 The same owner may retry safely; another identity cannot claim an owned tenant.

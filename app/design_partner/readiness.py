@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from app.design_partner.privacy import PilotPrivacyPolicy
 from app.design_partner.registry import FounderDesignPartnerRegistry
 
 
@@ -53,4 +54,5 @@ class DesignPartnerReadinessEvaluator:
             "real_data_activation_authorized": False,
             "pilot_status": "real_data_activation_frozen",
             "market_validation_claimed": False,
+            "privacy_policy": PilotPrivacyPolicy().pack(tenant_id=partner.tenant_id),
         }

@@ -53,6 +53,8 @@ class DesignPartnerSignupRequest:
     invitation_code: str
     privacy_notice_accepted: bool
     synthetic_data_boundary_accepted: bool
+    privacy_notice_version: str = "pilot-privacy-notice-v1"
+    data_boundary_version: str = "synthetic-data-boundary-v1"
 
     def __post_init__(self) -> None:
         for name in ("partner_name", "invitation_code"):
@@ -63,6 +65,16 @@ class DesignPartnerSignupRequest:
         ):
             if not isinstance(getattr(self, name), bool):
                 raise TypeError(f"{name} must be a boolean.")
+        for name in ("privacy_notice_version", "data_boundary_version"):
+            object.__setattr__(self, name, required_text(getattr(self, name), name))
+
+
+@dataclass(slots=True, frozen=True)
+class DataBoundaryRequest:
+    category: str
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "category", required_text(self.category, "category"))
 
 
 @dataclass(slots=True, frozen=True)

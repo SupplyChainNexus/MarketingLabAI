@@ -15,6 +15,7 @@ from app.compliance.models import ReviewSubjectType
 from app.design_partner import (
     DesignPartnerReadinessEvaluator,
     FounderDesignPartnerSignupService,
+    PilotPrivacyPolicy,
     SignupConflictError,
 )
 from app.identity import AuthorizationDeniedError, IdentityProviderAdapter
@@ -24,6 +25,7 @@ from app.pilot_api.contracts import (
     BriefRevisionRequest,
     CampaignRevisionRequest,
     ContextRequest,
+    DataBoundaryRequest,
     DesignPartnerReadinessRequest,
     DesignPartnerSignupRequest,
     ExportRequest,
@@ -83,12 +85,57 @@ class PilotApiService:
                 synthetic_data_boundary_accepted=(
                     request.synthetic_data_boundary_accepted
                 ),
+                privacy_notice_version=request.privacy_notice_version,
+                data_boundary_version=request.data_boundary_version,
             )
         except PermissionError as error:
             raise PilotApiError(403, "invitation_denied", str(error)) from error
         except SignupConflictError as error:
             raise PilotApiError(409, "invitation_claimed", str(error)) from error
         return ApiResponse(200 if result.replayed else 201, result.to_dict())
+
+    def privacy_pack(self, *, credential: str, tenant_id: str) -> ApiResponse:
+        principal, _ = self._principal_and_session(credential, tenant_id)
+        pack = PilotPrivacyPolicy().pack(tenant_id=tenant_id)
+        with self.application.database.connection() as connection:
+            row = connection.execute(
+                """
+                SELECT notice_version, boundary_version, accepted_at
+                FROM pilot_privacy_acceptances
+                WHERE tenant_id = ? AND provider = ? AND subject_id = ?
+                ORDER BY accepted_at DESC LIMIT 1
+                """,
+                (tenant_id, principal.provider, principal.subject_id),
+            ).fetchone()
+        pack["acceptance"] = (
+            {
+                "recorded": True,
+                "notice_version": str(row["notice_version"]),
+                "boundary_version": str(row["boundary_version"]),
+                "accepted_at": str(row["accepted_at"]),
+                "current": (
+                    str(row["notice_version"]) == PilotPrivacyPolicy.NOTICE_VERSION
+                    and str(row["boundary_version"])
+                    == PilotPrivacyPolicy.BOUNDARY_VERSION
+                ),
+            }
+            if row is not None
+            else {"recorded": False, "current": False}
+        )
+        return ApiResponse(200, pack)
+
+    def authorize_data_boundary(
+        self,
+        *,
+        credential: str,
+        tenant_id: str,
+        request: DataBoundaryRequest,
+    ) -> ApiResponse:
+        self._session(credential, tenant_id)
+        decision = PilotPrivacyPolicy().authorize(
+            tenant_id=tenant_id, category=request.category
+        )
+        return ApiResponse(200, decision.to_dict())
 
     def context(
         self, *, credential: str, tenant_id: str, request: ContextRequest

@@ -26,6 +26,8 @@ require `Idempotency-Key`.
 | `POST /v1/pilot/onboarding/context` | Save minimum verified Company, Customer, and Product context. |
 | `POST /v1/pilot/workflow-review` | Read transport-safe current plan, brief, context, and readiness views. |
 | `POST /v1/pilot/design-partner/readiness` | Assess deterministic founder design-partner gates without authorizing activation. |
+| `POST /v1/pilot/privacy/pack` | Read the authenticated tenant's versioned synthetic policy and acceptance status. |
+| `POST /v1/pilot/privacy/authorize` | Evaluate one data category through the default-deny synthetic boundary. |
 | `POST /v1/pilot/generate` | Generate from named approved Campaign Plan and Marketing Brief versions. |
 | `POST /v1/pilot/campaign-plans/{id}/approve` | Approve the expected current plan version. |
 | `POST /v1/pilot/marketing-briefs/{id}/approve` | Approve the expected current brief version. |
@@ -57,6 +59,10 @@ founder approval, privacy choices, external identity, recovery rehearsal,
 support ownership, and data-boundary acceptance. It always keeps real-data
 activation unauthorized; only a separate founder decision may change that
 boundary.
+
+Privacy-pack responses list explicit allowed and prohibited categories,
+synthetic retention controls, unset real-data periods, and identity-bound
+acceptance evidence. Category decisions never authorize real data.
 
 ## Security boundary
 

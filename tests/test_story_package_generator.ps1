@@ -6,6 +6,13 @@ $Templates = Get-ChildItem (Join-Path (Split-Path $PSScriptRoot -Parent) "templa
 if ($GeneratorText -match '(?i)-Encoding\s+utf8NoBOM') {
     throw "Generator uses an encoding name unsupported by PowerShell 5.1."
 }
+$InstallerTemplate = Get-Content -Raw (Join-Path (Split-Path $PSScriptRoot -Parent) "templates\story_package\install.ps1.template")
+if ($InstallerTemplate -notmatch 'git rev-parse HEAD') {
+    throw "Installer template does not verify the repository baseline."
+}
+if ($InstallerTemplate -notmatch 'Baseline mismatch') {
+    throw "Installer template does not stop on a baseline mismatch."
+}
 foreach ($Template in $Templates) {
     $Text = Get-Content -Raw $Template.FullName
     if ($Text -notmatch 'function Invoke-PythonLogged') { throw "Missing Python helper: $($Template.Name)" }

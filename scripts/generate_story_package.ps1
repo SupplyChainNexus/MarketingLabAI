@@ -95,6 +95,7 @@ $Tokens = @{
     IMPORT_ARGUMENTS = ConvertTo-PsArrayItems $ImportArguments
     EXPECTED_STATUS = ConvertTo-PsArrayItems $Manifest.expectedStatus
     HAS_IMPORT = $HasImportToken
+    BASELINE = ConvertTo-PsSingleQuotedLiteral ([string]$Manifest.baseline)
 }
 
 $Installer = Resolve-Template (Join-Path $TemplateRoot "install.ps1.template") $Tokens

@@ -71,6 +71,22 @@ class QualityGovernanceTests(unittest.TestCase):
         self.assertIn("real_data_activation_frozen", decision)
         self.assertIn("external design-partner invitations", decision)
 
+    def test_privacy_decision_is_versioned_and_does_not_activate_real_data(self):
+        decision = self.read(
+            "governance/adrs/ADR-0025-pilot-privacy-data-boundaries.md"
+        )
+        handling = self.read("docs/privacy-and-data-handling.md")
+
+        for required in (
+            "default-deny",
+            "atomically",
+            "real_data_activation_authorized",
+            "real-data periods unset",
+        ):
+            self.assertIn(required, decision)
+        self.assertIn("Real-data retention and deletion periods", handling)
+        self.assertIn("must approve jurisdiction", handling)
+
 
 if __name__ == "__main__":
     unittest.main()

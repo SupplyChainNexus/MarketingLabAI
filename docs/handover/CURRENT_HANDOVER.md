@@ -7,7 +7,8 @@
 - Remote state before this story: synchronized
 - Last completed epic: MLAI-029 Marketing Strategy Intelligence
 - Active epic: MLAI-030 Founder Design Partner Onboarding
-- Active story: MLAI-030.2 External Identity Deployment and Signup Experience
+- Last completed story: MLAI-030.2 External Identity Deployment and Signup Experience
+- Active story: MLAI-030.3 Pilot Privacy and Data Boundaries
 
 ## Product direction
 
@@ -83,6 +84,14 @@ only, and clears it after creating the existing hashed tenant-bound session.
 Cloud Functions, password authentication, SMS, MFA, public signup, invitation
 delivery, real customer data, and paid identity extensions remain disabled.
 
+MLAI-030.3 adds a versioned, default-deny synthetic privacy policy for each
+approved design-partner tenant. Signup now records the exact privacy notice and
+data-boundary versions atomically with tenant ownership. Authenticated APIs
+expose the current policy, identity-bound acceptance evidence, and deterministic
+category decisions. Only enumerated invented synthetic categories are allowed.
+Real-data retention and deletion periods remain unset, and every privacy
+response keeps real-data activation false.
+
 The Repository Integrity Protocol is now locked for every future story:
 baseline and scope verification, tracked/untracked/staged reporting, failure
 classification, complete applicable quality gates, no remaining intended paths,
@@ -128,11 +137,8 @@ decision and the applicable privacy, recovery, support and data boundaries.
 
 ## Next engineer action
 
-Install and validate the MLAI-030.2 browser-signup completion package. Configure
-the local environment with the already-created project's browser-safe API key,
-OAuth client ID, project ID, and auth domain; never add the OAuth client secret.
-Then rehearse Google sign-in, invitation claiming, tenant-session creation,
-invalid-token denial, recovery, and account revocation using synthetic data and
-the controlled test audience. Do not publish the OAuth app, enable password or
-SMS sign-in, send founder invitations, or enable real customer data until the
-remaining onboarding and activation gates are approved.
+Complete MLAI-030.3 validation and install it only on verified baseline
+`c91bbf7`. Then begin MLAI-030.4 Production Identity and Security Readiness.
+Rehearse only with approved test identities and invented synthetic records. Do
+not publish the OAuth app, send external invitations, enable real customer data,
+or fill the unset real-data privacy choices without a new founder decision.

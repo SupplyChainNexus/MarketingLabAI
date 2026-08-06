@@ -1,6 +1,7 @@
 $ErrorActionPreference = "Stop"
 $ProjectRoot = '{{PROJECT_ROOT}}'
 $PayloadRoot = Join-Path $PSScriptRoot "payload"
+$ExpectedBaseline = {{BASELINE}}
 
 function Invoke-PythonLogged {
     param([Parameter(Mandatory = $true)][string[]]$Arguments)
@@ -33,6 +34,11 @@ Write-Host "===================================================="
 Write-Host ""
 
 if (-not (Test-Path ".\.git")) { throw "MarketingLabAI Git repository was not found." }
+$CurrentBaseline = (git rev-parse HEAD).Trim()
+if ($LASTEXITCODE -ne 0) { throw "Unable to resolve the repository baseline." }
+if ($ExpectedBaseline -and -not $CurrentBaseline.StartsWith($ExpectedBaseline)) {
+    throw "Baseline mismatch. Expected $ExpectedBaseline but found $CurrentBaseline."
+}
 $Status = @(git status --short)
 if ($Status.Count -gt 0) {
     $Status | ForEach-Object { Write-Host $_ }
