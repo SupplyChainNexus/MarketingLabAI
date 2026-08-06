@@ -2,7 +2,7 @@
 
 ## Review checkpoint
 
-Reviewed for MLAI-030.4 Production Identity and Security Readiness.
+Reviewed for MLAI-030.5 Recovery, Monitoring and Support Readiness.
 
 ## Maturity scale
 
@@ -43,7 +43,7 @@ deployment-specific identity, legal, privacy, and rehearsal evidence is absent.
 | Privacy | Versioned synthetic policy, atomic acceptance evidence, classification, and default-deny tenant decisions | Prevents synthetic rehearsal from silently becoming real-data processing | 3 | Complete partner-specific legal choices before real-data activation |
 | Interface | Authenticated pilot API contract | Gives the workspace one governed, retry-safe boundary | 3 | Maintain through MLAI-027.5/027.6 |
 | Interface | Guided session-protected workspace with Positioning, Strategy, workflow, and design-partner readiness | Makes the governed vertical slice understandable and usable | 3 | Keep real-data activation founder-controlled |
-| Operations | Deployment, health, safe logs, rate limits, backup, restore, CI, and incident process | Makes a future private pilot supportable | 3 | Rehearse only when pilot is unfrozen |
+| Operations | Deployment, health, safe logs, signal alerts, backup, restore, rollback, immutable rehearsal evidence, support ownership and incident process | Makes a future private pilot supportable | 3 | Execute controlled synthetic rehearsals before acceptance |
 | Calendar | International Marketing Calendar | Coordinates time-based activity | 0 | Deferred MLAI-026 |
 | Publishing | Connector-controlled execution | Reduces manual channel work | 0 | Post-pilot |
 | Learning | Actual results, evidence-grounded campaign learning, adaptation, and experiments | Closes the marketing control loop | 0 | Post-real outcomes; never infer synthetic learning |
@@ -71,3 +71,4 @@ deployment-specific identity, legal, privacy, and rehearsal evidence is absent.
 17. MLAI-030.2 External Identity Deployment and Signup Experience
 18. MLAI-030.3 Pilot Privacy and Data Boundaries
 19. MLAI-030.4 Production Identity and Security Readiness
+20. MLAI-030.5 Recovery, Monitoring and Support Readiness

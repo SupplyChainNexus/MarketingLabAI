@@ -3,12 +3,12 @@
 ## Checkpoint
 
 - Branch: `feature/tenant-architecture`
-- Installation baseline: `b03e996`
+- Installation baseline: `54cb7c9`
 - Remote state before this story: synchronized
 - Last completed epic: MLAI-029 Marketing Strategy Intelligence
 - Active epic: MLAI-030 Founder Design Partner Onboarding
-- Last completed story: MLAI-030.3 Pilot Privacy and Data Boundaries
-- Active story: MLAI-030.4 Production Identity and Security Readiness
+- Last completed story: MLAI-030.4 Production Identity and Security Readiness
+- Active story: MLAI-030.5 Recovery, Monitoring and Support Readiness
 
 ## Product direction
 
@@ -100,6 +100,14 @@ claims are accepted only as explicit boolean evidence. Missing evidence blocks
 production-security readiness, and every report keeps real-data activation
 false even when all checks pass.
 
+MLAI-030.5 replaces unsupported readiness claims with immutable migration-17
+evidence bound to environment, deployed commit, operator, timestamps, expiry,
+and sanitized references. Failures require classification and remediation.
+Recovery, alert, incident and support checks feed a deterministic operational
+report, while privacy-safe signal counters expose alert state without customer
+content. The top-level founder-assessment gate requires base, security and
+operational readiness together and still keeps activation false.
+
 The Repository Integrity Protocol is now locked for every future story:
 baseline and scope verification, tracked/untracked/staged reporting, failure
 classification, complete applicable quality gates, no remaining intended paths,
@@ -145,9 +153,9 @@ decision and the applicable privacy, recovery, support and data boundaries.
 
 ## Next engineer action
 
-Complete MLAI-030.4 validation and install it only on verified baseline
-`b03e996`. Record each production-security evidence item only after its
-controlled rehearsal succeeds, then begin MLAI-030.5 Recovery, Monitoring and
-Support Readiness. Use approved test identities and invented records only. Do
-not publish the OAuth app, send external invitations, enable customer data, or
-fill unset privacy choices without a new founder decision.
+Complete MLAI-030.5 validation and install it only on verified baseline
+`54cb7c9`. Execute and record each controlled rehearsal, including failures,
+then begin MLAI-030.6 Design-Partner Acceptance Rehearsal. Use approved test
+identities and invented records only. Do not publish the OAuth app, send
+external invitations, enable customer data, or fill unset privacy choices
+without a new founder decision.

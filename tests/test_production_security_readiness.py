@@ -5,10 +5,16 @@ from __future__ import annotations
 import json
 import tempfile
 import unittest
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from app.database.connection import SQLiteDatabase
-from app.operations import PilotConfiguration, ProductionSecurityEvaluator
+from app.operations import (
+    PilotConfiguration,
+    ProductionSecurityEvaluator,
+    ReadinessEvidence,
+    ReadinessEvidenceRepository,
+)
 
 
 class ProductionSecurityReadinessTests(unittest.TestCase):
@@ -46,6 +52,7 @@ class ProductionSecurityReadinessTests(unittest.TestCase):
             ),
             "MLAI_ALLOW_REAL_CUSTOMER_DATA": "false",
             "MLAI_SECURITY_EVIDENCE_JSON": json.dumps(self.external_evidence()),
+            "MLAI_DEPLOYMENT_COMMIT": "54cb7c908e5dc628ff29f1c63ed1ccdc9abdf332",
         }
         values.update(changes)
         return PilotConfiguration.from_environment(values)
@@ -103,11 +110,26 @@ class ProductionSecurityReadinessTests(unittest.TestCase):
         )
         self.assertFalse(report["ready_for_founder_activation_assessment"])
 
-    def test_release_gate_exposes_security_without_authorizing_activation(self) -> None:
+    def test_release_gate_requires_traceable_security_evidence(self) -> None:
         from app.operations import PilotReleaseGate
 
         with tempfile.TemporaryDirectory() as directory:
             database = SQLiteDatabase(Path(directory) / "security.sqlite3")
+            repository = ReadinessEvidenceRepository(database)
+            observed = datetime.now(UTC)
+            for name in ProductionSecurityEvaluator.EXTERNAL_EVIDENCE:
+                repository.add(
+                    ReadinessEvidence(
+                        check_name=name,
+                        environment="controlled-production-readiness",
+                        commit_sha="54cb7c908e5dc628ff29f1c63ed1ccdc9abdf332",
+                        operator_id="test-operator",
+                        passed=True,
+                        evidence_reference=f"ToolkitTemp/evidence/{name}.json",
+                        observed_at=observed.isoformat(),
+                        expires_at=(observed + timedelta(days=30)).isoformat(),
+                    )
+                )
             payload = (
                 PilotReleaseGate(self.configuration(), database).evaluate().to_dict()
             )
@@ -115,6 +137,22 @@ class ProductionSecurityReadinessTests(unittest.TestCase):
             payload["production_security"]["production_identity_security_ready"]
         )
         self.assertFalse(payload["real_data_activation_authorized"])
+
+    def test_configuration_booleans_alone_do_not_satisfy_release_gate(self) -> None:
+        from app.operations import PilotReleaseGate
+
+        with tempfile.TemporaryDirectory() as directory:
+            payload = (
+                PilotReleaseGate(
+                    self.configuration(),
+                    SQLiteDatabase(Path(directory) / "security.sqlite3"),
+                )
+                .evaluate()
+                .to_dict()
+            )
+        self.assertFalse(
+            payload["production_security"]["production_identity_security_ready"]
+        )
 
     def test_configuration_rejects_unbounded_security_values(self) -> None:
         for name, value in (

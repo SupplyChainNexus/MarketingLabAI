@@ -101,6 +101,20 @@ class QualityGovernanceTests(unittest.TestCase):
             self.assertIn(required, decision)
         self.assertRegex(decision, r"active\s+tenant membership")
 
+    def test_operational_readiness_preserves_failures_and_activation_boundary(self):
+        decision = self.read(
+            "governance/adrs/ADR-0027-recovery-monitoring-support-readiness.md"
+        )
+        normalized = " ".join(decision.split())
+        for required in (
+            "unsupported configuration booleans",
+            "Failed results require a failure classification",
+            "different environment or commit",
+            "permits MLAI-030.6 acceptance rehearsal only",
+            "never authorizes real data",
+        ):
+            self.assertIn(required, normalized)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -284,6 +284,26 @@ class SQLiteDatabase:
                 CREATE INDEX IF NOT EXISTS idx_privacy_acceptance_tenant
                     ON pilot_privacy_acceptances(tenant_id, accepted_at);
 
+                CREATE TABLE IF NOT EXISTS pilot_readiness_evidence (
+                    evidence_id TEXT PRIMARY KEY,
+                    check_name TEXT NOT NULL,
+                    environment TEXT NOT NULL,
+                    commit_sha TEXT NOT NULL,
+                    operator_id TEXT NOT NULL,
+                    passed INTEGER NOT NULL,
+                    evidence_reference TEXT NOT NULL,
+                    observed_at TEXT NOT NULL,
+                    expires_at TEXT NOT NULL,
+                    failure_classification TEXT NOT NULL DEFAULT '',
+                    remediation TEXT NOT NULL DEFAULT '',
+                    created_at TEXT NOT NULL
+                );
+
+                CREATE INDEX IF NOT EXISTS idx_readiness_evidence_lookup
+                    ON pilot_readiness_evidence(
+                        check_name, environment, commit_sha, observed_at
+                    );
+
                 CREATE TABLE IF NOT EXISTS compliance_rules (
                     rule_id TEXT NOT NULL,
                     version INTEGER NOT NULL,
@@ -463,6 +483,16 @@ class SQLiteDatabase:
                 VALUES (
                     2,
                     'Add versioned compliance rules',
+                    strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+                )
+                """)
+
+            connection.execute("""
+                INSERT OR IGNORE INTO schema_migrations (
+                    version, description, applied_at
+                ) VALUES (
+                    17,
+                    'Add immutable pilot readiness evidence',
                     strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
                 )
                 """)

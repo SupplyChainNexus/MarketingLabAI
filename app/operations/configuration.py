@@ -43,6 +43,7 @@ class PilotConfiguration:
     google_oauth_client_id: str = ""
     google_auth_domain: str = ""
     allow_real_customer_data: bool = False
+    deployment_commit: str = "unrecorded"
 
     @classmethod
     def from_environment(
@@ -175,6 +176,15 @@ class PilotConfiguration:
             raise ValueError(
                 "MLAI_SECURITY_EVIDENCE_JSON must map evidence names to booleans."
             )
+        deployment_commit = (
+            str(env.get("MLAI_DEPLOYMENT_COMMIT", "unrecorded")).strip().lower()
+        )
+        if deployment_commit != "unrecorded" and not re.fullmatch(
+            r"[0-9a-f]{7,40}", deployment_commit
+        ):
+            raise ValueError(
+                "MLAI_DEPLOYMENT_COMMIT must be a 7 to 40 character Git SHA."
+            )
         return cls(
             environment=environment,
             database_path=Path(required("MLAI_DATABASE_PATH")),
@@ -198,6 +208,7 @@ class PilotConfiguration:
             google_oauth_client_id=google_oauth_client_id,
             google_auth_domain=google_auth_domain,
             allow_real_customer_data=False,
+            deployment_commit=deployment_commit,
         )
 
     def public_summary(self) -> dict[str, object]:
@@ -213,6 +224,7 @@ class PilotConfiguration:
             "max_request_bytes": self.max_request_bytes,
             "google_max_auth_age_seconds": self.google_max_auth_age_seconds,
             "security_evidence_items": len(self.security_evidence or {}),
+            "deployment_commit_recorded": self.deployment_commit != "unrecorded",
             "real_customer_data_allowed": False,
             "engineering_development_authorized": True,
             "synthetic_rehearsal_authorized": True,

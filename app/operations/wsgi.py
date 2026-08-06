@@ -6,7 +6,7 @@ import json
 from http.cookies import SimpleCookie
 
 from app.operations.configuration import PilotConfiguration
-from app.operations.observability import PrivacySafeJsonLogger
+from app.operations.observability import OperationalSignalMonitor, PrivacySafeJsonLogger
 from app.operations.rate_limit import RateLimitExceeded, SlidingWindowRateLimiter
 from app.operations.release_gate import PilotReleaseGate
 from app.operations.sessions import PilotSessionProvider
@@ -21,6 +21,7 @@ class OperationalPilotApplication:
         *,
         logger: PrivacySafeJsonLogger | None = None,
         rate_limiter: SlidingWindowRateLimiter | None = None,
+        monitor: OperationalSignalMonitor | None = None,
     ) -> None:
         self.application = application
         self.sessions = sessions
@@ -30,6 +31,7 @@ class OperationalPilotApplication:
             configuration.rate_limit_requests,
             configuration.rate_limit_window_seconds,
         )
+        self.monitor = monitor or OperationalSignalMonitor()
 
     def __call__(self, environ, start_response):
         path = str(environ.get("PATH_INFO", ""))
@@ -47,6 +49,8 @@ class OperationalPilotApplication:
                     self.configuration, self.sessions.application.database
                 ).evaluate()
                 status = 200 if report.synthetic_pilot_ready else 503
+                if status == 503:
+                    self.monitor.observe("readiness_failure")
                 return self._json(start_response, status, report.to_dict())
             if path == "/v1/pilot/identity/config" and method == "GET":
                 return self._json(
@@ -76,6 +80,7 @@ class OperationalPilotApplication:
             )
             return response
         except RateLimitExceeded:
+            self.monitor.observe("rate_limit_rejection")
             self.logger.emit(
                 "pilot_request_denied",
                 request_id=request_id,
@@ -93,6 +98,7 @@ class OperationalPilotApplication:
                 },
             )
         except PermissionError:
+            self.monitor.observe("authentication_failure")
             self.logger.emit(
                 "pilot_request_denied",
                 request_id=request_id,

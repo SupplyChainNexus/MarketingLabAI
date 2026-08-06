@@ -6,6 +6,8 @@ from dataclasses import dataclass
 
 from app.database.connection import SQLiteDatabase
 from app.operations.configuration import PilotConfiguration
+from app.operations.operational_readiness import OperationalReadinessEvaluator
+from app.operations.readiness_evidence import ReadinessEvidenceRepository
 from app.operations.security import ProductionSecurityEvaluator
 
 
@@ -22,6 +24,15 @@ class ReleaseGateReport:
     synthetic_pilot_ready: bool
     private_customer_pilot_authorized: bool
     security: dict
+    operations: dict
+
+    @property
+    def ready_for_founder_activation_assessment(self) -> bool:
+        return (
+            self.synthetic_pilot_ready
+            and bool(self.security.get("production_identity_security_ready"))
+            and bool(self.operations.get("recovery_monitoring_support_ready"))
+        )
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -33,9 +44,13 @@ class ReleaseGateReport:
             "engineering_development_authorized": True,
             "synthetic_rehearsal_authorized": True,
             "private_customer_pilot_authorized": False,
+            "ready_for_founder_activation_assessment": (
+                self.ready_for_founder_activation_assessment
+            ),
             "real_data_activation_authorized": False,
             "customer_pilot_status": "real_data_activation_frozen",
             "production_security": self.security,
+            "operational_readiness": self.operations,
         }
 
 
@@ -91,11 +106,21 @@ class PilotReleaseGate:
                 "real-data activation freeze retained",
             ),
         )
+        repository = ReadinessEvidenceRepository(self.database)
+        security_evidence = (
+            repository.current_passes(
+                ProductionSecurityEvaluator.EXTERNAL_EVIDENCE,
+                environment=self.config.environment,
+                commit_sha=self.config.deployment_commit,
+            )
+            if self.config.deployment_commit != "unrecorded"
+            else {}
+        )
         security = (
             ProductionSecurityEvaluator(
                 self.config,
                 self.database,
-                external_evidence=self.config.security_evidence or {},
+                external_evidence=security_evidence,
             )
             .evaluate()
             .to_dict()
@@ -105,6 +130,11 @@ class PilotReleaseGate:
             synthetic_pilot_ready=all(item.passed for item in checks),
             private_customer_pilot_authorized=False,
             security=security,
+            operations=OperationalReadinessEvaluator(
+                self.config, self.database, repository
+            )
+            .evaluate()
+            .to_dict(),
         )
         return report
 
@@ -115,7 +145,15 @@ class PilotReleaseGate:
             ProductionSecurityEvaluator(
                 self.config,
                 self.database,
-                external_evidence=self.config.security_evidence or {},
+                external_evidence=(
+                    ReadinessEvidenceRepository(self.database).current_passes(
+                        ProductionSecurityEvaluator.EXTERNAL_EVIDENCE,
+                        environment=self.config.environment,
+                        commit_sha=self.config.deployment_commit,
+                    )
+                    if self.config.deployment_commit != "unrecorded"
+                    else {}
+                ),
             )
             .evaluate()
             .to_dict()

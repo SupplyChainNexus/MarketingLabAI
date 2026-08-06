@@ -17,6 +17,7 @@ from app.identity import (
     TenantRole,
 )
 from app.operations import (
+    OperationalSignalMonitor,
     PilotConfiguration,
     PilotReleaseGate,
     PilotSessionProvider,
@@ -189,6 +190,17 @@ class PilotOperationsTests(unittest.TestCase):
         self.assertNotIn("secret-token", line)
         self.assertNotIn("private", line)
         self.assertIn("tenant-one", line)
+
+    def test_operational_monitor_alerts_without_customer_content(self):
+        monitor = OperationalSignalMonitor(
+            {name: 2 for name in OperationalSignalMonitor.SIGNALS}
+        )
+        monitor.observe("authentication_failure")
+        self.assertFalse(monitor.snapshot()["authentication_failure"]["alerting"])
+        monitor.observe("authentication_failure")
+        snapshot = monitor.snapshot()
+        self.assertTrue(snapshot["authentication_failure"]["alerting"])
+        self.assertNotIn("tenant", json.dumps(snapshot))
 
     def test_rate_limit_is_deterministic(self):
         now = [10.0]

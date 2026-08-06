@@ -2,7 +2,7 @@
 
 ## Release state
 
-MLAI-030.4 supports production-security validation with approved test identities
+MLAI-030.5 supports production-security and operational validation with approved test identities
 and invented records only. Customer activation remains frozen. Do not load real
 customer data until every later gate passes and the founder records an explicit
 activation decision.
@@ -27,7 +27,7 @@ privacy-safe audit event, and expires both cookies.
 
 ## Security readiness rehearsal
 
-1. Keep `MLAI_SECURITY_EVIDENCE_JSON={}` before rehearsal.
+1. Keep `MLAI_SECURITY_EVIDENCE_JSON={}`; legacy booleans do not satisfy readiness.
 2. Verify the browser key restrictions, OAuth testing audience, authorized
    domains, and identity audit logging in the controlled Google project.
 3. Rehearse invalid-token rejection, logout/session revocation, and cross-tenant
@@ -40,6 +40,23 @@ privacy-safe audit event, and expires both cookies.
 The evidence setting must contain no secrets, tokens, invitation codes, email
 addresses, submitted content, or customer records. A passing report permits a
 founder assessment; it never changes the real-data freeze.
+
+## Immutable readiness evidence
+
+Set `MLAI_DEPLOYMENT_COMMIT` to the exact deployed Git commit. After each
+unchanged controlled check, record its result with:
+
+`python -m app.operations.cli record-evidence <check> <operator> <pass|fail> <sanitized-reference>`
+
+Use `--failure-classification` and `--remediation` for every failed result.
+References point to sanitized files under `ToolkitTemp`; they must not contain
+credentials or customer content. Evidence expires after 30 days by default and
+may never exceed 90 days. Rerun a check after deployment, environment, or
+material configuration changes.
+
+Required operational checks are backup creation and verification, restore,
+rollback, readiness/authentication/rate-limit/database alerts, incident
+response, assigned support ownership, and approved response targets.
 
 ## Backup and restore
 
@@ -66,3 +83,8 @@ database integrity failure, backup failure, and elevated 5xx responses. Logs
 may include request ID, route, method, outcome, tenant ID, provider identifier,
 and timing. They must not include credentials, cookies, prompts, generated
 content, customer context, instructions, or secrets.
+
+The support record must name an accountable operator role and approved response
+targets without storing personal contact details in readiness evidence. Every
+incident rehearsal records detection, classification, containment, recovery,
+verification, communication decision, and follow-up ownership.

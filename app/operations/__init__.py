@@ -1,8 +1,17 @@
 """Operational controls for the controlled MarketingLabAI pilot."""
 
 from app.operations.configuration import PilotConfiguration
-from app.operations.observability import PrivacySafeJsonLogger
+from app.operations.observability import OperationalSignalMonitor, PrivacySafeJsonLogger
+from app.operations.operational_readiness import (
+    OperationalCheck,
+    OperationalReadinessEvaluator,
+    OperationalReadinessReport,
+)
 from app.operations.rate_limit import RateLimitExceeded, SlidingWindowRateLimiter
+from app.operations.readiness_evidence import (
+    ReadinessEvidence,
+    ReadinessEvidenceRepository,
+)
 from app.operations.recovery import SQLiteRecoveryService
 from app.operations.release_gate import PilotReleaseGate, ReleaseGateReport
 from app.operations.security import (
@@ -21,8 +30,14 @@ __all__ = [
     "ProductionSecurityEvaluator",
     "ProductionSecurityReport",
     "OperationalPilotApplication",
+    "OperationalCheck",
+    "OperationalReadinessEvaluator",
+    "OperationalReadinessReport",
+    "OperationalSignalMonitor",
     "PrivacySafeJsonLogger",
     "RateLimitExceeded",
+    "ReadinessEvidence",
+    "ReadinessEvidenceRepository",
     "ReleaseGateReport",
     "SQLiteRecoveryService",
     "SecurityCheck",
