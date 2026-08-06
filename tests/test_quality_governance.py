@@ -129,6 +129,20 @@ class QualityGovernanceTests(unittest.TestCase):
         ):
             self.assertIn(required, normalized)
 
+    def test_controlled_hosting_refuses_unsafe_sqlite_deployment(self):
+        decision = self.read(
+            "governance/adrs/ADR-0030-controlled-hosting-durable-persistence.md"
+        )
+        normalized = " ".join(decision.split())
+        for required in (
+            "must not be deployed",
+            "PostgreSQL",
+            "external secret bindings",
+            "explicit founder decisions",
+            "never authorizes an external invitation or real data",
+        ):
+            self.assertIn(required, normalized)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -33,7 +33,7 @@ Write-Host "===================================================="
 $ExpectedStatus = @(
 {{EXPECTED_STATUS}}
 )
-$CurrentStatus = @(git status --short)
+$CurrentStatus = @(git status --short --untracked-files=all)
 $CurrentStatus | ForEach-Object { Write-Host $_ }
 if ($CurrentStatus.Count -ne $ExpectedStatus.Count) { throw "Unexpected Git status entry count." }
 foreach ($ExpectedLine in $ExpectedStatus) {
@@ -71,6 +71,6 @@ if ($PythonExitCode -ne 0) { throw "Complete test suite failed." }
 Write-Host "`n[4/4] Checking whitespace..."
 git diff --check
 if ($LASTEXITCODE -ne 0) { throw "Git whitespace validation failed." }
-git status --short
+git status --short --untracked-files=all
 git diff --stat
 Write-Host "`n{{STORY_ID}} VALIDATION PASSED"

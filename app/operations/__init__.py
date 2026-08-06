@@ -1,6 +1,13 @@
 """Operational controls for the controlled MarketingLabAI pilot."""
 
 from app.operations.configuration import PilotConfiguration
+from app.operations.hosting_readiness import (
+    ControlledHostingConfiguration,
+    ControlledHostingReport,
+    HostingCheck,
+    HostingConfigurationError,
+    require_cloud_deployment_authorization,
+)
 from app.operations.observability import OperationalSignalMonitor, PrivacySafeJsonLogger
 from app.operations.operational_readiness import (
     OperationalCheck,
@@ -24,6 +31,11 @@ from app.operations.wsgi import OperationalPilotApplication
 
 __all__ = [
     "PilotConfiguration",
+    "ControlledHostingConfiguration",
+    "ControlledHostingReport",
+    "HostingCheck",
+    "HostingConfigurationError",
+    "require_cloud_deployment_authorization",
     "PilotReleaseGate",
     "PilotSession",
     "PilotSessionProvider",

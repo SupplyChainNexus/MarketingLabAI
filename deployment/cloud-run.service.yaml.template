@@ -1,0 +1,28 @@
+# Non-deployable evidence template. Founder authorization and verified durable
+# persistence are required before producing a deployable Cloud Run manifest.
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: marketinglabai-velani-pilot
+  annotations:
+    marketinglabai/deployment-authorized: "false"
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: "0"
+        autoscaling.knative.dev/maxScale: "1"
+        run.googleapis.com/cloudsql-instances: "{{CLOUD_SQL_INSTANCE}}"
+    spec:
+      containerConcurrency: 8
+      containers:
+        - image: "{{IMMUTABLE_IMAGE_DIGEST}}"
+          resources:
+            limits:
+              cpu: "1"
+              memory: "512Mi"
+          env:
+            - name: MLAI_DURABLE_ADAPTER_VERIFIED
+              value: "false"
+            - name: MLAI_ALLOW_REAL_CUSTOMER_DATA
+              value: "false"

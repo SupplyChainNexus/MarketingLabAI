@@ -3,12 +3,12 @@
 ## Checkpoint
 
 - Branch: `feature/tenant-architecture`
-- Installation baseline: `724eaa7`
+- Installation baseline: `646aeae`
 - Remote state before this story: synchronized
 - Last completed epic: MLAI-029 Marketing Strategy Intelligence
-- Active epic: MLAI-030 Founder Design Partner Onboarding
-- Last completed story: MLAI-030.5 Recovery, Monitoring and Support Readiness
-- Active story: MLAI-030.6 Design-Partner Acceptance Rehearsal
+- Active epic: MLAI-031 Controlled Pilot Hosting
+- Last completed story: MLAI-030.7 Controlled Real-Data Activation
+- Active story: MLAI-031.1 Controlled Hosting and Durable Pilot Persistence
 
 ## Product direction
 
@@ -139,6 +139,16 @@ governance drag. These findings are remediation evidence, not pilot activation.
 
 ## Release state
 
+MLAI-030.6 adds partner-specific acceptance evidence and MLAI-030.7 adds
+append-only, tenant- and founder-bound activation controls with Velani Wholesale
+as the first candidate. Neither story sends an invitation or activates data.
+
+The post-MLAI-030.7 hosting audit confirmed the Google project is active and
+billing-enabled while Cloud Run, Artifact Registry, Cloud Build and Secret
+Manager remain disabled. The audit also found 144 SQLite persistence references.
+Because Cloud Run local storage is replaceable, MLAI-031.1 refuses SQLite cloud
+deployment and requires complete PostgreSQL migration and recovery evidence.
+
 ADR-0024 authorizes engineering and quality development and controlled
 synthetic design-partner rehearsal, including approved Google test identities,
 synthetic invitation claiming and browser, accessibility, recovery, revocation,
@@ -153,9 +163,7 @@ decision and the applicable privacy, recovery, support and data boundaries.
 
 ## Next engineer action
 
-Complete MLAI-030.5 validation and install it only on verified baseline
-`54cb7c9`. Execute and record each controlled rehearsal, including failures,
-then begin MLAI-030.6 Design-Partner Acceptance Rehearsal. Use approved test
-identities and invented records only. Do not publish the OAuth app, send
-external invitations, enable customer data, or fill unset privacy choices
-without a new founder decision.
+Install MLAI-031.1 only on verified baseline `646aeae`. Complete repository-wide
+PostgreSQL compatibility and synthetic migration/restore evidence before
+enabling Google deployment APIs or building an image. Do not deploy SQLite to
+Cloud Run, publish the OAuth app, send external invitations or enable real data.

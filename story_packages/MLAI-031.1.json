@@ -1,0 +1,67 @@
+{
+  "storyId": "MLAI-031.1",
+  "title": "Controlled Hosting and Durable Pilot Persistence",
+  "slug": "controlled_hosting_durable_pilot_persistence",
+  "baseline": "646aeae",
+  "projectRoot": "C:\\Ai Projects\\MarketingLabAI",
+  "sourceRoot": "C:\\Ai Projects\\MarketingLabAI",
+  "installFiles": [
+    ".env.example",
+    "app\\operations\\__init__.py",
+    "app\\operations\\hosting_readiness.py",
+    "backlog\\MLAI-031.md",
+    "deployment\\cloud-run.service.yaml.template",
+    "docs\\controlled-hosting-and-durable-persistence.md",
+    "docs\\handover\\CURRENT_HANDOVER.md",
+    "governance\\adrs\\ADR-0030-controlled-hosting-durable-persistence.md",
+    "governance\\product-capability-map.md",
+    "governance\\registers\\risk-register.md",
+    "governance\\registers\\technical-debt-register.md",
+    "templates\\story_package\\validate.ps1.template",
+    "story_packages\\MLAI-031.1.json",
+    "tests\\test_controlled_hosting.py",
+    "tests\\test_quality_governance.py",
+    "tests\\test_story_package_generator.ps1"
+  ],
+  "newFiles": [
+    "app\\operations\\hosting_readiness.py",
+    "backlog\\MLAI-031.md",
+    "deployment\\cloud-run.service.yaml.template",
+    "docs\\controlled-hosting-and-durable-persistence.md",
+    "governance\\adrs\\ADR-0030-controlled-hosting-durable-persistence.md",
+    "story_packages\\MLAI-031.1.json",
+    "tests\\test_controlled_hosting.py"
+  ],
+  "compileFiles": [
+    "app\\operations\\__init__.py",
+    "app\\operations\\hosting_readiness.py",
+    "tests\\test_controlled_hosting.py",
+    "tests\\test_quality_governance.py"
+  ],
+  "focusedTestModules": [
+    "tests.test_controlled_hosting",
+    "tests.test_controlled_activation",
+    "tests.test_operational_readiness",
+    "tests.test_production_security_readiness",
+    "tests.test_quality_governance"
+  ],
+  "importCommand": "from app.operations import ControlledHostingConfiguration, require_cloud_deployment_authorization; print('MLAI-031.1 hosting imports OK')",
+  "expectedStatus": [
+    " M .env.example",
+    " M app/operations/__init__.py",
+    " M docs/handover/CURRENT_HANDOVER.md",
+    " M governance/product-capability-map.md",
+    " M governance/registers/risk-register.md",
+    " M governance/registers/technical-debt-register.md",
+    " M templates/story_package/validate.ps1.template",
+    " M tests/test_quality_governance.py",
+    " M tests/test_story_package_generator.ps1",
+    "?? app/operations/hosting_readiness.py",
+    "?? backlog/MLAI-031.md",
+    "?? deployment/cloud-run.service.yaml.template",
+    "?? docs/controlled-hosting-and-durable-persistence.md",
+    "?? governance/adrs/ADR-0030-controlled-hosting-durable-persistence.md",
+    "?? story_packages/MLAI-031.1.json",
+    "?? tests/test_controlled_hosting.py"
+  ]
+}
