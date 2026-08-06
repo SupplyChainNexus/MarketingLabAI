@@ -62,6 +62,13 @@ class PostgreSQLCompatibilityTests(unittest.TestCase):
         self.assertEqual(
             sum("CREATE TABLE IF NOT EXISTS" in item for item in statements), 21
         )
+        index_statements = [
+            item for item in statements if item.lstrip().startswith("CREATE INDEX")
+        ]
+        self.assertTrue(index_statements)
+        self.assertTrue(
+            all("CREATE INDEX IF NOT EXISTS" in item for item in index_statements)
+        )
 
     def test_seed_rows_include_migrations_and_only_default_tenant(self):
         seeds = build_postgresql_seed_rows()

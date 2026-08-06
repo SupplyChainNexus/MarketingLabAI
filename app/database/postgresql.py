@@ -183,6 +183,18 @@ def _postgresql_table_sql(name: str, sql: str) -> str:
     return translated
 
 
+def _postgresql_index_sql(sql: str) -> str:
+    """Make canonical index creation safe across repeated initialisation."""
+
+    return re.sub(
+        r"^CREATE\s+(UNIQUE\s+)?INDEX\s+",
+        lambda match: f"CREATE {match.group(1) or ''}INDEX IF NOT EXISTS ",
+        sql,
+        count=1,
+        flags=re.IGNORECASE,
+    )
+
+
 def build_postgresql_schema() -> tuple[str, ...]:
     """Derive a deterministic PostgreSQL schema from the canonical SQLite schema."""
 
@@ -204,7 +216,9 @@ def build_postgresql_schema() -> tuple[str, ...]:
         for row in rows
         if row["type"] == "table"
     }
-    indexes = [str(row["sql"]) for row in rows if row["type"] == "index"]
+    indexes = [
+        _postgresql_index_sql(str(row["sql"])) for row in rows if row["type"] == "index"
+    ]
     dependencies = {
         name: {
             dependency
