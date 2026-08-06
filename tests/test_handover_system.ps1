@@ -123,8 +123,11 @@ if ($CurrentHandoverText -notmatch "MLAI-027.1 through MLAI-027.6") {
     throw "Current handover does not record MLAI-027.6 completion."
 }
 
-if ($CurrentHandoverText -notmatch "customer pilot remains explicitly") {
-    throw "Current handover does not preserve the founder pilot freeze."
+if (
+    ($CurrentHandoverText -notmatch "controlled\s+synthetic design-partner rehearsal") -or
+    ($CurrentHandoverText -notmatch "real_data_activation_frozen")
+) {
+    throw "Current handover does not preserve the controlled rehearsal and real-data boundary."
 }
 
 if ($CurrentHandoverText -notmatch "MLAI-028.5") {
@@ -271,6 +274,12 @@ $WorkspaceDecisionText = Get-Content -LiteralPath (
 $IntegrityProtocolText = Get-Content -LiteralPath (
     Join-Path $ProjectRoot "governance\repository-integrity-protocol.md"
 ) -Raw
+$QualityMandateText = Get-Content -LiteralPath (
+    Join-Path $ProjectRoot "governance\adrs\ADR-0023-constitution-preserving-quality-mandate.md"
+) -Raw
+$DevelopmentUnfreezeText = Get-Content -LiteralPath (
+    Join-Path $ProjectRoot "governance\adrs\ADR-0024-controlled-pilot-development-unfreeze.md"
+) -Raw
 
 if (
     ($WorkspaceDecisionText -notmatch "Strand Auto Parts") -or
@@ -283,17 +292,34 @@ if (
 if (
     ($CurrentHandoverText -notmatch "MLAI-029.6") -or
     ($CurrentHandoverText -notmatch "Repository Integrity Protocol") -or
-    ($CurrentHandoverText -notmatch "customer pilot remains explicitly founder-frozen")
+    ($CurrentHandoverText -notmatch "real_data_activation_frozen")
 ) {
     throw "Current handover does not preserve MLAI-029.6 boundaries."
 }
 
 if (
-    ($IntegrityProtocolText -notmatch "explicit allowlist") -or
+    ($IntegrityProtocolText -notmatch "expected-path allowlist") -or
     ($IntegrityProtocolText -notmatch "classify every failure") -or
     ($IntegrityProtocolText -notmatch "local/remote commit equality")
 ) {
     throw "Repository Integrity Protocol is incomplete."
+}
+if (
+    ($QualityMandateText -notmatch "Constitution-Preserving Quality Mandate") -or
+    ($QualityMandateText -notmatch "necessary adjacent paths") -or
+    ($QualityMandateText -notmatch "never be weakened merely to obtain a passing result") -or
+    ($QualityMandateText -notmatch "real customer data") -or
+    ($QualityMandateText -notmatch "paid services")
+) {
+    throw "ADR-0023 does not preserve quality authority and founder reservations."
+}
+if (
+    ($DevelopmentUnfreezeText -notmatch "Engineering and quality development") -or
+    ($DevelopmentUnfreezeText -notmatch "Controlled synthetic design-partner rehearsal") -or
+    ($DevelopmentUnfreezeText -notmatch "real_data_activation_frozen") -or
+    ($DevelopmentUnfreezeText -notmatch "external design-partner invitations")
+) {
+    throw "ADR-0024 does not preserve development authority and activation boundaries."
 }
 
 $EntraDecisionText = Get-Content -LiteralPath (
@@ -320,7 +346,9 @@ if (
     ($CurrentHandoverText -notmatch "MLAI-030.2") -or
     ($CurrentHandoverText -notmatch "strict RS256") -or
     ($CurrentHandoverText -notmatch "Google Cloud\s+Identity Platform") -or
-    ($CurrentHandoverText -notmatch "real customer data remain disabled")
+    ($CurrentHandoverText -notmatch "marketinglabai-identity-dev") -or
+    ($CurrentHandoverText -notmatch "keeps the token in memory") -or
+    ($CurrentHandoverText -notmatch "real customer data.*remain disabled")
 ) {
     throw "Current handover does not preserve MLAI-030.2 boundaries."
 }

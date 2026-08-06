@@ -1,19 +1,23 @@
 {
   "story_id": "MLAI-030.2",
-  "slug": "google_cloud_identity_reconciliation",
-  "title": "Google Cloud Identity Platform Reconciliation",
-  "baseline": "602f32e",
+  "slug": "google_browser_signup_completion",
+  "title": "Google Browser Signup and Controlled Development Unfreeze",
+  "baseline": "a3e9a55",
   "focused_tests": [
+    "tests.test_google_browser_signin",
     "tests.test_google_cloud_identity",
     "tests.test_entra_external_identity",
     "tests.test_design_partner_signup",
     "tests.test_pilot_api",
-    "tests.test_pilot_operations"
+    "tests.test_pilot_operations",
+    "tests.test_quality_governance",
+    "tests.test_strategy_workspace_readiness",
+    "tests.test_design_partner_registry"
   ],
   "import_modules": [
     "app.identity.google_cloud",
     "app.operations.configuration",
     "app.operations.runtime"
   ],
-  "commit_message": "refactor(identity): select Google Cloud Identity Platform"
+  "commit_message": "feat(identity): complete controlled browser signup"
 }

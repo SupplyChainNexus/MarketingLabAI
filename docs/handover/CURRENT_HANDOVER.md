@@ -72,10 +72,36 @@ organization may administer the Cloud project, but its staff directory is not
 the customer directory. A live Cloud project is not
 required until offline validation succeeds.
 
+The controlled Google project `marketinglabai-identity-dev` is now configured
+for synthetic browser rehearsal. Google sign-in is enabled with an external
+testing audience, controlled test users, exact loopback origin
+`http://127.0.0.1:8080`, restricted Firebase browser-key referrers, and only the
+Identity Toolkit and Token Service APIs. The application serves browser-safe
+configuration, exchanges the Google credential for a project-audience Firebase
+ID token, requires verified Google email claims, keeps the token in memory
+only, and clears it after creating the existing hashed tenant-bound session.
+Cloud Functions, password authentication, SMS, MFA, public signup, invitation
+delivery, real customer data, and paid identity extensions remain disabled.
+
 The Repository Integrity Protocol is now locked for every future story:
 baseline and scope verification, tracked/untracked/staged reporting, failure
 classification, complete applicable quality gates, no remaining intended paths,
 and clean local/remote synchronization are mandatory.
+
+ADR-0023 now supersedes the narrow interpretation of story path allowlists with
+the Constitution-Preserving Quality Mandate. Expected scope remains explicit,
+but reversible evidence-backed improvements to correctness, security,
+usability, accessibility, maintainability, testing, recovery and operational
+clarity may include necessary adjacent paths when they are justified, tested,
+documented and separately reported. Founder approval remains mandatory for
+real data, live invitations, public activation, paid services, destructive or
+irreversible changes, privacy boundaries and product-direction changes.
+
+The first Governance Drag Audit found no broad architectural corruption or
+omitted executable behaviour. It confirmed brittle prose-regex continuity
+checks, stale identity operational guidance and incoherent workspace step
+numbering, and identified missing browser/accessibility automation as probable
+governance drag. These findings are remediation evidence, not pilot activation.
 
 ## Locked MLAI-029 sequence
 
@@ -88,18 +114,25 @@ and clean local/remote synchronization are mandatory.
 
 ## Release state
 
-The customer pilot remains explicitly founder-frozen. Synthetic evidence is
-not market validation or learning. A controlled design-partner pilot is now the
-next necessary product-validation checkpoint, but readiness is not activation.
-Real customer data still requires a new founder-approved pilot decision,
-legal/privacy choices, deployed identity, recovery rehearsal, support ownership,
-and accepted data boundaries.
+ADR-0024 authorizes engineering and quality development and controlled
+synthetic design-partner rehearsal, including approved Google test identities,
+synthetic invitation claiming and browser, accessibility, recovery, revocation,
+backup, security and failure testing. The former broad founder-frozen status is
+superseded by `real_data_activation_frozen`.
+
+Synthetic evidence is not market validation or learning. Actual business data,
+external design-partner invitations, public or production activation, external
+publishing, real-data learning, customer billing, unapproved paid services and
+destructive production changes still require a separate founder-approved
+decision and the applicable privacy, recovery, support and data boundaries.
 
 ## Next engineer action
 
-Install and validate the reconciled MLAI-030.2 package. Then create a controlled
-Google Cloud project under the existing Workspace organization, enable Identity
-Platform, configure only local environment values, enable audit logs and budget
-alerts, and rehearse synthetic signup and recovery. Do not enable SMS, send
-founder invitations, or enable real customer data until the remaining onboarding
-and activation gates are approved.
+Install and validate the MLAI-030.2 browser-signup completion package. Configure
+the local environment with the already-created project's browser-safe API key,
+OAuth client ID, project ID, and auth domain; never add the OAuth client secret.
+Then rehearse Google sign-in, invitation claiming, tenant-session creation,
+invalid-token denial, recovery, and account revocation using synthetic data and
+the controlled test audience. Do not publish the OAuth app, enable password or
+SMS sign-in, send founder invitations, or enable real customer data until the
+remaining onboarding and activation gates are approved.

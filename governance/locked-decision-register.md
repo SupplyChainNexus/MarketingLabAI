@@ -632,3 +632,38 @@ Workspace organization may administer the Cloud project, but Workspace staff
 accounts and MarketingLabAI customer identities remain separate. MarketingLabAI
 retains tenant authorization, invitations, entitlements and audit decisions.
 Real customer data remains founder-frozen.
+
+### LDR-051 — Constitution-Preserving Quality Mandate
+
+**Status:** Current / Governance
+**Source:** ADR-0023 and founder approval on 2026-08-06
+
+The Engineering Steward may implement reversible, evidence-backed improvements
+to correctness, security, usability, accessibility, maintainability, testing,
+recovery and operational clarity, including necessary adjacent paths outside an
+initial expected-path allowlist. Every added path must be justified, tested,
+documented and separately reported. Tests may be corrected when their
+expectations are demonstrably defective but may never be weakened merely to
+pass.
+
+The mandate does not authorize product drift, real customer data, live
+invitations, public activation, production publishing, paid services,
+destructive migrations, privacy-boundary changes or changes to the Product
+Constitution and locked product direction. Those decisions remain reserved for
+explicit founder approval.
+
+### LDR-052 — Controlled Pilot Development Unfreeze
+
+**Status:** Current / Governance
+**Source:** ADR-0024 and founder approval on 2026-08-06
+
+Engineering and quality development and controlled synthetic design-partner
+rehearsal are authorized. This includes approved Google test identities,
+synthetic isolated partner tenants, synthetic invitation claiming, browser,
+accessibility, recovery, revocation, backup, security and failure rehearsal.
+
+Real-customer activation remains frozen. Actual business data, external partner
+invitation delivery, public signup, production access, external publishing,
+real-data learning, customer billing, unapproved paid services and destructive
+production changes require explicit founder approval. The canonical status is
+`real_data_activation_frozen`, not the former broad `founder_frozen` label.

@@ -28,8 +28,11 @@ class ReleaseGateReport:
                 for item in self.checks
             ],
             "synthetic_pilot_ready": self.synthetic_pilot_ready,
+            "engineering_development_authorized": True,
+            "synthetic_rehearsal_authorized": True,
             "private_customer_pilot_authorized": False,
-            "customer_pilot_status": "frozen_by_founder",
+            "real_data_activation_authorized": False,
+            "customer_pilot_status": "real_data_activation_frozen",
         }
 
 
@@ -82,7 +85,7 @@ class PilotReleaseGate:
             GateCheck(
                 "customer_data_freeze",
                 not self.config.allow_real_customer_data,
-                "founder freeze retained",
+                "real-data activation freeze retained",
             ),
         )
         return ReleaseGateReport(

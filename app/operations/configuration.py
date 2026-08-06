@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Mapping
@@ -35,6 +36,9 @@ class PilotConfiguration:
     entra_tenant_subdomain: str = ""
     entra_client_id: str = ""
     google_cloud_project_id: str = ""
+    google_web_api_key: str = ""
+    google_oauth_client_id: str = ""
+    google_auth_domain: str = ""
     allow_real_customer_data: bool = False
 
     @classmethod
@@ -54,7 +58,15 @@ class PilotConfiguration:
             str(env.get("MLAI_TRUST_PROXY_TLS", "false")),
             "MLAI_TRUST_PROXY_TLS",
         )
-        if not origin.startswith("https://") and not trust_proxy_tls:
+        environment = required("MLAI_ENVIRONMENT")
+        loopback_origin = bool(
+            re.fullmatch(r"http://127\.0\.0\.1(?::\d{1,5})?", origin)
+        )
+        if (
+            not origin.startswith("https://")
+            and not trust_proxy_tls
+            and not (environment == "synthetic-pilot" and loopback_origin)
+        ):
             raise ValueError("Pilot traffic must use HTTPS or a trusted TLS proxy.")
         secret = required("MLAI_SESSION_SECRET")
         if len(secret) < 32 or secret.lower().startswith("replace"):
@@ -74,7 +86,7 @@ class PilotConfiguration:
         )
         if allow_real:
             raise ValueError(
-                "Real customer data remains founder-frozen; keep "
+                "Real customer-data activation remains frozen; keep "
                 "MLAI_ALLOW_REAL_CUSTOMER_DATA=false."
             )
         identity_provider = required("MLAI_IDENTITY_PROVIDER")
@@ -103,6 +115,21 @@ class PilotConfiguration:
                 "MLAI_GOOGLE_CLOUD_PROJECT_ID is required for Google Cloud "
                 "Identity Platform."
             )
+        google_web_api_key = str(env.get("MLAI_GOOGLE_WEB_API_KEY", "")).strip()
+        google_oauth_client_id = str(env.get("MLAI_GOOGLE_OAUTH_CLIENT_ID", "")).strip()
+        google_auth_domain = str(env.get("MLAI_GOOGLE_AUTH_DOMAIN", "")).strip()
+        if identity_provider == "google-cloud-identity-platform":
+            if not google_web_api_key or not google_oauth_client_id:
+                raise ValueError(
+                    "MLAI_GOOGLE_WEB_API_KEY and MLAI_GOOGLE_OAUTH_CLIENT_ID are "
+                    "required for the Google browser sign-in flow."
+                )
+            expected_domain = f"{google_cloud_project_id}.firebaseapp.com"
+            if google_auth_domain != expected_domain:
+                raise ValueError(
+                    "MLAI_GOOGLE_AUTH_DOMAIN must match the project's standard "
+                    "Firebase authentication domain."
+                )
         try:
             invitation_hashes = json.loads(
                 str(env.get("MLAI_FOUNDER_INVITATION_HASHES_JSON", "{}"))
@@ -119,7 +146,7 @@ class PilotConfiguration:
                 "Founder invitation hashes must map tenant IDs to SHA-256 hashes."
             )
         return cls(
-            environment=required("MLAI_ENVIRONMENT"),
+            environment=environment,
             database_path=Path(required("MLAI_DATABASE_PATH")),
             backup_directory=Path(required("MLAI_BACKUP_DIRECTORY")),
             public_origin=origin,
@@ -134,6 +161,9 @@ class PilotConfiguration:
             founder_invitation_hashes=dict(invitation_hashes),
             **entra_values,
             google_cloud_project_id=google_cloud_project_id,
+            google_web_api_key=google_web_api_key,
+            google_oauth_client_id=google_oauth_client_id,
+            google_auth_domain=google_auth_domain,
             allow_real_customer_data=False,
         )
 
@@ -148,6 +178,9 @@ class PilotConfiguration:
             "rate_limit_requests": self.rate_limit_requests,
             "rate_limit_window_seconds": self.rate_limit_window_seconds,
             "real_customer_data_allowed": False,
+            "engineering_development_authorized": True,
+            "synthetic_rehearsal_authorized": True,
+            "real_data_activation_status": "frozen",
             "founder_invitations_configured": len(self.founder_invitation_hashes),
             "entra_configured": bool(
                 self.entra_tenant_id
@@ -155,4 +188,28 @@ class PilotConfiguration:
                 and self.entra_client_id
             ),
             "google_cloud_identity_configured": bool(self.google_cloud_project_id),
+            "google_browser_sign_in_configured": bool(
+                self.google_web_api_key
+                and self.google_oauth_client_id
+                and self.google_auth_domain
+            ),
+        }
+
+    @property
+    def secure_cookies(self) -> bool:
+        """Require Secure cookies except for the exact synthetic loopback origin."""
+
+        return not self.public_origin.startswith("http://127.0.0.1")
+
+    def public_identity_configuration(self) -> dict[str, str]:
+        """Return only browser-safe Google Identity Platform identifiers."""
+
+        if self.identity_provider != "google-cloud-identity-platform":
+            raise ValueError("Google browser identity is not configured.")
+        return {
+            "provider": self.identity_provider,
+            "project_id": self.google_cloud_project_id,
+            "api_key": self.google_web_api_key,
+            "oauth_client_id": self.google_oauth_client_id,
+            "auth_domain": self.google_auth_domain,
         }

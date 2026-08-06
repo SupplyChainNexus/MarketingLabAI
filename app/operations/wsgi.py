@@ -45,6 +45,13 @@ class OperationalPilotApplication:
                 ).evaluate()
                 status = 200 if report.synthetic_pilot_ready else 503
                 return self._json(start_response, status, report.to_dict())
+            if path == "/v1/pilot/identity/config" and method == "GET":
+                return self._json(
+                    start_response,
+                    200,
+                    self.configuration.public_identity_configuration(),
+                    [("Cache-Control", "no-store")],
+                )
             if path == "/v1/pilot/session" and method == "POST":
                 return self._create_session(environ, start_response)
             if path == "/v1/pilot/session" and method == "GET":
@@ -108,11 +115,12 @@ class OperationalPilotApplication:
             "csrf_token": session.csrf_token,
             "expires_at": session.expires_at,
         }
+        secure = "; Secure" if self.configuration.secure_cookies else ""
         session_cookie = (
-            f"mlai_session={session.token}; Path=/; HttpOnly; Secure; "
+            f"mlai_session={session.token}; Path=/; HttpOnly{secure}; "
             "SameSite=Strict"
         )
-        csrf_cookie = f"mlai_csrf={session.csrf_token}; Path=/; Secure; SameSite=Strict"
+        csrf_cookie = f"mlai_csrf={session.csrf_token}; Path=/{secure}; SameSite=Strict"
         return self._json(
             start_response,
             201,

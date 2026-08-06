@@ -26,3 +26,16 @@ own the Cloud organization and project, but Workspace users are administrators,
 not MarketingLabAI customer accounts. A billing account may be linked while
 usage remains within free allowances; budgets and alerts are required before
 live configuration. No customer invitation or real data is authorized here.
+
+## Deployment completion
+
+The local browser flow uses Google Identity Services and exchanges its
+credential through Identity Platform for a project-audience Firebase ID token.
+MarketingLabAI accepts only verified Google email identities and clears the ID
+token from browser memory after establishing its tenant-bound session.
+
+The restricted Firebase browser key and OAuth client ID are public identifiers;
+the OAuth client secret is never delivered to the browser. HTTP is allowed only
+for the exact `127.0.0.1` synthetic rehearsal origin. Cloud Functions, password
+authentication, SMS, MFA, public signup, real data and paid extensions remain
+disabled.

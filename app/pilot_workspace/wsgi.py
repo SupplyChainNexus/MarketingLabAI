@@ -47,7 +47,9 @@ class PilotWorkspaceApplication:
     @staticmethod
     def _content_security_policy() -> str:
         return (
-            "default-src 'self'; script-src 'self'; style-src 'self'; "
-            "connect-src 'self'; img-src 'self' data:; object-src 'none'; "
-            "base-uri 'none'; frame-ancestors 'none'; form-action 'self'"
+            "default-src 'self'; script-src 'self' https://accounts.google.com/gsi/client; "
+            "style-src 'self'; connect-src 'self' https://identitytoolkit.googleapis.com; "
+            "frame-src https://accounts.google.com; img-src 'self' data:; "
+            "object-src 'none'; base-uri 'none'; frame-ancestors 'none'; "
+            "form-action 'self'"
         )

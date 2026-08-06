@@ -1,7 +1,7 @@
 "use strict";
 
 const cookieValue = (name) => document.cookie.split("; ").find((part) => part.startsWith(`${name}=`))?.split("=").slice(1).join("=") || "";
-const state = { review: null, result: null, csrfToken: cookieValue("mlai_csrf") };
+const state = { review: null, result: null, csrfToken: cookieValue("mlai_csrf"), idToken: "", identityConfig: null };
 const byId = (id) => document.getElementById(id);
 const value = (id) => byId(id).value.trim();
 const requestKey = (operation) => `${operation}-${crypto.randomUUID()}`;
@@ -108,6 +108,100 @@ async function safeExport() {
   } catch (error) { message(error.message, true); }
 }
 
+function identityMessage(text, error = false) {
+  const target = byId("identityMessage");
+  target.textContent = text;
+  target.className = `message ${error ? "error" : "success"}`;
+}
+
+function loadGoogleIdentity() {
+  return new Promise((resolve, reject) => {
+    if (window.google?.accounts?.id) return resolve();
+    const script = document.createElement("script");
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.onload = resolve;
+    script.onerror = () => reject(new Error("Google sign-in could not be loaded."));
+    document.head.append(script);
+  });
+}
+
+async function exchangeGoogleCredential(credential) {
+  const endpoint = `https://identitytoolkit.googleapis.com/v1/accounts:signInWithIdp?key=${encodeURIComponent(state.identityConfig.api_key)}`;
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      postBody: new URLSearchParams({ id_token: credential, providerId: "google.com" }).toString(),
+      requestUri: window.location.origin,
+      returnIdpCredential: true,
+      returnSecureToken: true
+    })
+  });
+  const payload = await response.json();
+  if (!response.ok || !payload.idToken) throw new Error(payload.error?.message || "Identity Platform rejected the Google credential.");
+  state.idToken = payload.idToken;
+  byId("claimInvitation").disabled = false;
+  byId("connectSession").disabled = false;
+  identityMessage("Google identity verified. Claim an invitation or connect an existing tenant.");
+}
+
+async function initializeIdentity() {
+  try {
+    const response = await fetch("/v1/pilot/identity/config", { credentials: "same-origin", cache: "no-store" });
+    if (!response.ok) throw new Error("Public identity configuration is unavailable.");
+    state.identityConfig = await response.json();
+    await loadGoogleIdentity();
+    window.google.accounts.id.initialize({
+      client_id: state.identityConfig.oauth_client_id,
+      callback: async ({ credential }) => {
+        try { await exchangeGoogleCredential(credential); }
+        catch (error) { identityMessage(error.message, true); }
+      }
+    });
+    window.google.accounts.id.renderButton(byId("googleSignIn"), { theme: "outline", size: "large", text: "signin_with" });
+    identityMessage("Use an approved OAuth test account to continue.");
+  } catch (error) { identityMessage(error.message, true); }
+}
+
+async function claimInvitation() {
+  try {
+    const response = await fetch("/v1/pilot/design-partner/signup", {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${state.idToken}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        partner_name:value("signupPartner"),
+        invitation_code:value("invitationCode"),
+        privacy_notice_accepted:byId("privacyConsent").checked,
+        synthetic_data_boundary_accepted:byId("syntheticConsent").checked
+      })
+    });
+    const payload = await response.json();
+    if (!response.ok) throw new Error(payload.error?.message || "Invitation claim failed.");
+    byId("tenantId").value = payload.data.tenant_id;
+    byId("invitationCode").value = "";
+    identityMessage("Founder invitation claimed. Connect the isolated pilot tenant to continue.");
+  } catch (error) { identityMessage(error.message, true); }
+}
+
+async function connectSession() {
+  try {
+    const response = await fetch("/v1/pilot/session", {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${state.idToken}`, "X-Tenant-ID": value("tenantId") },
+      credentials: "same-origin"
+    });
+    const payload = await response.json();
+    if (!response.ok) throw new Error(payload.error?.message || "Pilot session could not be created.");
+    state.csrfToken = payload.csrf_token;
+    state.idToken = "";
+    byId("onboarding").hidden = false;
+    byId("connectSession").disabled = true;
+    byId("claimInvitation").disabled = true;
+    identityMessage("Secure tenant-bound session established. Google token cleared from browser memory.");
+  } catch (error) { identityMessage(error.message, true); }
+}
+
 async function assessPartner() {
   try {
     const data = await api("/v1/pilot/design-partner/readiness", {
@@ -122,7 +216,7 @@ async function assessPartner() {
       }
     });
     renderDefinitionList(byId("partnerReadiness"), data);
-    message(data.ready_for_activation_decision ? "Readiness evidence is complete. Founder activation remains a separate decision." : "Design Partner blockers remain visible; the pilot stays frozen.");
+    message(data.ready_for_activation_decision ? "Readiness evidence is complete. Real-data activation remains a separate founder decision." : "Synthetic rehearsal may continue; real-data activation blockers remain visible.");
   } catch (error) { message(error.message, true); }
 }
 
@@ -136,3 +230,6 @@ byId("generateAsset").addEventListener("click", generate);
 byId("reviseGeneration").addEventListener("click", () => { byId("generationInstructions").focus(); byId("resultPanel").hidden=true; });
 byId("safeExport").addEventListener("click", safeExport);
 byId("assessPartner").addEventListener("click", assessPartner);
+byId("claimInvitation").addEventListener("click", claimInvitation);
+byId("connectSession").addEventListener("click", connectSession);
+initializeIdentity();

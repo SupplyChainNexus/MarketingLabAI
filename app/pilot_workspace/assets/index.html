@@ -22,9 +22,36 @@
       pilot validation until the MLAI-027.6 release gates pass.
     </section>
 
-    <section class="panel" id="onboarding">
+    <section class="panel" id="identityPanel">
       <div class="section-heading">
         <span class="step">1</span>
+        <div><h2>Sign in securely</h2><p>Google verifies your identity. MarketingLabAI controls invitations, tenant access and founder entitlement.</p></div>
+      </div>
+      <div id="googleSignIn"></div>
+      <p id="identityMessage" class="message" role="status" aria-live="polite">Preparing controlled Google sign-in…</p>
+      <div class="form-grid">
+        <label>Approved business
+          <select id="signupPartner">
+            <option value="Strand Auto Parts">Strand Auto Parts</option>
+            <option value="Velani Wholesale">Velani Wholesale</option>
+          </select>
+        </label>
+        <label>Founder invitation code<input id="invitationCode" type="password" autocomplete="one-time-code"></label>
+      </div>
+      <div class="indicator-grid">
+        <label><input type="checkbox" id="privacyConsent"> I accept the pilot privacy notice</label>
+        <label><input type="checkbox" id="syntheticConsent"> I will use synthetic data only</label>
+      </div>
+      <div class="actions">
+        <button id="claimInvitation" disabled>Claim founder invitation</button>
+        <button id="connectSession" class="primary" disabled>Connect existing pilot tenant</button>
+      </div>
+      <p class="muted">The Google credential and Firebase ID token remain in browser memory only. The OAuth client secret is never sent to this page.</p>
+    </section>
+
+    <section class="panel" id="onboarding" hidden>
+      <div class="section-heading">
+        <span class="step">2</span>
         <div><h2>Connect your pilot workspace</h2><p>Enter the synthetic pilot references supplied by the operator.</p></div>
       </div>
       <div class="form-grid">

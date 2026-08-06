@@ -10,6 +10,16 @@ Every production increment must pass:
 6. Public import verification
 7. Git scope review
 
+Passing automated tests alone is not product readiness. Each increment must
+also classify the applicability and result of usability, accessibility,
+browser-journey, failure-recovery, maintainability, cost and operational gates.
+An inapplicable gate requires a recorded reason; an incomplete applicable gate
+remains a limitation or blocker.
+
+Git scope review begins from an expected-path allowlist. Necessary adjacent
+quality repairs are permitted under ADR-0023 when their evidence, tests,
+documentation and separate scope reporting are complete.
+
 A failed gate must be investigated before committing.
 
 ## Intelligence Quality Gates
@@ -59,4 +69,3 @@ A failed gate must be investigated before committing.
 - Capability maturity must be reviewed after a major increment.
 - AI-generated assets must preserve provider and model audit data.
 - Technical debt and accepted risks must be recorded.
-

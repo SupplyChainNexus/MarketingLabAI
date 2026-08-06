@@ -42,6 +42,13 @@ locked until current versions are approved again.
 
 ## Security and limitations
 
+The workspace begins with Google sign-in, optional Founder invitation claiming,
+and explicit tenant-session connection. Google authenticates the person;
+MarketingLabAI owns invitation validity, tenant isolation, founder entitlement,
+billing state, consent evidence, and session controls. The Firebase ID token is
+kept in browser memory only and cleared after session creation. Synthetic
+onboarding remains hidden until that session exists.
+
 - The page uses a restrictive same-origin Content Security Policy, `no-store`,
   and `nosniff` headers.
 - Tenant IDs remain routing input, never proof of authorization.

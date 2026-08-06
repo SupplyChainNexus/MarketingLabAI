@@ -27,7 +27,8 @@ class FounderDesignPartnerRegistryTests(unittest.TestCase):
             self.assertTrue(report["account_entitlement"]["full_feature_access"])
             self.assertFalse(report["account_entitlement"]["billing_enabled"])
             self.assertFalse(report["real_data_activation_authorized"])
-            self.assertEqual(report["pilot_status"], "founder_frozen")
+            self.assertTrue(report["synthetic_rehearsal_authorized"])
+            self.assertEqual(report["pilot_status"], "real_data_activation_frozen")
 
     def test_unapproved_partner_and_tenant_are_rejected(self) -> None:
         registry = FounderDesignPartnerRegistry()

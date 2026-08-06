@@ -49,7 +49,8 @@ class DesignPartnerReadinessEvaluator:
             "checks": checks,
             "blockers": [item["name"] for item in checks if not item["passed"]],
             "ready_for_activation_decision": ready_for_activation_decision,
+            "synthetic_rehearsal_authorized": True,
             "real_data_activation_authorized": False,
-            "pilot_status": "founder_frozen",
+            "pilot_status": "real_data_activation_frozen",
             "market_validation_claimed": False,
         }

@@ -44,7 +44,8 @@ class StrategyWorkspaceReadinessTests(unittest.TestCase):
         data = payload["data"]
         self.assertTrue(data["ready_for_activation_decision"])
         self.assertFalse(data["real_data_activation_authorized"])
-        self.assertEqual(data["pilot_status"], "founder_frozen")
+        self.assertTrue(data["synthetic_rehearsal_authorized"])
+        self.assertEqual(data["pilot_status"], "real_data_activation_frozen")
         self.assertFalse(data["account_entitlement"]["billing_enabled"])
         self.assertTrue(data["account_entitlement"]["full_feature_access"])
         self.assertFalse(data["market_validation_claimed"])

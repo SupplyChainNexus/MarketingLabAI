@@ -171,3 +171,31 @@ manually created accounts.
 **Ratified authority:** Both are approved candidates, but each tenant and owner
 membership is created only through authenticated, invitation-controlled signup.
 Founder entitlement does not authorize real customer data.
+
+## R-018 — Strict path allowlists versus product quality
+
+The Repository Integrity Protocol originally described the story path list as
+an explicit allowlist and required approval for material scope changes. This
+protected clean commits but could be interpreted as prohibiting necessary
+adjacent quality repairs discovered during implementation.
+
+**Ratified authority:** ADR-0023 supersedes the narrow interpretation. The path
+list is an expected scope. Reversible, constitution-preserving quality work may
+add necessary paths when each addition is evidence-backed, tested, documented
+and separately reported. Baseline, unrelated-work, failure-classification,
+regression, staging and synchronization controls remain mandatory. Founder
+approval remains required for the reserved product, activation, commercial,
+privacy, destructive and irreversible decisions listed in ADR-0023.
+
+## R-019 — Broad founder freeze versus controlled development
+
+The founder freeze originally protected the product from premature real-data
+use. Applied broadly, it could also be read as blocking complete interface work,
+controlled deployment and synthetic browser rehearsal.
+
+**Ratified authority:** ADR-0024 supersedes the broad interpretation.
+Engineering and quality development and controlled synthetic design-partner
+rehearsal are authorized. Real-customer data, external invitation delivery,
+public or production activation, external publishing, real-data learning,
+customer billing, unapproved paid services and destructive production changes
+remain frozen pending explicit founder approval.

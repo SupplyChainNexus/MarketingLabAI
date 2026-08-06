@@ -87,7 +87,18 @@ class GoogleCloudIdentityAdapter(IdentityProviderAdapter):
             raise GoogleCloudAuthenticationError(
                 "Google Cloud identity subject is invalid."
             )
-        display_name = str(claims.get("name") or claims.get("email") or "").strip()
+        email = str(claims.get("email", "")).strip()
+        firebase = claims.get("firebase")
+        if (
+            not email
+            or claims.get("email_verified") is not True
+            or not isinstance(firebase, dict)
+            or firebase.get("sign_in_provider") != "google.com"
+        ):
+            raise GoogleCloudAuthenticationError(
+                "A verified Google sign-in identity is required."
+            )
+        display_name = str(claims.get("name") or email).strip()
         return AuthenticatedPrincipal(
             subject_id=subject,
             provider="google-cloud-identity-platform",

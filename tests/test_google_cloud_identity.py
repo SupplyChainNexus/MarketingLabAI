@@ -24,7 +24,12 @@ class GoogleCloudIdentityTests(unittest.TestCase):
         )
 
     def test_valid_token_maps_only_verified_claims(self) -> None:
-        claims = {"sub": "google-subject", "email": "owner@example.test"}
+        claims = {
+            "sub": "google-subject",
+            "email": "owner@example.test",
+            "email_verified": True,
+            "firebase": {"sign_in_provider": "google.com"},
+        }
         with patch("app.identity.google_cloud.jwt.decode", return_value=claims) as call:
             principal = self.adapter.authenticate("signed-token")
         self.assertEqual(principal.subject_id, "google-subject")
@@ -57,6 +62,26 @@ class GoogleCloudIdentityTests(unittest.TestCase):
             ):
                 with self.assertRaises(GoogleCloudAuthenticationError):
                     self.adapter.authenticate("signed-token")
+
+    def test_unverified_or_non_google_identity_is_denied(self) -> None:
+        claims = {
+            "sub": "subject",
+            "email": "owner@example.test",
+            "email_verified": True,
+            "firebase": {"sign_in_provider": "google.com"},
+        }
+        invalid = (
+            {**claims, "email_verified": False},
+            {**claims, "email": ""},
+            {**claims, "firebase": {"sign_in_provider": "password"}},
+        )
+        for selected in invalid:
+            with self.subTest(claims=selected):
+                with patch(
+                    "app.identity.google_cloud.jwt.decode", return_value=selected
+                ):
+                    with self.assertRaises(GoogleCloudAuthenticationError):
+                        self.adapter.authenticate("signed-token")
 
     def test_settings_pin_google_project_endpoints(self) -> None:
         self.assertEqual(

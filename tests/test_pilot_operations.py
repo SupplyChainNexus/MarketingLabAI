@@ -103,6 +103,13 @@ class PilotOperationsTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             PilotConfiguration.from_environment(values)
 
+    def test_development_and_synthetic_rehearsal_are_authorized(self):
+        summary = self.config.public_summary()
+        self.assertTrue(summary["engineering_development_authorized"])
+        self.assertTrue(summary["synthetic_rehearsal_authorized"])
+        self.assertFalse(summary["real_customer_data_allowed"])
+        self.assertEqual(summary["real_data_activation_status"], "frozen")
+
     def test_session_is_hashed_revocable_tenant_bound_and_csrf_protected(self):
         session = self.sessions.create("upstream-proof", "tenant-one")
         principal = self.sessions.authenticate(session.token)
@@ -155,11 +162,17 @@ class PilotOperationsTests(unittest.TestCase):
         now[0] = 71.0
         limiter.check("client")
 
-    def test_release_gate_passes_synthetic_but_keeps_customer_pilot_frozen(self):
+    def test_release_gate_authorizes_rehearsal_but_freezes_real_data(self):
         report = PilotReleaseGate(self.config, self.database).evaluate()
+        payload = report.to_dict()
         self.assertTrue(report.synthetic_pilot_ready)
+        self.assertTrue(payload["engineering_development_authorized"])
+        self.assertTrue(payload["synthetic_rehearsal_authorized"])
         self.assertFalse(report.private_customer_pilot_authorized)
-        self.assertEqual("frozen_by_founder", report.to_dict()["customer_pilot_status"])
+        self.assertFalse(payload["real_data_activation_authorized"])
+        self.assertEqual(
+            "real_data_activation_frozen", payload["customer_pilot_status"]
+        )
 
     def test_operational_wsgi_issues_secure_session_and_protects_api(self):
         runtime = OperationalPilotApplication(

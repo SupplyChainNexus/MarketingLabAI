@@ -12,6 +12,11 @@ A feature is complete only when:
 - Git scope contains only intended files.
 - Documentation reflects the implementation.
 - Risks and technical debt have been considered.
+- Applicable usability, accessibility, browser-journey, failure-recovery and
+  operational gates have passed or are explicitly recorded as incomplete or
+  inapplicable.
+- Necessary adjacent paths are justified, tested and separately reported under
+  ADR-0023.
 
 ## Continuity gate
 
