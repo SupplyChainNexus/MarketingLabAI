@@ -9,6 +9,7 @@ from app.pilot_api.contracts import (
     CampaignRevisionRequest,
     ContextRequest,
     DataBoundaryRequest,
+    DesignPartnerAcceptanceRequest,
     DesignPartnerReadinessRequest,
     DesignPartnerSignupRequest,
     ExportRequest,
@@ -94,6 +95,10 @@ class PilotWsgiApplication:
         if path == "/v1/pilot/design-partner/readiness":
             return self.service.design_partner_readiness(
                 request=DesignPartnerReadinessRequest(**body), **common
+            )
+        if path == "/v1/pilot/design-partner/acceptance":
+            return self.service.design_partner_acceptance(
+                request=DesignPartnerAcceptanceRequest(**body), **common
             )
         if path == "/v1/pilot/onboarding/context":
             return self.service.save_onboarding_context(

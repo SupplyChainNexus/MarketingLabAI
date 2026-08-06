@@ -1,5 +1,6 @@
 """Founder Design Partner readiness contracts."""
 
+from app.design_partner.acceptance import DesignPartnerAcceptanceEvaluator
 from app.design_partner.privacy import (
     DataBoundaryDecision,
     PilotDataCategory,
@@ -20,6 +21,7 @@ from app.design_partner.signup import (
 __all__ = [
     "APPROVED_FOUNDER_DESIGN_PARTNERS",
     "DesignPartnerReadinessEvaluator",
+    "DesignPartnerAcceptanceEvaluator",
     "DataBoundaryDecision",
     "FounderDesignPartner",
     "FounderDesignPartnerRegistry",

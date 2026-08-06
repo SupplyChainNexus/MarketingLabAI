@@ -1,0 +1,65 @@
+{
+  "storyId": "MLAI-030.6",
+  "title": "Design-Partner Acceptance Rehearsal",
+  "slug": "design_partner_acceptance_rehearsal",
+  "baseline": "724eaa7",
+  "projectRoot": "C:\\Ai Projects\\MarketingLabAI",
+  "sourceRoot": "C:\\Ai Projects\\MarketingLabAI",
+  "installFiles": [
+    "app\\design_partner\\__init__.py",
+    "app\\design_partner\\acceptance.py",
+    "app\\operations\\runtime.py",
+    "app\\pilot_api\\contracts.py",
+    "app\\pilot_api\\service.py",
+    "app\\pilot_api\\wsgi.py",
+    "backlog\\MLAI-030.md",
+    "docs\\handover\\CURRENT_HANDOVER.md",
+    "governance\\adrs\\ADR-0028-design-partner-acceptance-rehearsal.md",
+    "governance\\registers\\risk-register.md",
+    "governance\\registers\\technical-debt-register.md",
+    "story_packages\\MLAI-030.6.json",
+    "tests\\test_design_partner_acceptance.py",
+    "tests\\test_quality_governance.py"
+  ],
+  "newFiles": [
+    "app\\design_partner\\acceptance.py",
+    "governance\\adrs\\ADR-0028-design-partner-acceptance-rehearsal.md",
+    "story_packages\\MLAI-030.6.json",
+    "tests\\test_design_partner_acceptance.py"
+  ],
+  "compileFiles": [
+    "app\\design_partner\\__init__.py",
+    "app\\design_partner\\acceptance.py",
+    "app\\operations\\runtime.py",
+    "app\\pilot_api\\contracts.py",
+    "app\\pilot_api\\service.py",
+    "app\\pilot_api\\wsgi.py",
+    "tests\\test_design_partner_acceptance.py",
+    "tests\\test_quality_governance.py"
+  ],
+  "focusedTestModules": [
+    "tests.test_design_partner_acceptance",
+    "tests.test_operational_readiness",
+    "tests.test_production_security_readiness",
+    "tests.test_strategy_workspace_readiness",
+    "tests.test_pilot_api",
+    "tests.test_quality_governance"
+  ],
+  "importCommand": "from app.design_partner import DesignPartnerAcceptanceEvaluator; print('MLAI-030.6 acceptance imports OK')",
+  "expectedStatus": [
+    " M app/design_partner/__init__.py",
+    " M app/operations/runtime.py",
+    " M app/pilot_api/contracts.py",
+    " M app/pilot_api/service.py",
+    " M app/pilot_api/wsgi.py",
+    " M backlog/MLAI-030.md",
+    " M docs/handover/CURRENT_HANDOVER.md",
+    " M governance/registers/risk-register.md",
+    " M governance/registers/technical-debt-register.md",
+    " M tests/test_quality_governance.py",
+    "?? app/design_partner/acceptance.py",
+    "?? governance/adrs/ADR-0028-design-partner-acceptance-rehearsal.md",
+    "?? story_packages/MLAI-030.6.json",
+    "?? tests/test_design_partner_acceptance.py"
+  ]
+}

@@ -6,6 +6,7 @@ from importlib import import_module
 
 from app.application import CanonicalApplication
 from app.database.connection import SQLiteDatabase
+from app.design_partner import DesignPartnerAcceptanceEvaluator
 from app.identity import IdentityProviderAdapter
 from app.operations.configuration import PilotConfiguration
 from app.operations.sessions import PilotSessionProvider
@@ -45,6 +46,9 @@ def create_application() -> OperationalPilotApplication:
         registry,
         signup_identity_provider=upstream,
         founder_invitation_hashes=config.founder_invitation_hashes,
+        acceptance_evaluator=DesignPartnerAcceptanceEvaluator(
+            config, canonical.database
+        ),
     )
     workspace = PilotWorkspaceApplication(service)
     return OperationalPilotApplication(workspace, sessions, config)

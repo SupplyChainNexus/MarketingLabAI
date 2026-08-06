@@ -115,6 +115,20 @@ class QualityGovernanceTests(unittest.TestCase):
         ):
             self.assertIn(required, normalized)
 
+    def test_partner_acceptance_is_tenant_bound_and_never_activates(self):
+        decision = self.read(
+            "governance/adrs/ADR-0028-design-partner-acceptance-rehearsal.md"
+        )
+        normalized = " ".join(decision.split())
+        for required in (
+            "separately for each approved partner tenant",
+            "authenticated tenant must match",
+            "Request-supplied booleans are not acceptance evidence",
+            "does not authorize external invitations",
+            "real data",
+        ):
+            self.assertIn(required, normalized)
+
 
 if __name__ == "__main__":
     unittest.main()

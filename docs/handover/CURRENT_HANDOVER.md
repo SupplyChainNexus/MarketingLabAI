@@ -3,12 +3,12 @@
 ## Checkpoint
 
 - Branch: `feature/tenant-architecture`
-- Installation baseline: `54cb7c9`
+- Installation baseline: `724eaa7`
 - Remote state before this story: synchronized
 - Last completed epic: MLAI-029 Marketing Strategy Intelligence
 - Active epic: MLAI-030 Founder Design Partner Onboarding
-- Last completed story: MLAI-030.4 Production Identity and Security Readiness
-- Active story: MLAI-030.5 Recovery, Monitoring and Support Readiness
+- Last completed story: MLAI-030.5 Recovery, Monitoring and Support Readiness
+- Active story: MLAI-030.6 Design-Partner Acceptance Rehearsal
 
 ## Product direction
 

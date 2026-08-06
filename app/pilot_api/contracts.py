@@ -48,6 +48,16 @@ class DesignPartnerReadinessRequest:
 
 
 @dataclass(slots=True, frozen=True)
+class DesignPartnerAcceptanceRequest:
+    partner_name: str
+
+    def __post_init__(self) -> None:
+        object.__setattr__(
+            self, "partner_name", required_text(self.partner_name, "partner_name")
+        )
+
+
+@dataclass(slots=True, frozen=True)
 class DesignPartnerSignupRequest:
     partner_name: str
     invitation_code: str

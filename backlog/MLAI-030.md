@@ -11,8 +11,8 @@ founder decides whether either design partner may use real business data.
 2. MLAI-030.2 — External Identity Deployment and Signup Experience — complete
 3. MLAI-030.3 — Pilot Privacy and Data Boundaries — complete
 4. MLAI-030.4 — Production Identity and Security Readiness — complete
-5. MLAI-030.5 — Recovery, Monitoring and Support Readiness — active
-6. MLAI-030.6 — Design-Partner Acceptance Rehearsal
+5. MLAI-030.5 — Recovery, Monitoring and Support Readiness — complete
+6. MLAI-030.6 — Design-Partner Acceptance Rehearsal — active
 7. MLAI-030.7 — Controlled Real-Data Activation
 
 MLAI-030.5 makes security, recovery, monitoring, incident and support evidence
@@ -20,6 +20,11 @@ immutable, environment- and commit-bound, expiring, and failure-preserving. It
 adds deterministic operational alert state and a combined founder-assessment
 gate. Passing permits controlled acceptance rehearsal only; readiness never
 authorizes real data.
+
+MLAI-030.6 adds a partner- and tenant-bound acceptance assessment over seven
+synthetic end-to-end scenarios. It requires the complete MLAI-030.4 and
+MLAI-030.5 persisted evidence gates plus current privacy acceptance. Caller
+booleans cannot establish acceptance, and each partner passes independently.
 
 Strand Auto Parts and Velani Wholesale remain the only approved candidates.
 Each has an isolated tenant and must pass every readiness gate independently.

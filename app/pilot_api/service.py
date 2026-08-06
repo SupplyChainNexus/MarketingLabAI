@@ -13,6 +13,7 @@ from app.application import CanonicalApplication, LifecycleConflictError
 from app.compliance.engine import ComplianceEngine
 from app.compliance.models import ReviewSubjectType
 from app.design_partner import (
+    DesignPartnerAcceptanceEvaluator,
     DesignPartnerReadinessEvaluator,
     FounderDesignPartnerSignupService,
     PilotPrivacyPolicy,
@@ -26,6 +27,7 @@ from app.pilot_api.contracts import (
     CampaignRevisionRequest,
     ContextRequest,
     DataBoundaryRequest,
+    DesignPartnerAcceptanceRequest,
     DesignPartnerReadinessRequest,
     DesignPartnerSignupRequest,
     ExportRequest,
@@ -53,6 +55,7 @@ class PilotApiService:
         *,
         signup_identity_provider: IdentityProviderAdapter | None = None,
         founder_invitation_hashes: dict[str, str] | None = None,
+        acceptance_evaluator: DesignPartnerAcceptanceEvaluator | None = None,
     ) -> None:
         if not isinstance(application, CanonicalApplication):
             raise TypeError("application must be a CanonicalApplication.")
@@ -69,6 +72,7 @@ class PilotApiService:
             signup_identity_provider or identity_provider,
             founder_invitation_hashes or {},
         )
+        self.acceptance_evaluator = acceptance_evaluator
 
     def design_partner_signup(
         self,
@@ -296,6 +300,28 @@ class PilotApiService:
             partner_name=request.partner_name,
             evidence=request.evidence,
         )
+        return ApiResponse(200, data)
+
+    def design_partner_acceptance(
+        self,
+        *,
+        credential: str,
+        tenant_id: str,
+        request: DesignPartnerAcceptanceRequest,
+    ) -> ApiResponse:
+        self._session(credential, tenant_id)
+        if self.acceptance_evaluator is None:
+            raise PilotApiError(
+                503,
+                "acceptance_assessment_unavailable",
+                "The evidence-bound acceptance assessment is not configured.",
+            )
+        try:
+            data = self.acceptance_evaluator.evaluate(
+                partner_name=request.partner_name, tenant_id=tenant_id
+            )
+        except PermissionError as error:
+            raise PilotApiError(403, "partner_tenant_mismatch", str(error)) from error
         return ApiResponse(200, data)
 
     def save_onboarding_context(
