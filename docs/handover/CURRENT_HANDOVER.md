@@ -60,12 +60,16 @@ controlled signup for Strand Auto Parts and Velani Wholesale. Each claim creates
 an isolated tenant and admin owner atomically. Signup remains synthetic-only;
 the external identity deployment and browser flow remain MLAI-030.2 blockers.
 
-MLAI-030.2 selects Microsoft Entra External ID under a free-first policy and
-adds strict RS256 signature, issuer, application audience, expiry, issued-at and
-subject validation behind the existing identity adapter. Entra authenticates;
+MLAI-030.2 initially selected Microsoft Entra External ID, then superseded that
+choice before deployment after a formal free-first comparison. Google Cloud
+Identity Platform is now selected and adds strict RS256 signature, project
+issuer and audience, expiry, issued-at, authentication-time, and subject
+validation behind the existing identity adapter. Google authenticates;
 MarketingLabAI retains tenant membership, authorization, founder entitlement,
 invitations and audit decisions. SMS, Front Door, premium add-ons, invitation
-delivery and real customer data remain disabled. A live external tenant is not
+delivery and real customer data remain disabled. The existing Google Workspace
+organization may administer the Cloud project, but its staff directory is not
+the customer directory. A live Cloud project is not
 required until offline validation succeeds.
 
 The Repository Integrity Protocol is now locked for every future story:
@@ -93,8 +97,9 @@ and accepted data boundaries.
 
 ## Next engineer action
 
-Install and validate MLAI-030.2. Then create the free Microsoft Entra external
-tenant and application registration, configure only local environment values,
-and rehearse synthetic signup and recovery. Do not send founder invitations or
-enable real customer data until the remaining onboarding and activation gates
-are approved.
+Install and validate the reconciled MLAI-030.2 package. Then create a controlled
+Google Cloud project under the existing Workspace organization, enable Identity
+Platform, configure only local environment values, enable audit logs and budget
+alerts, and rehearse synthetic signup and recovery. Do not enable SMS, send
+founder invitations, or enable real customer data until the remaining onboarding
+and activation gates are approved.

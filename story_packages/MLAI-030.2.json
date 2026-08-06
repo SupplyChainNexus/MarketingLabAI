@@ -1,18 +1,19 @@
 {
   "story_id": "MLAI-030.2",
-  "slug": "entra_external_identity",
-  "title": "External Identity Deployment and Signup Experience",
-  "baseline": "f5f304a",
+  "slug": "google_cloud_identity_reconciliation",
+  "title": "Google Cloud Identity Platform Reconciliation",
+  "baseline": "602f32e",
   "focused_tests": [
+    "tests.test_google_cloud_identity",
     "tests.test_entra_external_identity",
     "tests.test_design_partner_signup",
     "tests.test_pilot_api",
     "tests.test_pilot_operations"
   ],
   "import_modules": [
-    "app.identity.entra",
+    "app.identity.google_cloud",
     "app.operations.configuration",
     "app.operations.runtime"
   ],
-  "commit_message": "feat(identity): integrate Microsoft Entra External ID"
+  "commit_message": "refactor(identity): select Google Cloud Identity Platform"
 }

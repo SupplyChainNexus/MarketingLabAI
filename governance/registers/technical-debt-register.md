@@ -11,7 +11,7 @@
 | TD-006 | Delivery automation | Tracked Linux quality and Windows continuity jobs now define remote gates. | Medium | Resolved by MLAI-027.6; enforce branch protection separately |
 | TD-007 | Governance accuracy | Capability maturity previously lagged implemented Customer Intelligence and Campaign Planner evidence. | Medium | Addressed by MLAI-027 adoption review; maintain each epic |
 | TD-009 | Product Intelligence | Current Product/Offer profiles are mutable snapshots without offer expiry or approval history. | Low | Define version, review, and expiry lifecycle from pilot evidence after MLAI-027.2 |
-| TD-010 | Identity operations | Microsoft Entra External ID is selected and its strict adapter is implemented; live tenant creation and browser rehearsal remain. | High | Configure after MLAI-030.2 local validation and before invitations |
+| TD-010 | Identity operations | Google Cloud Identity Platform is selected and its strict adapter is implemented; controlled project creation, billing guardrails, audit logging, and browser rehearsal remain. | High | Configure after MLAI-030.2 reconciliation validation and before invitations |
 | TD-011 | API operations | Waitress, TLS-aware config, single-process rate limiting, health and logs exist. Distributed rate limiting is intentionally absent. | Low | Revisit only if deployment becomes multi-instance |
 | TD-012 | Workspace identity | Temporary credential entry was removed and browser operations require server session plus CSRF. | Critical | Resolved by MLAI-027.6 |
 | TD-013 | Positioning references | Positioning target, product, and offer identifiers are validated against Customer and Product Intelligence repositories. | High | Resolved by MLAI-028.2 |

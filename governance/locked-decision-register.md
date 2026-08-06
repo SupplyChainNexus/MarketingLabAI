@@ -608,13 +608,27 @@ pre-created, and identity subjects may not be invented for convenience.
 
 ### LDR-049 — Microsoft Entra External ID and free-first identity
 
-**Status:** Current / Implemented adapter foundation
+**Status:** Superseded before deployment / Adapter retained
 **Source:** ADR-0021 and founder approval on 2026-08-06
 
-Microsoft Entra External ID is the selected customer identity provider. The
+Microsoft Entra External ID was initially selected, but ADR-0022 superseded the
+choice before deployment. The
 core authentication allowance is used free-first; SMS, Azure Front Door,
 premium governance and other paid add-ons remain disabled until supported by
 scale, revenue, security evidence or contract requirements. Azure AD B2C is not
 used for new deployment. MarketingLabAI retains tenant authorization,
 entitlements, invitations and audit decisions behind a provider-neutral
 adapter. Real customer data remains founder-frozen.
+
+### LDR-050 — Google Cloud Identity Platform and free-first identity
+
+**Status:** Current / Implemented adapter foundation
+**Source:** ADR-0022 and founder approval on 2026-08-06
+
+Google Cloud Identity Platform is the selected customer identity provider. The
+core 50,000-MAU allowance is used free-first; SMS, enterprise federation,
+Cloud Functions and other paid extensions remain disabled. The existing Google
+Workspace organization may administer the Cloud project, but Workspace staff
+accounts and MarketingLabAI customer identities remain separate. MarketingLabAI
+retains tenant authorization, invitations, entitlements and audit decisions.
+Real customer data remains founder-frozen.

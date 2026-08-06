@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted by founder on 2026-08-06.
+Superseded before deployment by ADR-0022 on 2026-08-06.
 
 ## Decision
 
@@ -26,3 +26,10 @@ story passes locally. Real customer data and invitation delivery remain frozen.
 
 Changing identity provider later requires an explicit identity-linking migration;
 provider subjects must never be treated as tenant identifiers.
+
+## Supersession
+
+No Microsoft tenant, live user, invitation or customer data was created. The
+subsequent comparison found Google Cloud Identity Platform better aligned with
+the founder's free-first SME strategy. The adapter remains optional evidence of
+provider neutrality; it is not the selected production configuration.

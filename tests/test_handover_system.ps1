@@ -301,14 +301,25 @@ $EntraDecisionText = Get-Content -LiteralPath (
 ) -Raw
 if (
     ($EntraDecisionText -notmatch "Microsoft Entra External ID") -or
-    ($EntraDecisionText -notmatch "free core offering") -or
-    ($EntraDecisionText -notmatch "Real customer data")
+    ($EntraDecisionText -notmatch "Superseded before deployment")
 ) {
-    throw "ADR-0021 does not preserve Entra cost and pilot boundaries."
+    throw "ADR-0021 does not preserve the superseded Entra decision."
+}
+$GoogleDecisionText = Get-Content -LiteralPath (
+    Join-Path $ProjectRoot "governance\adrs\ADR-0022-google-cloud-identity-platform.md"
+) -Raw
+if (
+    ($GoogleDecisionText -notmatch "Google Cloud Identity Platform") -or
+    ($GoogleDecisionText -notmatch "50,000-MAU") -or
+    ($GoogleDecisionText -notmatch "Workspace users are administrators") -or
+    ($GoogleDecisionText -notmatch "(?s)SMS.*paid\s+services remain disabled")
+) {
+    throw "ADR-0022 does not preserve Google cost, ownership and pilot boundaries."
 }
 if (
     ($CurrentHandoverText -notmatch "MLAI-030.2") -or
     ($CurrentHandoverText -notmatch "strict RS256") -or
+    ($CurrentHandoverText -notmatch "Google Cloud\s+Identity Platform") -or
     ($CurrentHandoverText -notmatch "real customer data remain disabled")
 ) {
     throw "Current handover does not preserve MLAI-030.2 boundaries."

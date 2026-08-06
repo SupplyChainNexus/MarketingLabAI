@@ -6,6 +6,12 @@ from app.identity.entra import (
     EntraExternalIdSettings,
     create_entra_adapter,
 )
+from app.identity.google_cloud import (
+    GoogleCloudAuthenticationError,
+    GoogleCloudIdentityAdapter,
+    GoogleCloudIdentitySettings,
+    create_google_cloud_adapter,
+)
 from app.identity.models import (
     AuthenticatedPrincipal,
     AuthorizationAuditEvent,
@@ -25,10 +31,14 @@ __all__ = [
     "EntraExternalIdAdapter",
     "EntraExternalIdSettings",
     "IdentityProviderAdapter",
+    "GoogleCloudAuthenticationError",
+    "GoogleCloudIdentityAdapter",
+    "GoogleCloudIdentitySettings",
     "IdentityRepository",
     "Permission",
     "TenantAuthorizationService",
     "TenantMembership",
     "TenantRole",
     "create_entra_adapter",
+    "create_google_cloud_adapter",
 ]

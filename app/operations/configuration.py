@@ -34,6 +34,7 @@ class PilotConfiguration:
     entra_tenant_id: str = ""
     entra_tenant_subdomain: str = ""
     entra_client_id: str = ""
+    google_cloud_project_id: str = ""
     allow_real_customer_data: bool = False
 
     @classmethod
@@ -91,6 +92,17 @@ class PilotConfiguration:
                 "MLAI_ENTRA_TENANT_ID, MLAI_ENTRA_TENANT_SUBDOMAIN and "
                 "MLAI_ENTRA_CLIENT_ID are required for Microsoft Entra External ID."
             )
+        google_cloud_project_id = str(
+            env.get("MLAI_GOOGLE_CLOUD_PROJECT_ID", "")
+        ).strip()
+        if (
+            identity_provider == "google-cloud-identity-platform"
+            and not google_cloud_project_id
+        ):
+            raise ValueError(
+                "MLAI_GOOGLE_CLOUD_PROJECT_ID is required for Google Cloud "
+                "Identity Platform."
+            )
         try:
             invitation_hashes = json.loads(
                 str(env.get("MLAI_FOUNDER_INVITATION_HASHES_JSON", "{}"))
@@ -121,6 +133,7 @@ class PilotConfiguration:
             session_secret=secret,
             founder_invitation_hashes=dict(invitation_hashes),
             **entra_values,
+            google_cloud_project_id=google_cloud_project_id,
             allow_real_customer_data=False,
         )
 
@@ -141,4 +154,5 @@ class PilotConfiguration:
                 and self.entra_tenant_subdomain
                 and self.entra_client_id
             ),
+            "google_cloud_identity_configured": bool(self.google_cloud_project_id),
         }

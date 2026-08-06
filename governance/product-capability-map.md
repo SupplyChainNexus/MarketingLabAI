@@ -2,7 +2,7 @@
 
 ## Review checkpoint
 
-Reviewed for MLAI-030.2 External Identity Deployment and Signup Experience.
+Reviewed for the MLAI-030.2 Google Cloud identity-provider reconciliation.
 
 ## Maturity scale
 
@@ -38,7 +38,7 @@ deployment-specific identity, legal, privacy, and rehearsal evidence is absent.
 | Generation | Provider-neutral orchestration and Company, Customer, Product, and memory context assembly | Produces governed marketing assets | 3 | Maintain through secure pilot |
 | Compliance | Preventative guidance and independent evaluation | Reduces brand and policy risk | 3 | Expose in pilot |
 | Memory | Provider, model, workflow, and event audit context | Preserves traceability | 2 | Extend in pilot |
-| Identity | Entra External ID adapter, tenant authorization, and revocable sessions | Protects customer data and actions | 3 | Create and rehearse the free external tenant after local validation |
+| Identity | Google Cloud Identity Platform adapter, tenant authorization, and revocable sessions | Protects customer data and actions | 3 | Create and rehearse a controlled Google Cloud project after local validation |
 | Identity | Invitation-controlled Founder Design Partner tenant claiming | Lets approved owners create isolated free accounts without fabricated identities | 3 | Rehearse browser signup before invitations are sent |
 | Interface | Authenticated pilot API contract | Gives the workspace one governed, retry-safe boundary | 3 | Maintain through MLAI-027.5/027.6 |
 | Interface | Guided session-protected workspace with Positioning, Strategy, workflow, and design-partner readiness | Makes the governed vertical slice understandable and usable | 3 | Keep real-data activation founder-controlled |

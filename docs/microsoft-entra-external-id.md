@@ -1,6 +1,9 @@
-# Microsoft Entra External ID deployment
+# Microsoft Entra External ID — superseded deployment option
 
-MLAI-030.2 selects Microsoft Entra External ID for authentication while retaining
+ADR-0021 selected Microsoft Entra External ID, but ADR-0022 superseded that
+decision before any live external tenant or customer deployment. The adapter is
+retained as a tested portability option. Google Cloud Identity Platform is the
+current provider selection while retaining
 MarketingLabAI-owned tenant authorization.
 
 ## Free-first boundary

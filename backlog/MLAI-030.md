@@ -16,6 +16,11 @@ Each must authenticate and claim a separate invitation. Tenant and owner creatio
 must be atomic and retry-safe. Both receive free full access with billing disabled,
 while real customer data remains founder-frozen.
 
-MLAI-030.2 selects Microsoft Entra External ID and adds strict issuer, audience,
-signature, expiry and subject validation behind the existing provider-neutral
-adapter. The free-first deployment excludes SMS and premium Azure services.
+MLAI-030.2 initially selected Microsoft Entra External ID, then reconciled the
+decision before live deployment. Google Cloud Identity Platform is the current
+selection because its free allowance, TOTP support, custom-domain route, and
+fit with the existing Google Workspace administration better match the
+free-first SME strategy. Strict issuer, project audience, RS256 signature,
+expiry, issued-at, authentication-time, and subject validation remain behind
+the provider-neutral adapter. SMS, enterprise federation, paid extensions,
+live invitations, and real customer data remain disabled.
