@@ -2,7 +2,7 @@
 
 ## Review checkpoint
 
-Reviewed for MLAI-030.1 Founder Design Partner Signup and Tenant Provisioning.
+Reviewed for MLAI-030.2 External Identity Deployment and Signup Experience.
 
 ## Maturity scale
 
@@ -38,8 +38,8 @@ deployment-specific identity, legal, privacy, and rehearsal evidence is absent.
 | Generation | Provider-neutral orchestration and Company, Customer, Product, and memory context assembly | Produces governed marketing assets | 3 | Maintain through secure pilot |
 | Compliance | Preventative guidance and independent evaluation | Reduces brand and policy risk | 3 | Expose in pilot |
 | Memory | Provider, model, workflow, and event audit context | Preserves traceability | 2 | Extend in pilot |
-| Identity | External identity boundary, tenant authorization, and revocable sessions | Protects customer data and actions | 3 | Select provider only when pilot is unfrozen |
-| Identity | Invitation-controlled Founder Design Partner tenant claiming | Lets approved owners create isolated free accounts without fabricated identities | 2 | Deploy external identity and browser signup in MLAI-030.2 |
+| Identity | Entra External ID adapter, tenant authorization, and revocable sessions | Protects customer data and actions | 3 | Create and rehearse the free external tenant after local validation |
+| Identity | Invitation-controlled Founder Design Partner tenant claiming | Lets approved owners create isolated free accounts without fabricated identities | 3 | Rehearse browser signup before invitations are sent |
 | Interface | Authenticated pilot API contract | Gives the workspace one governed, retry-safe boundary | 3 | Maintain through MLAI-027.5/027.6 |
 | Interface | Guided session-protected workspace with Positioning, Strategy, workflow, and design-partner readiness | Makes the governed vertical slice understandable and usable | 3 | Keep real-data activation founder-controlled |
 | Operations | Deployment, health, safe logs, rate limits, backup, restore, CI, and incident process | Makes a future private pilot supportable | 3 | Rehearse only when pilot is unfrozen |
@@ -67,3 +67,4 @@ deployment-specific identity, legal, privacy, and rehearsal evidence is absent.
 14. MLAI-029.5 Governed Workflow Integration
 15. MLAI-029.6 Client-Facing Strategy Workspace and Design-Partner Readiness
 16. MLAI-030.1 Founder Design Partner Signup and Tenant Provisioning
+17. MLAI-030.2 External Identity Deployment and Signup Experience

@@ -8,6 +8,7 @@ dependencies = [
     "google-genai",
     "python-dotenv",
     "waitress",
+    "PyJWT[crypto]",
 ]
 
 [tool.black]

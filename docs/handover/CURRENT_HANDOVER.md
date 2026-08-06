@@ -7,7 +7,7 @@
 - Remote state before this story: synchronized
 - Last completed epic: MLAI-029 Marketing Strategy Intelligence
 - Active epic: MLAI-030 Founder Design Partner Onboarding
-- Active story: MLAI-030.1 Founder Design Partner Signup and Tenant Provisioning
+- Active story: MLAI-030.2 External Identity Deployment and Signup Experience
 
 ## Product direction
 
@@ -60,6 +60,14 @@ controlled signup for Strand Auto Parts and Velani Wholesale. Each claim creates
 an isolated tenant and admin owner atomically. Signup remains synthetic-only;
 the external identity deployment and browser flow remain MLAI-030.2 blockers.
 
+MLAI-030.2 selects Microsoft Entra External ID under a free-first policy and
+adds strict RS256 signature, issuer, application audience, expiry, issued-at and
+subject validation behind the existing identity adapter. Entra authenticates;
+MarketingLabAI retains tenant membership, authorization, founder entitlement,
+invitations and audit decisions. SMS, Front Door, premium add-ons, invitation
+delivery and real customer data remain disabled. A live external tenant is not
+required until offline validation succeeds.
+
 The Repository Integrity Protocol is now locked for every future story:
 baseline and scope verification, tracked/untracked/staged reporting, failure
 classification, complete applicable quality gates, no remaining intended paths,
@@ -85,6 +93,8 @@ and accepted data boundaries.
 
 ## Next engineer action
 
-Validate and commit MLAI-030.1. Then select and deploy the external identity
-provider in MLAI-030.2 before sending invitations. Retain the real-data freeze
-until a separate founder activation decision.
+Install and validate MLAI-030.2. Then create the free Microsoft Entra external
+tenant and application registration, configure only local environment values,
+and rehearse synthetic signup and recovery. Do not send founder invitations or
+enable real customer data until the remaining onboarding and activation gates
+are approved.

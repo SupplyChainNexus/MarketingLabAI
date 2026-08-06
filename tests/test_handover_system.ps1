@@ -296,4 +296,22 @@ if (
     throw "Repository Integrity Protocol is incomplete."
 }
 
+$EntraDecisionText = Get-Content -LiteralPath (
+    Join-Path $ProjectRoot "governance\adrs\ADR-0021-microsoft-entra-external-identity.md"
+) -Raw
+if (
+    ($EntraDecisionText -notmatch "Microsoft Entra External ID") -or
+    ($EntraDecisionText -notmatch "free core offering") -or
+    ($EntraDecisionText -notmatch "Real customer data")
+) {
+    throw "ADR-0021 does not preserve Entra cost and pilot boundaries."
+}
+if (
+    ($CurrentHandoverText -notmatch "MLAI-030.2") -or
+    ($CurrentHandoverText -notmatch "strict RS256") -or
+    ($CurrentHandoverText -notmatch "real customer data remain disabled")
+) {
+    throw "Current handover does not preserve MLAI-030.2 boundaries."
+}
+
 Write-Host "MARKETINGLABAI HANDOVER REGRESSION TESTS PASSED" -ForegroundColor Green

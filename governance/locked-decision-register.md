@@ -605,3 +605,16 @@ boundary gates pass. Readiness never self-authorizes activation.
 MLAI-030.1 requires each owner to sign up through trusted external
 authentication and a business-specific invitation. Accounts are not manually
 pre-created, and identity subjects may not be invented for convenience.
+
+### LDR-049 — Microsoft Entra External ID and free-first identity
+
+**Status:** Current / Implemented adapter foundation
+**Source:** ADR-0021 and founder approval on 2026-08-06
+
+Microsoft Entra External ID is the selected customer identity provider. The
+core authentication allowance is used free-first; SMS, Azure Front Door,
+premium governance and other paid add-ons remain disabled until supported by
+scale, revenue, security evidence or contract requirements. Azure AD B2C is not
+used for new deployment. MarketingLabAI retains tenant authorization,
+entitlements, invitations and audit decisions behind a provider-neutral
+adapter. Real customer data remains founder-frozen.

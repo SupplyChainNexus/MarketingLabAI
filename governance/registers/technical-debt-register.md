@@ -11,7 +11,7 @@
 | TD-006 | Delivery automation | Tracked Linux quality and Windows continuity jobs now define remote gates. | Medium | Resolved by MLAI-027.6; enforce branch protection separately |
 | TD-007 | Governance accuracy | Capability maturity previously lagged implemented Customer Intelligence and Campaign Planner evidence. | Medium | Addressed by MLAI-027 adoption review; maintain each epic |
 | TD-009 | Product Intelligence | Current Product/Offer profiles are mutable snapshots without offer expiry or approval history. | Low | Define version, review, and expiry lifecycle from pilot evidence after MLAI-027.2 |
-| TD-010 | Identity operations | Provider-neutral live adapter factories and hardened sessions exist; the actual identity vendor and controlled bootstrap deployment remain unselected. | High | Select and rehearse only when customer pilot is unfrozen |
+| TD-010 | Identity operations | Microsoft Entra External ID is selected and its strict adapter is implemented; live tenant creation and browser rehearsal remain. | High | Configure after MLAI-030.2 local validation and before invitations |
 | TD-011 | API operations | Waitress, TLS-aware config, single-process rate limiting, health and logs exist. Distributed rate limiting is intentionally absent. | Low | Revisit only if deployment becomes multi-instance |
 | TD-012 | Workspace identity | Temporary credential entry was removed and browser operations require server session plus CSRF. | Critical | Resolved by MLAI-027.6 |
 | TD-013 | Positioning references | Positioning target, product, and offer identifiers are validated against Customer and Product Intelligence repositories. | High | Resolved by MLAI-028.2 |
@@ -24,3 +24,4 @@
 | TD-020 | Mix persistence | Marketing-mix and measurement reports are deterministic evaluator outputs but do not yet have separate canonical persistence. | Medium | Integrate through the immutable Strategy lifecycle in MLAI-029.5 before adding another repository |
 | TD-021 | Design-partner operations | The readiness evaluator is deterministic, but deployed identity, jurisdiction-specific privacy choices, support ownership, and recovery evidence are not yet configured. | High | Resolve and rehearse before requesting founder approval for real-data activation |
 | TD-022 | Signup experience | Provider-neutral tenant claiming exists, but no external identity vendor or browser redirect/callback flow is deployed. | Critical | Resolve in MLAI-030.2 before inviting either business |
+| TD-023 | Identity portability | Memberships use provider plus subject as the identity key rather than a separate internal user identifier and identity-link table. | Medium | Add a tested identity-link migration before supporting provider switching or account linking |

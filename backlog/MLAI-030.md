@@ -15,3 +15,7 @@ MLAI-030.1 approves Strand Auto Parts and Velani Wholesale as the only candidate
 Each must authenticate and claim a separate invitation. Tenant and owner creation
 must be atomic and retry-safe. Both receive free full access with billing disabled,
 while real customer data remains founder-frozen.
+
+MLAI-030.2 selects Microsoft Entra External ID and adds strict issuer, audience,
+signature, expiry and subject validation behind the existing provider-neutral
+adapter. The free-first deployment excludes SMS and premium Azure services.

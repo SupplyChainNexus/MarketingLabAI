@@ -31,6 +31,9 @@ class PilotConfiguration:
     provider_registry_factory: str
     session_secret: str
     founder_invitation_hashes: dict[str, str]
+    entra_tenant_id: str = ""
+    entra_tenant_subdomain: str = ""
+    entra_client_id: str = ""
     allow_real_customer_data: bool = False
 
     @classmethod
@@ -73,6 +76,21 @@ class PilotConfiguration:
                 "Real customer data remains founder-frozen; keep "
                 "MLAI_ALLOW_REAL_CUSTOMER_DATA=false."
             )
+        identity_provider = required("MLAI_IDENTITY_PROVIDER")
+        entra_values = {
+            "entra_tenant_id": str(env.get("MLAI_ENTRA_TENANT_ID", "")).strip(),
+            "entra_tenant_subdomain": str(
+                env.get("MLAI_ENTRA_TENANT_SUBDOMAIN", "")
+            ).strip(),
+            "entra_client_id": str(env.get("MLAI_ENTRA_CLIENT_ID", "")).strip(),
+        }
+        if identity_provider == "microsoft-entra-external-id" and not all(
+            entra_values.values()
+        ):
+            raise ValueError(
+                "MLAI_ENTRA_TENANT_ID, MLAI_ENTRA_TENANT_SUBDOMAIN and "
+                "MLAI_ENTRA_CLIENT_ID are required for Microsoft Entra External ID."
+            )
         try:
             invitation_hashes = json.loads(
                 str(env.get("MLAI_FOUNDER_INVITATION_HASHES_JSON", "{}"))
@@ -97,11 +115,12 @@ class PilotConfiguration:
             session_ttl_seconds=ttl,
             rate_limit_requests=requests,
             rate_limit_window_seconds=window,
-            identity_provider=required("MLAI_IDENTITY_PROVIDER"),
+            identity_provider=identity_provider,
             identity_adapter_factory=required("MLAI_IDENTITY_ADAPTER_FACTORY"),
             provider_registry_factory=required("MLAI_PROVIDER_REGISTRY_FACTORY"),
             session_secret=secret,
             founder_invitation_hashes=dict(invitation_hashes),
+            **entra_values,
             allow_real_customer_data=False,
         )
 
@@ -117,4 +136,9 @@ class PilotConfiguration:
             "rate_limit_window_seconds": self.rate_limit_window_seconds,
             "real_customer_data_allowed": False,
             "founder_invitations_configured": len(self.founder_invitation_hashes),
+            "entra_configured": bool(
+                self.entra_tenant_id
+                and self.entra_tenant_subdomain
+                and self.entra_client_id
+            ),
         }

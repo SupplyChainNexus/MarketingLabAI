@@ -1,0 +1,18 @@
+{
+  "story_id": "MLAI-030.2",
+  "slug": "entra_external_identity",
+  "title": "External Identity Deployment and Signup Experience",
+  "baseline": "f5f304a",
+  "focused_tests": [
+    "tests.test_entra_external_identity",
+    "tests.test_design_partner_signup",
+    "tests.test_pilot_api",
+    "tests.test_pilot_operations"
+  ],
+  "import_modules": [
+    "app.identity.entra",
+    "app.operations.configuration",
+    "app.operations.runtime"
+  ],
+  "commit_message": "feat(identity): integrate Microsoft Entra External ID"
+}
