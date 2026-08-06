@@ -1,0 +1,54 @@
+{
+  "storyId": "MLAI-030.7",
+  "title": "Controlled Real-Data Activation",
+  "slug": "controlled_real_data_activation",
+  "baseline": "e164fdd",
+  "projectRoot": "C:\\Ai Projects\\MarketingLabAI",
+  "sourceRoot": "C:\\Ai Projects\\MarketingLabAI",
+  "installFiles": [
+    "app\\database\\connection.py",
+    "app\\design_partner\\__init__.py",
+    "app\\design_partner\\activation.py",
+    "backlog\\MLAI-030.md",
+    "governance\\adrs\\ADR-0029-controlled-real-data-activation.md",
+    "governance\\registers\\risk-register.md",
+    "governance\\registers\\technical-debt-register.md",
+    "story_packages\\MLAI-030.7.json",
+    "tests\\test_controlled_activation.py",
+    "tests\\test_sqlite_database.py"
+  ],
+  "newFiles": [
+    "app\\design_partner\\activation.py",
+    "governance\\adrs\\ADR-0029-controlled-real-data-activation.md",
+    "story_packages\\MLAI-030.7.json",
+    "tests\\test_controlled_activation.py"
+  ],
+  "compileFiles": [
+    "app\\database\\connection.py",
+    "app\\design_partner\\__init__.py",
+    "app\\design_partner\\activation.py",
+    "tests\\test_controlled_activation.py",
+    "tests\\test_sqlite_database.py"
+  ],
+  "focusedTestModules": [
+    "tests.test_controlled_activation",
+    "tests.test_design_partner_acceptance",
+    "tests.test_operational_readiness",
+    "tests.test_production_security_readiness",
+    "tests.test_quality_governance",
+    "tests.test_sqlite_database"
+  ],
+  "importCommand": "from app.design_partner import ControlledActivationService, FounderActivationDecision; print('MLAI-030.7 activation imports OK')",
+  "expectedStatus": [
+    " M app/database/connection.py",
+    " M app/design_partner/__init__.py",
+    " M backlog/MLAI-030.md",
+    " M governance/registers/risk-register.md",
+    " M governance/registers/technical-debt-register.md",
+    " M tests/test_sqlite_database.py",
+    "?? app/design_partner/activation.py",
+    "?? governance/adrs/ADR-0029-controlled-real-data-activation.md",
+    "?? story_packages/MLAI-030.7.json",
+    "?? tests/test_controlled_activation.py"
+  ]
+}

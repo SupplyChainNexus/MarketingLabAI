@@ -12,8 +12,8 @@ founder decides whether either design partner may use real business data.
 3. MLAI-030.3 — Pilot Privacy and Data Boundaries — complete
 4. MLAI-030.4 — Production Identity and Security Readiness — complete
 5. MLAI-030.5 — Recovery, Monitoring and Support Readiness — complete
-6. MLAI-030.6 — Design-Partner Acceptance Rehearsal — active
-7. MLAI-030.7 — Controlled Real-Data Activation
+6. MLAI-030.6 — Design-Partner Acceptance Rehearsal — complete
+7. MLAI-030.7 — Controlled Real-Data Activation — active
 
 MLAI-030.5 makes security, recovery, monitoring, incident and support evidence
 immutable, environment- and commit-bound, expiring, and failure-preserving. It
@@ -35,3 +35,9 @@ Engineering and controlled synthetic rehearsal are authorized under ADR-0024.
 Actual business data, external invitations, public or production activation,
 external publishing, real-data learning, billing, unapproved paid services,
 and destructive production changes remain frozen.
+
+MLAI-030.7 selects Velani Wholesale as the first candidate and implements a
+two-stage, append-only activation boundary. Selection and passing evidence never
+self-authorize activation. Stage one uses an approved external operator with
+synthetic content; stage two is limited to explicitly enumerated company and
+product categories. All other tenants and high-risk activities remain frozen.

@@ -304,6 +304,28 @@ class SQLiteDatabase:
                         check_name, environment, commit_sha, observed_at
                     );
 
+                CREATE TABLE IF NOT EXISTS pilot_activation_events (
+                    event_id TEXT PRIMARY KEY,
+                    decision_id TEXT NOT NULL,
+                    tenant_id TEXT NOT NULL,
+                    partner_name TEXT NOT NULL,
+                    stage TEXT NOT NULL,
+                    founder_id TEXT NOT NULL,
+                    environment TEXT NOT NULL,
+                    commit_sha TEXT NOT NULL,
+                    allowed_categories_json TEXT NOT NULL DEFAULT '[]',
+                    starts_at TEXT NOT NULL,
+                    expires_at TEXT NOT NULL,
+                    action TEXT NOT NULL,
+                    reason TEXT NOT NULL DEFAULT '',
+                    created_at TEXT NOT NULL,
+                    FOREIGN KEY (tenant_id) REFERENCES tenants(tenant_id)
+                        ON DELETE CASCADE
+                );
+
+                CREATE INDEX IF NOT EXISTS idx_activation_tenant_created
+                    ON pilot_activation_events(tenant_id, created_at);
+
                 CREATE TABLE IF NOT EXISTS compliance_rules (
                     rule_id TEXT NOT NULL,
                     version INTEGER NOT NULL,
