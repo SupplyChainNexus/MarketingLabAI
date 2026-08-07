@@ -51,3 +51,22 @@ environment. The retained Cloud SQL instance and synthetic primary database do n
 authorize application deployment, invitations, public signup, billing, publishing,
 real-customer data, production activation or real-data learning. Those boundaries
 remain frozen and require separate founder decisions.
+
+## MLAI-031.3 — Controlled Private Synthetic Application Deployment
+
+Status: engineering package ready; external deployment evidence pending
+
+### Purpose
+
+Deploy one IAM-authenticated, scale-to-zero synthetic Cloud Run service through
+the canonical runtime without public access or real-customer data.
+
+### Acceptance
+
+- Container startup uses the canonical environment-composed WSGI application.
+- The image is non-root, digest-pinned and excludes local data and secrets.
+- A dedicated least-privilege runtime identity replaces broad account reuse.
+- Cloud SQL connector and four external Secret Manager bindings are exact.
+- Minimum instances are zero and maximum instances are one.
+- IAM denial, health, rollback, recovery, tenant isolation and cost are evidenced.
+- Invitations, public signup, billing, publishing, real data and learning stay frozen.

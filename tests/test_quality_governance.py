@@ -158,6 +158,23 @@ class QualityGovernanceTests(unittest.TestCase):
         ):
             self.assertIn(required, normalized)
 
+    def test_private_synthetic_deployment_preserves_activation_boundaries(self):
+        decision = self.read(
+            "governance/adrs/ADR-0032-controlled-private-synthetic-deployment.md"
+        )
+        normalized = " ".join(decision.split())
+        for required in (
+            "IAM-authenticated",
+            "digest-pinned container",
+            "dedicated least-privilege runtime identity",
+            "no parallel application path",
+            "unauthenticated invocation are refused",
+            "real-customer data",
+            "billing",
+            "real-data learning remain frozen",
+        ):
+            self.assertIn(required, normalized)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -3,12 +3,12 @@
 ## Checkpoint
 
 - Branch: `feature/tenant-architecture`
-- Evidence baseline: `b09055a`
-- Remote state: synchronized and clean before governance closure
+- Installation baseline: `0be1255`
+- Remote state: synchronized and clean before MLAI-031.3
 - Last completed epic: MLAI-029 Marketing Strategy Intelligence
 - Active epic: MLAI-031 Controlled Pilot Hosting
 - Last completed story: MLAI-031.2 Repository-Wide PostgreSQL Compatibility and Migration
-- Active story: none; next controlled deployment story requires a new package and authorization
+- Active story: MLAI-031.3 Controlled Private Synthetic Application Deployment
 
 ## Product direction
 
@@ -177,9 +177,9 @@ decision and the applicable privacy, recovery, support and data boundaries.
 
 ## Next engineer action
 
-Prepare a separately scoped controlled application-deployment-readiness story from
-the clean post-closure commit. It must preserve connector-only Cloud SQL access,
-external secret bindings, bounded cost and scale, health and rollback evidence, and
-the retained synthetic-only boundary. Do not build or deploy an application, publish
-the OAuth app, send invitations, enable public signup, billing, publishing,
-real-customer data or real-data learning without their separate approvals.
+Install and validate MLAI-031.3 only on clean baseline `0be1255`. Then enable the
+four exact deployment APIs and create the bounded repository, runtime identity and
+secret metadata through separately verified commands. Build the exact commit,
+record its digest, and deploy one IAM-authenticated synthetic revision only after
+every pre-deployment check passes. Do not publish the OAuth app, send invitations,
+enable public signup, billing, publishing, real-customer data or real-data learning.

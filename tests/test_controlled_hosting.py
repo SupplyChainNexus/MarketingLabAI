@@ -21,7 +21,7 @@ class ControlledHostingTests(unittest.TestCase):
                 "projects/marketinglabai-identity-dev/secrets/database-url"
             ),
             "MLAI_CLOUD_SQL_INSTANCE": (
-                "marketinglabai-identity-dev:africa-south1:velani-pilot-db"
+                "marketinglabai-identity-dev:africa-south1:mlai-synthetic-pg18-jhb"
             ),
             "MLAI_CLOUD_RUN_MAX_INSTANCES": "1",
             "MLAI_CLOUD_RUN_MIN_INSTANCES": "0",
@@ -30,7 +30,8 @@ class ControlledHostingTests(unittest.TestCase):
             "MLAI_CLOUD_RUN_MEMORY_MIB": "512",
             "MLAI_MONTHLY_BUDGET_ZAR": "500",
             "MLAI_SECRET_BINDINGS_JSON": (
-                '{"MLAI_DATABASE_URL":"projects/p/secrets/database-url",'
+                '{"GEMINI_API_KEY":"projects/p/secrets/gemini-api-key",'
+                '"MLAI_DATABASE_URL":"projects/p/secrets/database-url",'
                 '"MLAI_SESSION_SECRET":"projects/p/secrets/session-secret",'
                 '"MLAI_FOUNDER_INVITATION_HASHES_JSON":'
                 '"projects/p/secrets/invitation-hashes"}'

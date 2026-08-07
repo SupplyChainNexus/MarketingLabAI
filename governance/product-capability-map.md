@@ -2,7 +2,7 @@
 
 ## Review checkpoint
 
-Reviewed for MLAI-031.2 live local and controlled Cloud PostgreSQL evidence closure.
+Reviewed for MLAI-031.3 controlled private synthetic deployment engineering.
 
 ## Maturity scale
 
@@ -44,7 +44,7 @@ deployment-specific identity, legal, privacy, and rehearsal evidence is absent.
 | Interface | Authenticated pilot API contract | Gives the workspace one governed, retry-safe boundary | 3 | Maintain through MLAI-027.5/027.6 |
 | Interface | Guided session-protected workspace with Positioning, Strategy, workflow, and design-partner readiness | Makes the governed vertical slice understandable and usable | 3 | Keep real-data activation founder-controlled |
 | Operations | Deployment, health, safe logs, signal alerts, backup, restore, rollback, immutable rehearsal evidence, support ownership and incident process | Makes a future private pilot supportable | 3 | Execute controlled synthetic rehearsals before acceptance |
-| Hosting | Default-deny Cloud Run target, bounded resources and costs, external secret references, and durable-persistence gate | Prevents unsafe or self-authorizing pilot deployment | 2 | Prepare separately authorized controlled deployment evidence; no application deployment yet |
+| Hosting | Default-deny Cloud Run target, non-root digest-pinned container, dedicated runtime identity, bounded resources, external secrets and durable PostgreSQL | Prevents unsafe or self-authorizing pilot deployment | 3 | Complete private synthetic deployment, IAM denial, rollback and cost evidence |
 | Persistence | Canonical PostgreSQL adapter, dependency-ordered schema, source-preserving transactional migration, live local and controlled Cloud migration, contract, backup and restore evidence | Enables durable hosted state without weakening tenant or activation boundaries | 3 | Maintain synthetic primary and recovery evidence; require separate approval for any real-data cutover |
 | Calendar | International Marketing Calendar | Coordinates time-based activity | 0 | Deferred MLAI-026 |
 | Publishing | Connector-controlled execution | Reduces manual channel work | 0 | Post-pilot |
@@ -78,3 +78,4 @@ deployment-specific identity, legal, privacy, and rehearsal evidence is absent.
 22. MLAI-030.7 Controlled Real-Data Activation
 23. MLAI-031.1 Controlled Hosting and Durable Pilot Persistence
 24. MLAI-031.2 Repository-Wide PostgreSQL Compatibility and Migration
+25. MLAI-031.3 Controlled Private Synthetic Application Deployment

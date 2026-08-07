@@ -37,10 +37,11 @@ def create_required_folders():
 
 
 def load_settings():
-    if not ENV_FILE.exists():
-        raise FileNotFoundError(f"Missing .env file: {ENV_FILE}")
-
-    load_dotenv(ENV_FILE)
+    # Local development may use .env. Hosted environments supply the same
+    # contract through Secret Manager and environment variables, so a container
+    # must never require a source-tree .env file.
+    if ENV_FILE.exists():
+        load_dotenv(ENV_FILE)
 
     api_key = os.getenv("GEMINI_API_KEY", "").strip()
     model = os.getenv("GEMINI_MODEL", "gemini-3.6-flash").strip()

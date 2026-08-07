@@ -64,6 +64,7 @@ class ControlledHostingConfiguration:
 
     REQUIRED_SECRETS = frozenset(
         {
+            "GEMINI_API_KEY",
             "MLAI_DATABASE_URL",
             "MLAI_SESSION_SECRET",
             "MLAI_FOUNDER_INVITATION_HASHES_JSON",
@@ -139,7 +140,6 @@ class ControlledHostingConfiguration:
         )
 
     def evaluate(self) -> ControlledHostingReport:
-        expected_instance_prefix = f"{self.project_id}:{self.region}:"
         missing_secrets = sorted(self.REQUIRED_SECRETS - self.secret_bindings.keys())
         checks = (
             HostingCheck(
@@ -180,8 +180,12 @@ class ControlledHostingConfiguration:
             ),
             HostingCheck(
                 "cloud_sql_instance",
-                self.cloud_sql_instance.startswith(expected_instance_prefix),
-                "project- and region-bound Cloud SQL instance",
+                self.cloud_sql_instance
+                == (
+                    "marketinglabai-identity-dev:africa-south1:"
+                    "mlai-synthetic-pg18-jhb"
+                ),
+                "exact retained controlled synthetic Cloud SQL instance",
             ),
             HostingCheck(
                 "database_secret",

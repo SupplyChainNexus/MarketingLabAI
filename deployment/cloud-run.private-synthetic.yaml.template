@@ -1,0 +1,100 @@
+# Evidence-bound template. Replace placeholders only in the separately authorized
+# deployment procedure; never commit rendered secret values or mutable image tags.
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: marketinglabai-velani-pilot
+  annotations:
+    run.googleapis.com/ingress: all
+    marketinglabai/private-synthetic-only: "true"
+    marketinglabai/public-access-authorized: "false"
+    marketinglabai/real-data-authorized: "false"
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: "0"
+        autoscaling.knative.dev/maxScale: "1"
+        run.googleapis.com/cloudsql-instances: >-
+          marketinglabai-identity-dev:africa-south1:mlai-synthetic-pg18-jhb
+    spec:
+      serviceAccountName: >-
+        mlai-synthetic-runtime@marketinglabai-identity-dev.iam.gserviceaccount.com
+      containerConcurrency: 8
+      containers:
+        - image: "{{IMMUTABLE_IMAGE_DIGEST}}"
+          ports:
+            - name: http1
+              containerPort: 8080
+          resources:
+            limits:
+              cpu: "1"
+              memory: "512Mi"
+          startupProbe:
+            httpGet:
+              path: /health/live
+              port: 8080
+            failureThreshold: 12
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: 8080
+            periodSeconds: 30
+          env:
+            - name: MLAI_ENVIRONMENT
+              value: cloud-synthetic
+            - name: MLAI_DATABASE_PATH
+              value: /tmp/mlai/database/unused.sqlite3
+            - name: MLAI_BACKUP_DIRECTORY
+              value: /tmp/mlai/backups
+            - name: MLAI_PUBLIC_ORIGIN
+              value: "{{PRIVATE_SERVICE_ORIGIN}}"
+            - name: MLAI_TRUST_PROXY_TLS
+              value: "true"
+            - name: MLAI_PERSISTENCE_BACKEND
+              value: postgresql
+            - name: MLAI_ALLOW_REAL_CUSTOMER_DATA
+              value: "false"
+            - name: MLAI_DEPLOYMENT_COMMIT
+              value: "{{FULL_GIT_COMMIT}}"
+            - name: MLAI_IDENTITY_PROVIDER
+              value: google-cloud-identity-platform
+            - name: MLAI_IDENTITY_ADAPTER_FACTORY
+              value: app.identity.google_cloud:create_google_cloud_adapter
+            - name: MLAI_PROVIDER_REGISTRY_FACTORY
+              value: deployment.providers:create_registry
+            - name: MLAI_GOOGLE_CLOUD_PROJECT_ID
+              value: marketinglabai-identity-dev
+            - name: MLAI_GOOGLE_AUTH_DOMAIN
+              value: marketinglabai-identity-dev.firebaseapp.com
+            - name: MLAI_GOOGLE_MAX_AUTH_AGE_SECONDS
+              value: "3600"
+            - name: MLAI_GOOGLE_WEB_API_KEY
+              value: "{{RESTRICTED_BROWSER_API_KEY}}"
+            - name: MLAI_GOOGLE_OAUTH_CLIENT_ID
+              value: "{{GOOGLE_OAUTH_CLIENT_ID}}"
+            - name: MLAI_SECURITY_EVIDENCE_JSON
+              value: "{}"
+            - name: GEMINI_MODEL
+              value: gemini-3.6-flash
+            - name: GEMINI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: mlai-gemini-api-key
+                  key: latest
+            - name: MLAI_DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: mlai-database-url
+                  key: latest
+            - name: MLAI_SESSION_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: mlai-session-secret
+                  key: latest
+            - name: MLAI_FOUNDER_INVITATION_HASHES_JSON
+              valueFrom:
+                secretKeyRef:
+                  name: mlai-founder-invitation-hashes
+                  key: latest
