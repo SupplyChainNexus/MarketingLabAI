@@ -2,7 +2,7 @@
 
 ## Review checkpoint
 
-Reviewed for MLAI-030.5 Recovery, Monitoring and Support Readiness.
+Reviewed for MLAI-031.2 live local and controlled Cloud PostgreSQL evidence closure.
 
 ## Maturity scale
 
@@ -44,8 +44,8 @@ deployment-specific identity, legal, privacy, and rehearsal evidence is absent.
 | Interface | Authenticated pilot API contract | Gives the workspace one governed, retry-safe boundary | 3 | Maintain through MLAI-027.5/027.6 |
 | Interface | Guided session-protected workspace with Positioning, Strategy, workflow, and design-partner readiness | Makes the governed vertical slice understandable and usable | 3 | Keep real-data activation founder-controlled |
 | Operations | Deployment, health, safe logs, signal alerts, backup, restore, rollback, immutable rehearsal evidence, support ownership and incident process | Makes a future private pilot supportable | 3 | Execute controlled synthetic rehearsals before acceptance |
-| Hosting | Default-deny Cloud Run target, bounded resources and costs, external secret references, and durable-persistence gate | Prevents unsafe or self-authorizing pilot deployment | 2 | Complete PostgreSQL compatibility before any cloud build |
-| Persistence | Canonical PostgreSQL adapter, dependency-ordered schema and source-preserving transactional synthetic migration | Enables durable hosted state without weakening tenant or activation boundaries | 2 | Complete live PostgreSQL migration and isolated restore evidence before cloud build |
+| Hosting | Default-deny Cloud Run target, bounded resources and costs, external secret references, and durable-persistence gate | Prevents unsafe or self-authorizing pilot deployment | 2 | Prepare separately authorized controlled deployment evidence; no application deployment yet |
+| Persistence | Canonical PostgreSQL adapter, dependency-ordered schema, source-preserving transactional migration, live local and controlled Cloud migration, contract, backup and restore evidence | Enables durable hosted state without weakening tenant or activation boundaries | 3 | Maintain synthetic primary and recovery evidence; require separate approval for any real-data cutover |
 | Calendar | International Marketing Calendar | Coordinates time-based activity | 0 | Deferred MLAI-026 |
 | Publishing | Connector-controlled execution | Reduces manual channel work | 0 | Post-pilot |
 | Learning | Actual results, evidence-grounded campaign learning, adaptation, and experiments | Closes the marketing control loop | 0 | Post-real outcomes; never infer synthetic learning |

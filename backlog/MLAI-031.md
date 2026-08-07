@@ -25,7 +25,7 @@ backup/restore and cost evidence before enabling APIs or building an image.
 
 ## MLAI-031.2 — Repository-Wide PostgreSQL Compatibility and Migration
 
-Status: engineering complete; live PostgreSQL evidence blocked
+Status: complete; live local and controlled Cloud PostgreSQL evidence passed
 
 ### Purpose
 
@@ -41,11 +41,13 @@ managed database.
   integrity semantics remain enforced.
 - Synthetic migration preserves the source and requires exact per-table parity.
 - PostgreSQL backup/restore cannot accidentally use SQLite recovery tooling.
-- A traceable live migration and isolated restore remain required before the
-  durable-adapter hosting gate can pass.
+- Traceable local and controlled Cloud PostgreSQL migration, contract, backup,
+  isolated-restore and cleanup evidence is recorded against commit `b09055a`.
 
 ### Gate effect
 
-Local PostgreSQL compatibility engineering and controlled synthetic rehearsal are
-authorized. Infrastructure mutation, cloud build, deployment, invitations and real
-data remain frozen and are not self-authorized.
+The durable PostgreSQL adapter evidence gate is passed for the controlled synthetic
+environment. The retained Cloud SQL instance and synthetic primary database do not
+authorize application deployment, invitations, public signup, billing, publishing,
+real-customer data, production activation or real-data learning. Those boundaries
+remain frozen and require separate founder decisions.

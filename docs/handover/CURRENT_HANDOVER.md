@@ -3,12 +3,12 @@
 ## Checkpoint
 
 - Branch: `feature/tenant-architecture`
-- Installation baseline: `dfbee77`
-- Remote state before this story: synchronized
+- Evidence baseline: `b09055a`
+- Remote state: synchronized and clean before governance closure
 - Last completed epic: MLAI-029 Marketing Strategy Intelligence
 - Active epic: MLAI-031 Controlled Pilot Hosting
-- Last completed story: MLAI-031.1 Controlled Hosting and Durable Pilot Persistence
-- Active story: MLAI-031.2 Repository-Wide PostgreSQL Compatibility and Migration
+- Last completed story: MLAI-031.2 Repository-Wide PostgreSQL Compatibility and Migration
+- Active story: none; next controlled deployment story requires a new package and authorization
 
 ## Product direction
 
@@ -152,10 +152,16 @@ deployment and requires complete PostgreSQL migration and recovery evidence.
 MLAI-031.2 adds runtime database selection, a PostgreSQL adapter compatible with
 the canonical repository contract, deterministic dependency-ordered generation of
 all 21 tables, and source-preserving transactional synthetic migration with exact
-per-table parity. PostgreSQL backup and restore are explicitly refused by the
-SQLite recovery CLI. Local compatibility evidence passes, but no live PostgreSQL
-server or managed restore target was available; the durable-adapter gate therefore
-remains false pending commit-bound live migration, isolation and restore evidence.
+per-table parity. The index-idempotency correction is recorded at `b09055a`.
+
+Commit-bound live evidence now passes locally and against the controlled synthetic
+Cloud SQL PostgreSQL 18 instance in `africa-south1`. Schema versions 1 through 17,
+all 21 tables, exact migration parity, 17 canonical application contracts, managed
+backup, isolated local restore and post-rehearsal cleanup were verified. The Cloud
+and local synthetic primary databases, sanitized evidence and recovery artifacts
+were retained; temporary contract and restore databases were deleted. This closes
+the durable-adapter external-evidence gate only and does not authorize deployment or
+real-customer data.
 
 ADR-0024 authorizes engineering and quality development and controlled
 synthetic design-partner rehearsal, including approved Google test identities,
@@ -171,8 +177,9 @@ decision and the applicable privacy, recovery, support and data boundaries.
 
 ## Next engineer action
 
-Install MLAI-031.2 only on verified baseline `dfbee77`. Run the unchanged complete
-local gates, then perform a separately approved live synthetic PostgreSQL migration
-and isolated restore rehearsal before enabling Google deployment APIs or building
-an image. Do not deploy SQLite to Cloud Run, publish the OAuth app, send external
-invitations or enable real data.
+Prepare a separately scoped controlled application-deployment-readiness story from
+the clean post-closure commit. It must preserve connector-only Cloud SQL access,
+external secret bindings, bounded cost and scale, health and rollback evidence, and
+the retained synthetic-only boundary. Do not build or deploy an application, publish
+the OAuth app, send invitations, enable public signup, billing, publishing,
+real-customer data or real-data learning without their separate approvals.

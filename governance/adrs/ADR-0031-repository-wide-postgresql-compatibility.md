@@ -21,9 +21,24 @@ gate remains false until a traceable, commit-bound live migration, tenant-isolat
 backup and isolated-restore result is recorded. PostgreSQL recovery must use the
 approved managed-database process; the SQLite backup CLI refuses that backend.
 
+## Evidence closure
+
+The live gate subsequently passed at correction commit `b09055a` against local
+PostgreSQL 18 and a controlled synthetic Cloud SQL PostgreSQL 18 instance in
+`africa-south1`. Evidence covers schema initialization, exact transactional
+migration parity, tenant isolation, 17 canonical application contracts, managed
+backup, isolated restore and verified cleanup. Failures were preserved, classified
+and remediated before unchanged gates were rerun. Raw evidence and credentials stay
+outside Git; only sanitized references and hashes are tracked.
+
 ## Consequences
 
-No Google API, Cloud SQL instance, build, deployment, external invitation or real
-data is authorized by this decision. A live failure must be classified and
-remediated before the unchanged gate is rerun. Founder authorization remains
-necessary after all external evidence passes.
+No Google API was authorized by the original engineering decision. The later,
+separately approved controlled Cloud SQL rehearsal supplied external synthetic
+evidence only and did not authorize application deployment or real data.
+
+The durable-adapter external-evidence gate is passed for controlled synthetic use.
+The retained Cloud SQL instance is infrastructure evidence, not application
+deployment or production activation. Build, deployment, external invitations,
+public signup, billing, publishing, real-customer data and real-data learning remain
+unauthorized. Founder authorization remains necessary for each applicable boundary.

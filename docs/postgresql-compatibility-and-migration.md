@@ -37,9 +37,22 @@ or restore into the active target during rehearsal. A failed copy rolls back its
 target transaction. A future real-data cutover requires a separately approved
 maintenance window, final delta plan, restore rehearsal and founder decision.
 
-## Still blocked
+## External evidence closure
 
-There is no live PostgreSQL server in the local validation environment. Therefore
-live adapter, migration, backup, restore, Cloud SQL cost and region evidence remain
-open. Cloud build/deployment, Velani invitation and all real-data activity remain
-frozen.
+The unchanged live gate passed against local PostgreSQL 18 and the controlled
+synthetic Cloud SQL PostgreSQL 18 instance in `africa-south1`, bound to correction
+commit `b09055a`. Evidence verifies 21 tables, migrations 1 through 17, exact
+source/target parity, preserved source SHA-256, 17 application contracts with zero
+failures or errors, managed backup, isolated local restore, and cleanup of temporary
+contract and restore databases.
+
+Sanitized evidence is indexed by the external manifest
+`MLAI-031.2_external_evidence_SHA256_b09055a.txt` (SHA-256
+`3f2c1e2788f46cc68d3e0873551f39ec0ed77a620cc9c5f0353edcc3a2a68cab`).
+The post-rehearsal cleanup addendum SHA-256 is
+`82c7ed004fc975968f26bd9e815178cd592e97829ba2be513cc9d5e11ba2156e`.
+Raw transcripts, dumps and credentials remain outside Git.
+
+The durable-adapter external-evidence gate is passed. Cloud application build and
+deployment, Velani invitation, public signup, billing, publishing, real-customer
+data, production activation and real-data learning remain frozen.
