@@ -14,8 +14,6 @@ RUN python -m pip install --no-cache-dir --requirement requirements.txt
 
 COPY app ./app
 COPY deployment ./deployment
-COPY assets ./assets
-COPY prompts ./prompts
 
 RUN mkdir -p /tmp/mlai/database /tmp/mlai/backups /tmp/mlai/outputs \
     && chown -R mlai:mlai /app /tmp/mlai

@@ -158,5 +158,63 @@ class PrivateSyntheticDeploymentTests(unittest.TestCase):
             self.assertIn(excluded, dockerignore)
 
 
+class DockerBuildContextRegressionTests(unittest.TestCase):
+    def test_every_docker_copy_source_is_tracked(self):
+        import subprocess
+        from pathlib import Path
+
+        repository = Path(__file__).resolve().parents[1]
+        dockerfile = (repository / "Dockerfile").read_text(encoding="utf-8")
+
+        tracked_result = subprocess.run(
+            ["git", "ls-files"],
+            cwd=repository,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        tracked_paths = set(tracked_result.stdout.splitlines())
+
+        copy_sources = []
+        for raw_line in dockerfile.splitlines():
+            line = raw_line.strip()
+            if not line.startswith("COPY "):
+                continue
+
+            parts = line.split()
+            self.assertGreaterEqual(
+                len(parts),
+                3,
+                msg=f"Unsupported Docker COPY instruction: {line}",
+            )
+
+            sources = parts[1:-1]
+            self.assertTrue(
+                sources,
+                msg=f"Docker COPY has no source: {line}",
+            )
+            copy_sources.extend(sources)
+
+        self.assertTrue(copy_sources, msg="Dockerfile has no COPY sources")
+
+        for raw_source in copy_sources:
+            source = raw_source.rstrip("/")
+            source_path = repository / source
+
+            self.assertTrue(
+                source_path.exists(),
+                msg=f"Docker COPY source does not exist: {raw_source}",
+            )
+
+            source_is_tracked = source in tracked_paths or any(
+                tracked.startswith(source + "/") for tracked in tracked_paths
+            )
+
+            self.assertTrue(
+                source_is_tracked,
+                msg=f"Docker COPY source is not tracked: {raw_source}",
+            )
+
+
 if __name__ == "__main__":
     unittest.main()
