@@ -70,3 +70,12 @@ the canonical runtime without public access or real-customer data.
 - Minimum instances are zero and maximum instances are one.
 - IAM denial, health, rollback, recovery, tenant isolation and cost are evidenced.
 - Invitations, public signup, billing, publishing, real data and learning stay frozen.
+
+### Durable deployment correction
+
+- The tracked Cloud Run template is the only deployment configuration authority.
+- A repository renderer validates every environment name, secret reference,
+  private-IAM fragment, immutable image package, and bounded resource setting.
+- PowerShell 5.1 and CI execute the same no-mutation preflight.
+- Failed manual revisions are retained as evidence and do not authorize another
+  one-off patch; ADR-0033 Durable Remediation governs recurrence prevention.

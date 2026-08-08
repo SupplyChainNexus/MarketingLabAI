@@ -17,6 +17,10 @@ A feature is complete only when:
   inapplicable.
 - Necessary adjacent paths are justified, tested and separately reported under
   ADR-0023.
+- Durable Remediation identifies and corrects the underlying failure path and
+  adds an automated prevention check where reasonably achievable.
+- A temporary containment is recorded as incomplete and cannot close the
+  defect, story, risk, technical debt, or gate without its durable follow-up.
 
 ## Continuity gate
 

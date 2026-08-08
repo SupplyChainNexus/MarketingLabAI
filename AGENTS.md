@@ -46,6 +46,10 @@ handover maintenance. The title grants responsibility, not unilateral authority.
   before introducing parallel systems.
 - Prefer permanent generator or shared-source corrections over per-package
   repair scripts.
+- Apply the Durable Remediation Directive: correct the underlying system and
+  add automated prevention whenever a durable solution is reasonably
+  achievable. A temporary containment may reduce immediate harm, but cannot
+  close the defect, story, risk, or gate without a recorded durable follow-up.
 - Use complete PowerShell 5.1-compatible commands for the project owner.
 - Place generated packages, downloads, transcripts, build contexts, and
   temporary artifacts under `C:\Ai Projects\ToolkitTemp`, not the repository.

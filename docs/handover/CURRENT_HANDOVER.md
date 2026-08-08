@@ -175,11 +175,22 @@ publishing, real-data learning, customer billing, unapproved paid services and
 destructive production changes still require a separate founder-approved
 decision and the applicable privacy, recovery, support and data boundaries.
 
+## Durable deployment correction
+
+ADR-0033 and LDR-053 now bind Durable Remediation: a one-off command repair may
+not close a failure when a durable source correction and automated prevention
+are reasonably achievable. The Cloud Run template, manifest renderer,
+application configuration contract, PowerShell 5.1 validator, and CI job are one
+canonical deployment contract. Manual environment reconstruction is refused.
+
+The controlled image remains digest-pinned, private, and synthetic. Previously
+failed Cloud Run revisions are evidence of configuration drift, not approval to
+patch or rerun. No cloud mutation is part of this repository correction.
+
 ## Next engineer action
 
-Install and validate MLAI-031.3 only on clean baseline `0be1255`. Then enable the
-four exact deployment APIs and create the bounded repository, runtime identity and
-secret metadata through separately verified commands. Build the exact commit,
-record its digest, and deploy one IAM-authenticated synthetic revision only after
-every pre-deployment check passes. Do not publish the OAuth app, send invitations,
-enable public signup, billing, publishing, real-customer data or real-data learning.
+Install and validate the durable correction against clean baseline `a66c853`.
+Render the canonical manifest outside the repository, review its redacted
+contract summary, and request separate authority before creating another private
+revision. Do not publish the OAuth app, send invitations, enable public signup,
+billing, publishing, real-customer data, or real-data learning.

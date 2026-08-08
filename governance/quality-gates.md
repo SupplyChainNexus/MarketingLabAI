@@ -22,6 +22,14 @@ documentation and separate scope reporting are complete.
 
 A failed gate must be investigated before committing.
 
+## Durable Remediation Gate
+
+A failed gate is not closed by a one-off command correction alone. The change
+must identify the underlying failure class, correct its authoritative source,
+and add automated prevention where reasonably achievable. Temporary
+containment must be labelled and tracked as incomplete; it may not weaken a
+test, security boundary, authorization boundary, or evidence requirement.
+
 ## Intelligence Quality Gates
 
 ### Domain Integrity

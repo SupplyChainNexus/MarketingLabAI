@@ -101,6 +101,21 @@ class PilotConfiguration:
                 "MLAI_ALLOW_REAL_CUSTOMER_DATA=false."
             )
         identity_provider = required("MLAI_IDENTITY_PROVIDER")
+        identity_adapter_factory = required("MLAI_IDENTITY_ADAPTER_FACTORY")
+        provider_registry_factory = required("MLAI_PROVIDER_REGISTRY_FACTORY")
+        google_identity_provider = "google-cloud-identity-platform"
+        google_identity_factory = (
+            "app.identity.google_cloud:create_google_cloud_adapter"
+        )
+        if environment == "cloud-synthetic" and (
+            identity_provider != google_identity_provider
+            or identity_adapter_factory != google_identity_factory
+            or provider_registry_factory != "deployment.providers:create_registry"
+        ):
+            raise ValueError(
+                "The cloud-synthetic runtime must use the canonical Google identity "
+                "and provider-registry factories."
+            )
         entra_values = {
             "entra_tenant_id": str(env.get("MLAI_ENTRA_TENANT_ID", "")).strip(),
             "entra_tenant_subdomain": str(
@@ -209,8 +224,8 @@ class PilotConfiguration:
             rate_limit_requests=requests,
             rate_limit_window_seconds=window,
             identity_provider=identity_provider,
-            identity_adapter_factory=required("MLAI_IDENTITY_ADAPTER_FACTORY"),
-            provider_registry_factory=required("MLAI_PROVIDER_REGISTRY_FACTORY"),
+            identity_adapter_factory=identity_adapter_factory,
+            provider_registry_factory=provider_registry_factory,
             session_secret=secret,
             founder_invitation_hashes=dict(invitation_hashes),
             max_request_bytes=max_request_bytes,

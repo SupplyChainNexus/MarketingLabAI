@@ -105,7 +105,7 @@ class PrivateSyntheticDeploymentSpecification:
                 bool(
                     re.fullmatch(
                         r"africa-south1-docker\.pkg\.dev/marketinglabai-identity-dev/"
-                        r"mlai-synthetic/marketinglabai@sha256:[0-9a-f]{64}",
+                        r"mlai-synthetic/marketinglabai-pilot@sha256:[0-9a-f]{64}",
                         self.artifact_image,
                     )
                 ),

@@ -175,6 +175,34 @@ class QualityGovernanceTests(unittest.TestCase):
         ):
             self.assertIn(required, normalized)
 
+    def test_durable_remediation_is_binding_and_ci_enforced(self):
+        sources = (
+            "AGENTS.md",
+            "governance/product-constitution.md",
+            "governance/locked-decision-register.md",
+            "governance/definition-of-done.md",
+            "governance/adrs/ADR-0033-durable-remediation-directive.md",
+        )
+
+        for source in sources:
+            self.assertIn("Durable Remediation", self.read(source), source)
+
+        decision = self.read(
+            "governance/adrs/ADR-0033-durable-remediation-directive.md"
+        )
+        normalized = " ".join(decision.split())
+        for required in (
+            "authoritative source",
+            "automated prevention",
+            "Temporary containment",
+            "cannot close the defect",
+            "Manual reconstruction",
+        ):
+            self.assertIn(required, normalized)
+
+        workflow = self.read(".github/workflows/quality.yml")
+        self.assertIn("validate_private_synthetic_deployment.ps1", workflow)
+
 
 if __name__ == "__main__":
     unittest.main()

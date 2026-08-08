@@ -9,7 +9,13 @@ from unittest.mock import Mock, patch
 
 from app import config as application_config
 from app.ai.registry import IntelligenceProviderRegistry
+from app.operations.configuration import PilotConfiguration
 from deployment.private_synthetic import PrivateSyntheticDeploymentSpecification
+from deployment.private_synthetic_manifest import (
+    ManifestRenderValues,
+    render_manifest,
+    validate_template,
+)
 from deployment.providers import create_registry
 from deployment.start import configured_port
 
@@ -25,7 +31,7 @@ class PrivateSyntheticDeploymentTests(unittest.TestCase):
             cloud_sql_instance=f"{project}:africa-south1:mlai-synthetic-pg18-jhb",
             artifact_image=(
                 f"africa-south1-docker.pkg.dev/{project}/mlai-synthetic/"
-                f"marketinglabai@sha256:{'a' * 64}"
+                f"marketinglabai-pilot@sha256:{'a' * 64}"
             ),
             minimum_instances=0,
             maximum_instances=1,
@@ -156,6 +162,88 @@ class PrivateSyntheticDeploymentTests(unittest.TestCase):
         self.assertNotIn("postgresql://", manifest)
         for excluded in (".env", "database", "outputs", "backups"):
             self.assertIn(excluded, dockerignore)
+
+    def test_canonical_manifest_contract_renders_without_drift(self):
+        root = Path(__file__).resolve().parent.parent
+        template = (
+            root / "deployment" / "cloud-run.private-synthetic.yaml.template"
+        ).read_text(encoding="utf-8")
+        report = validate_template(template)
+        self.assertTrue(report["template_valid"])
+        rendered = render_manifest(
+            template,
+            ManifestRenderValues(
+                immutable_image_digest=(
+                    "africa-south1-docker.pkg.dev/marketinglabai-identity-dev/"
+                    "mlai-synthetic/marketinglabai-pilot@sha256:" + "a" * 64
+                ),
+                private_service_origin=(
+                    "https://marketinglabai-velani-pilot-483973859553."
+                    "africa-south1.run.app"
+                ),
+                full_git_commit="a" * 40,
+                restricted_browser_api_key="AIza" + "A" * 32,
+                google_oauth_client_id=(
+                    "483973859553-synthetic.apps.googleusercontent.com"
+                ),
+            ),
+        )
+        self.assertNotIn("{{", rendered)
+        self.assertIn("marketinglabai-pilot@sha256:", rendered)
+        self.assertNotIn("allUsers", rendered)
+
+    def test_manifest_contract_rejects_missing_or_duplicate_variables(self):
+        root = Path(__file__).resolve().parent.parent
+        template = (
+            root / "deployment" / "cloud-run.private-synthetic.yaml.template"
+        ).read_text(encoding="utf-8")
+        for changed in (
+            template.replace("            - name: MLAI_ENVIRONMENT\n", "", 1),
+            template.replace(
+                "            - name: MLAI_ENVIRONMENT\n",
+                "            - name: MLAI_ENVIRONMENT\n"
+                "            - name: MLAI_ENVIRONMENT\n",
+                1,
+            ),
+        ):
+            with self.subTest(), self.assertRaises(ValueError):
+                validate_template(changed)
+
+    def test_identity_provider_and_factory_must_form_one_runtime_contract(self):
+        values = {
+            "MLAI_PUBLIC_ORIGIN": "https://private.example.test",
+            "MLAI_TRUST_PROXY_TLS": "true",
+            "MLAI_ENVIRONMENT": "cloud-synthetic",
+            "MLAI_SESSION_SECRET": "s" * 32,
+            "MLAI_IDENTITY_PROVIDER": "synthetic",
+            "MLAI_IDENTITY_ADAPTER_FACTORY": (
+                "app.identity.google_cloud:create_google_cloud_adapter"
+            ),
+            "MLAI_PROVIDER_REGISTRY_FACTORY": "deployment.providers:create_registry",
+            "MLAI_DATABASE_PATH": "/tmp/unused.sqlite3",
+            "MLAI_BACKUP_DIRECTORY": "/tmp/backups",
+            "MLAI_ALLOW_REAL_CUSTOMER_DATA": "false",
+        }
+        with self.assertRaisesRegex(ValueError, "cloud-synthetic runtime"):
+            PilotConfiguration.from_environment(values)
+
+        values.update(
+            {
+                "MLAI_IDENTITY_PROVIDER": "google-cloud-identity-platform",
+                "MLAI_GOOGLE_CLOUD_PROJECT_ID": "marketinglabai-identity-dev",
+                "MLAI_GOOGLE_WEB_API_KEY": "AIza" + "A" * 32,
+                "MLAI_GOOGLE_OAUTH_CLIENT_ID": (
+                    "483973859553-synthetic.apps.googleusercontent.com"
+                ),
+                "MLAI_GOOGLE_AUTH_DOMAIN": (
+                    "marketinglabai-identity-dev.firebaseapp.com"
+                ),
+            }
+        )
+        configuration = PilotConfiguration.from_environment(values)
+        self.assertEqual(
+            "google-cloud-identity-platform", configuration.identity_provider
+        )
 
 
 class DockerBuildContextRegressionTests(unittest.TestCase):

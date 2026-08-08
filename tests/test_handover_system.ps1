@@ -16,6 +16,7 @@ $RequiredFiles = @(
     "governance\adrs\ADR-0014-pilot-operations-release-gate.md",
     "governance\adrs\ADR-0015-positioning-intelligence-foundation.md",
     "governance\adrs\ADR-0016-governed-positioning-workflow-integration.md",
+    "governance\adrs\ADR-0033-durable-remediation-directive.md",
     "docs\pilot-release-gate.md",
     "docs\pilot-operations-runbook.md",
     "docs\privacy-and-data-handling.md",
@@ -25,7 +26,8 @@ $RequiredFiles = @(
     "backlog\MLAI-028.md",
     "docs\engineering\continuity.md",
     "docs\handover\CURRENT_HANDOVER.md",
-    "scripts\build_handover.ps1"
+    "scripts\build_handover.ps1",
+    "scripts\validate_private_synthetic_deployment.ps1"
 )
 
 foreach ($RelativePath in $RequiredFiles) {
@@ -37,6 +39,7 @@ foreach ($RelativePath in $RequiredFiles) {
 
 $Scripts = @(
     "scripts\build_handover.ps1",
+    "scripts\validate_private_synthetic_deployment.ps1",
     "tests\test_handover_system.ps1"
 )
 

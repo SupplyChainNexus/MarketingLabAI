@@ -250,3 +250,16 @@ Before a major capability is approved, it should answer:
 
 Wave 2 capabilities should be implemented when sufficient real execution data
 exists to make them meaningful.
+
+## 15. Durable Remediation Principle
+
+MarketingLabAI applies Durable Remediation. When a failure exposes a weakness
+in architecture, configuration, delivery workflow, security, or governance,
+the underlying weakness and its recurrence path must be corrected whenever a
+durable solution is reasonably achievable.
+
+A short-term patch may be used only as explicit containment of immediate harm,
+cost, or exposure. Containment must preserve existing controls, record its
+temporary status and owner, and name the separately authorized durable
+follow-up. A successful containment does not by itself close the defect,
+story, risk, technical debt, or quality gate.

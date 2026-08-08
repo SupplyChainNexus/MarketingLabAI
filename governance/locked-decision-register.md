@@ -667,3 +667,20 @@ invitation delivery, public signup, production access, external publishing,
 real-data learning, customer billing, unapproved paid services and destructive
 production changes require explicit founder approval. The canonical status is
 `real_data_activation_frozen`, not the former broad `founder_frozen` label.
+
+### LDR-053 — Durable Remediation Directive
+
+**Status:** Current / Binding governance
+**Source:** ADR-0033 and founder approval on 2026-08-08
+
+When a defect exposes a structural, configuration, workflow, security, or
+governance weakness, engineering must correct the underlying system and add an
+automated prevention control whenever a durable solution is reasonably
+achievable. A short-term patch must not be accepted as the final remediation
+merely because it makes the immediate command or test pass.
+
+Emergency containment is permitted only to limit immediate harm, cost, or
+exposure. It must be explicitly temporary, evidenced, preserve existing
+controls, name an owner and durable follow-up, and remain separately authorized.
+A successful containment alone cannot close the related defect, story, risk,
+technical debt, or quality gate.
