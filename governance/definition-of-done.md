@@ -21,7 +21,7 @@ A feature is complete only when:
   adds an automated prevention check where reasonably achievable.
 - A temporary containment is recorded as incomplete and cannot close the
   defect, story, risk, technical debt, or gate without its durable follow-up.
-- Applicable release phases use the versioned gate catalogue for orchestration,
+- Applicable release phases apply **Strong controls + automated sequencing + simple operator experience** through the versioned gate catalogue for orchestration,
   but controller state is never deployment authority. Deployable artifacts
   require the independent evidence and infrastructure controls in ADR-0035.
 - A deployment phase cannot be closed by an out-of-order manual command or by
