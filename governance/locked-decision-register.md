@@ -719,3 +719,21 @@ Backfills or repaired state may document a defect but cannot convert historical
 work into release authorization. Cloud Run Binary Authorization is the target
 enforcement control; the first enforced image must be rebuilt through the
 hardened provenance path.
+
+### LDR-056 — Simple Operator Experience and Measured Marketing Efficiency
+
+**Status:** Current / Binding product and evidence governance
+**Source:** ADR-0036 and founder approval on 2026-08-10
+
+MarketingLabAI absorbs governance complexity into the platform. Operators act
+on business decisions and exceptions rather than repositories, cryptography,
+policy engines, manifests or release mechanics. An ordinary Company Brain task
+targets no more than three meaningful operator decisions, while administrator
+and audit evidence is available through progressive disclosure.
+
+The product targets 5-10 hours saved per week and a 40-60% reduction in
+repeatable campaign-preparation time for growing businesses and lean marketing
+teams. These are measurable targets and may not be represented as proven,
+guaranteed or typical customer results until the governed evidence protocol is
+satisfied. MarketingLabAI does not claim to replace human accountability or a
+complete marketing department.

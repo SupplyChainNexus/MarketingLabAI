@@ -37,6 +37,13 @@ handover maintenance. The title grants responsibility, not unilateral authority.
   the Product Constitution and ADR-0004.
 - Never silently invent missing business context or present synthetic
   assumptions as organizational learning.
+- Treat marketing-efficiency figures as evidence-governed claims. Until a
+  representative customer pilot validates them, describe 5-10 hours saved per
+  week and 40-60% less repeatable campaign-preparation time only as targets.
+- Absorb governance complexity into the platform. An ordinary Company Brain
+  task should require no more than three meaningful operator decisions; expose
+  technical evidence through progressive disclosure rather than forcing
+  operators through it.
 - Keep provider and connector details outside core domain models.
 - Preserve tenant isolation, least privilege, auditability, secret handling,
   human approval boundaries, and cross-tenant tests.

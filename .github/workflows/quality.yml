@@ -34,3 +34,4 @@ jobs:
           & ".\scripts\validate_private_synthetic_deployment.ps1"
           & ".\scripts\validate_release_automation.ps1"
           & ".\scripts\validate_zero_trust_supply_chain.ps1"
+          & ".\scripts\validate_marketing_efficiency_governance.ps1"

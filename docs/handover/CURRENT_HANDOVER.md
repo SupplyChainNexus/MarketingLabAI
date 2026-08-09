@@ -209,3 +209,13 @@ independent verifier. It performs no cryptographic signing, cloud mutation,
 deployment or authorization. Next work is hosted-builder provenance and signing
 design, followed by separately authorized KMS, attestor and Binary Authorization
 infrastructure in audit mode before enforcement.
+
+## Queued customer-outcome governance
+
+ADR-0036 and LDR-056 bind simple operator experience and evidence-governed
+marketing-efficiency claims. Ordinary Company Brain work targets no more than
+three meaningful decisions. The product targets 5-10 hours saved per week and
+40-60% less repeatable campaign-preparation time, but those figures remain
+qualified targets until representative customer-pilot evidence passes the
+measurement protocol. MLAI-032.1 is queued and does not interrupt the active
+hosting and zero-trust supply-chain storyline.

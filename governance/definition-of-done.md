@@ -26,6 +26,10 @@ A feature is complete only when:
   require the independent evidence and infrastructure controls in ADR-0035.
 - A deployment phase cannot be closed by an out-of-order manual command or by
   evidence bound to a different commit, image, environment or release run.
+- Customer-facing efficiency claims identify whether they are targets,
+  synthetic benchmarks, pilot observations or validated commercial evidence.
+- Operator workflows expose business decisions and genuine exceptions while
+  infrastructure and governance mechanics use progressive disclosure.
 
 ## Continuity gate
 
@@ -70,3 +74,14 @@ are satisfied:
   required before deployment or traffic routing.
 - Legacy or incomplete runs remain non-deployable and are not repaired into
   compliance.
+
+## Customer Outcome Evidence Checklist
+
+- [ ] The workflow and start/end boundaries are named.
+- [ ] Manual baseline and assisted time use the same task and quality bar.
+- [ ] Total operator minutes, review time and revision cycles are retained.
+- [ ] Sample size, business type, user role and measurement period are stated.
+- [ ] Mean, median and range are reported without selecting only the best run.
+- [ ] Synthetic evidence is labelled and never presented as customer evidence.
+- [ ] Public wording matches the achieved evidence level.
+- [ ] Human approval and compliance-review time remain included.

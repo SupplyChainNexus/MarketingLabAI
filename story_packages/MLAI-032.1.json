@@ -1,0 +1,40 @@
+{
+  "storyId": "MLAI-032.1",
+  "title": "Marketing Efficiency Measurement Foundation",
+  "slug": "marketing_efficiency_measurement_foundation",
+  "baseline": "bdac5bc",
+  "projectRoot": "C:\\Ai Projects\\MarketingLabAI",
+  "sourceRoot": "C:\\Ai Projects\\MarketingLabAI",
+  "installFiles": [
+    ".github\\workflows\\quality.yml",
+    "AGENTS.md",
+    "backlog\\MLAI-032.md",
+    "docs\\handover\\CURRENT_HANDOVER.md",
+    "docs\\marketing-efficiency-evidence-protocol.md",
+    "governance\\adrs\\ADR-0036-simple-operator-and-measured-marketing-efficiency.md",
+    "governance\\definition-of-done.md",
+    "governance\\locked-decision-register.md",
+    "governance\\product-constitution.md",
+    "governance\\quality-gates.md",
+    "scripts\\validate_marketing_efficiency_governance.ps1",
+    "story_packages\\MLAI-032.1.json",
+    "tests\\test_marketing_efficiency_governance.py"
+  ],
+  "newFiles": [
+    "backlog\\MLAI-032.md",
+    "docs\\marketing-efficiency-evidence-protocol.md",
+    "governance\\adrs\\ADR-0036-simple-operator-and-measured-marketing-efficiency.md",
+    "scripts\\validate_marketing_efficiency_governance.ps1",
+    "story_packages\\MLAI-032.1.json",
+    "tests\\test_marketing_efficiency_governance.py"
+  ],
+  "compileFiles": [
+    "tests\\test_marketing_efficiency_governance.py"
+  ],
+  "focusedTestModules": [
+    "tests.test_marketing_efficiency_governance",
+    "tests.test_quality_governance"
+  ],
+  "importCommand": "from pathlib import Path; assert Path('docs/marketing-efficiency-evidence-protocol.md').is_file(); print('MLAI-032.1 governance imports OK')",
+  "expectedStatus": []
+}

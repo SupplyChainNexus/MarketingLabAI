@@ -286,3 +286,18 @@ bound to the exact source revision, artifact digest, environment, policy and
 gate evidence through separated cryptographic identities and deployment-layer
 enforcement. A legacy release with incomplete authority remains historical and
 non-deployable rather than being repaired into compliance.
+
+## 18. Simple Operator and Measured Customer Outcome Principle
+
+MarketingLabAI absorbs governance, provenance, sequencing and policy mechanics
+so that operators act on business decisions and genuine exceptions. An ordinary
+Company Brain task targets no more than three meaningful operator decisions.
+Administrative and audit detail remains available through progressive
+disclosure without becoming the default operator workflow.
+
+The initial measurable product target is 5-10 hours saved per week and a
+40-60% reduction in repeatable campaign-preparation time for growing businesses
+and lean marketing teams. These figures are targets, not proven outcomes, until
+representative customer-pilot evidence validates them. Public claims must use
+qualified language such as "designed to", "aims to", or "targeting" until the
+evidence protocol permits a validated claim.

@@ -101,3 +101,19 @@ policy and independent shadow verifier. CI covers `deployment` with Ruff and
 Black. No repository test may claim that structural evidence validation is a
 cryptographic signature, RFC 3161 verification, final release authorization,
 Binary Authorization enforcement, or deployment permission.
+
+## Marketing Efficiency and Operator Simplicity Gate
+
+- Ordinary Company Brain workflows target no more than three meaningful
+  operator decisions; extra decisions require a genuine conflict, risk or
+  separation-of-duties reason.
+- Technical identifiers, hashes, manifests and policy traces use progressive
+  disclosure and do not become mandatory operator steps.
+- Time comparisons use equivalent workflow boundaries and quality standards.
+- Manual baseline, assisted time, review time, revisions and exceptions are
+  retained in append-only measurement evidence.
+- Synthetic benchmarks remain labelled synthetic and cannot validate customer
+  or commercial claims.
+- Until representative pilot evidence passes, 5-10 hours saved per week and
+  40-60% less repeatable campaign-preparation time remain qualified targets
+  rather than guaranteed or proven outcomes.
