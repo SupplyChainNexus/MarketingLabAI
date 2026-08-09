@@ -203,6 +203,19 @@ class QualityGovernanceTests(unittest.TestCase):
         workflow = self.read(".github/workflows/quality.yml")
         self.assertIn("validate_private_synthetic_deployment.ps1", workflow)
 
+    def test_progressive_release_automation_is_binding_and_ci_enforced(self):
+        phrase = "Strong controls + automated sequencing + simple operator experience"
+        for source in (
+            "governance/product-constitution.md",
+            "governance/locked-decision-register.md",
+            "governance/quality-gates.md",
+            "governance/adrs/ADR-0034-progressive-release-automation.md",
+        ):
+            self.assertIn(phrase, self.read(source), source)
+
+        workflow = self.read(".github/workflows/quality.yml")
+        self.assertIn("validate_release_automation.ps1", workflow)
+
 
 if __name__ == "__main__":
     unittest.main()

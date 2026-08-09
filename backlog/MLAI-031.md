@@ -79,3 +79,14 @@ the canonical runtime without public access or real-customer data.
 - PowerShell 5.1 and CI execute the same no-mutation preflight.
 - Failed manual revisions are retained as evidence and do not authorize another
   one-off patch; ADR-0033 Durable Remediation governs recurrence prevention.
+
+## MLAI-031.4 — Progressive Release Automation
+
+Status: engineering implementation complete; external execution not authorized
+
+- Lock the deployment lifecycle into one dependency-ordered gate catalog.
+- Provide one PowerShell 5.1 operator entry point with status and safe-next-step output.
+- Record append-only, hash-chained, commit- and image-bound release evidence.
+- Refuse skipped gates, in-repository run data, unclassified failures, and
+  unauthorized mutation claims.
+- Execute the same no-mutation validation in CI.

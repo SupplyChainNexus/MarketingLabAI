@@ -684,3 +684,21 @@ exposure. It must be explicitly temporary, evidenced, preserve existing
 controls, name an owner and durable follow-up, and remain separately authorized.
 A successful containment alone cannot close the related defect, story, risk,
 technical debt, or quality gate.
+
+### LDR-054 — Progressive Release Automation
+
+**Status:** Current / Binding governance
+**Source:** ADR-0034 and founder approval on 2026-08-09
+
+MarketingLabAI adopts **Strong controls + automated sequencing + simple operator experience**.
+Material private-synthetic releases use one canonical gate
+catalogue, a dependency-aware repository controller, a thin PowerShell 5.1
+operator interface and unique immutable evidence runs bound to the exact commit,
+image digest and environment.
+
+Out-of-order phases, evidence overwrites and mutation claims from non-mutating
+gates are refused. The controller never grants deployment, traffic, public
+access, invitations, billing, publishing, real-customer data or real-data
+learning authority. Higher-risk controls are progressively implemented as hard
+gates before their corresponding boundaries open while local and controlled
+synthetic engineering continues.

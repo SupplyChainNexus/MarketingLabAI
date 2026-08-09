@@ -21,6 +21,10 @@ A feature is complete only when:
   adds an automated prevention check where reasonably achievable.
 - A temporary containment is recorded as incomplete and cannot close the
   defect, story, risk, technical debt, or gate without its durable follow-up.
+- Applicable release phases are executed through **Strong controls + automated sequencing + simple operator experience**: the canonical gate catalogue,
+  dependency-aware controller and immutable external run evidence.
+- A deployment phase cannot be closed by an out-of-order manual command or by
+  evidence bound to a different commit, image, environment or release run.
 
 ## Continuity gate
 

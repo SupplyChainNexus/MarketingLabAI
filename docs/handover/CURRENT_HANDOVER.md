@@ -194,3 +194,12 @@ Render the canonical manifest outside the repository, review its redacted
 contract summary, and request separate authority before creating another private
 revision. Do not publish the OAuth app, send invitations, enable public signup,
 billing, publishing, real-customer data, or real-data learning.
+
+## Progressive release automation
+
+ADR-0034 and LDR-054 bind the operating model: **Strong controls + automated sequencing + simple operator experience**.
+`deployment/release_controller.py`
+and its ordered gate catalog are the release-state authority. The PowerShell
+wrapper is the operator entry point; each transition is prerequisite-checked and
+written to an external hash-chained evidence log. This implementation performs
+no cloud mutation and grants no deployment or activation authority.

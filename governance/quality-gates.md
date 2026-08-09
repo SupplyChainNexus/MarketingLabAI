@@ -30,6 +30,23 @@ and add automated prevention where reasonably achievable. Temporary
 containment must be labelled and tracked as incomplete; it may not weaken a
 test, security boundary, authorization boundary, or evidence requirement.
 
+## Strong controls + automated sequencing + simple operator experience
+
+Material private-synthetic releases use the repository-owned gate catalogue and
+release controller. Sequential phases may not be recorded before every declared
+predecessor passes for the same commit, image digest, environment and immutable
+release run. Independent safety assertions must not be represented as sequential
+phases merely because they appear in a numbered report.
+
+Every attempt receives a unique external evidence directory. Failed runs remain
+failed and immutable; a correction starts a linked new run rather than overwriting
+or relabelling evidence. Only catalogue gates that explicitly permit mutation may
+record a cloud mutation, and they require a separate authorization reference.
+
+The controller is an evidence and sequencing authority. It does not itself grant
+deployment, private traffic, public access, invitations, billing, publishing,
+real-customer data or real-data learning authority.
+
 ## Intelligence Quality Gates
 
 ### Domain Integrity

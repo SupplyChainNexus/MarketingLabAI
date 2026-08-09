@@ -1,0 +1,72 @@
+{
+  "storyId": "MLAI-031.4",
+  "title": "Progressive Private Synthetic Release Automation",
+  "slug": "progressive_private_synthetic_release_automation",
+  "baseline": "5bd8e9d",
+  "projectRoot": "C:\\Ai Projects\\MarketingLabAI",
+  "sourceRoot": "C:\\Ai Projects\\MarketingLabAI",
+  "installFiles": [
+    ".github\\workflows\\quality.yml",
+    "AGENTS.md",
+    "backlog\\MLAI-031.md",
+    "deployment\\private_synthetic_release_gates.json",
+    "deployment\\release_controller.py",
+    "docs\\handover\\CURRENT_HANDOVER.md",
+    "docs\\private-synthetic-release-automation.md",
+    "governance\\adrs\\ADR-0034-progressive-release-automation.md",
+    "governance\\definition-of-done.md",
+    "governance\\locked-decision-register.md",
+    "governance\\product-constitution.md",
+    "governance\\quality-gates.md",
+    "governance\\registers\\risk-register.md",
+    "governance\\registers\\technical-debt-register.md",
+    "scripts\\release_private_synthetic.ps1",
+    "scripts\\validate_release_automation.ps1",
+    "story_packages\\MLAI-031.4.json",
+    "tests\\test_handover_system.ps1",
+    "tests\\test_quality_governance.py",
+    "tests\\test_release_controller.py"
+  ],
+  "newFiles": [
+    "deployment\\private_synthetic_release_gates.json",
+    "deployment\\release_controller.py",
+    "docs\\private-synthetic-release-automation.md",
+    "governance\\adrs\\ADR-0034-progressive-release-automation.md",
+    "scripts\\release_private_synthetic.ps1",
+    "scripts\\validate_release_automation.ps1",
+    "story_packages\\MLAI-031.4.json",
+    "tests\\test_release_controller.py"
+  ],
+  "compileFiles": [
+    "deployment\\release_controller.py",
+    "tests\\test_quality_governance.py",
+    "tests\\test_release_controller.py"
+  ],
+  "focusedTestModules": [
+    "tests.test_release_controller",
+    "tests.test_quality_governance"
+  ],
+  "importCommand": "from deployment.release_controller import load_catalog; assert len(load_catalog()) == 11; print('MLAI-031.4 release automation imports OK')",
+  "expectedStatus": [
+    " M .github/workflows/quality.yml",
+    " M AGENTS.md",
+    " M backlog/MLAI-031.md",
+    " M docs/handover/CURRENT_HANDOVER.md",
+    " M governance/definition-of-done.md",
+    " M governance/locked-decision-register.md",
+    " M governance/product-constitution.md",
+    " M governance/quality-gates.md",
+    " M governance/registers/risk-register.md",
+    " M governance/registers/technical-debt-register.md",
+    " M tests/test_handover_system.ps1",
+    " M tests/test_quality_governance.py",
+    "?? deployment/private_synthetic_release_gates.json",
+    "?? deployment/release_controller.py",
+    "?? docs/private-synthetic-release-automation.md",
+    "?? governance/adrs/ADR-0034-progressive-release-automation.md",
+    "?? scripts/release_private_synthetic.ps1",
+    "?? scripts/validate_release_automation.ps1",
+    "?? story_packages/MLAI-031.4.json",
+    "?? tests/test_release_controller.py"
+  ]
+}

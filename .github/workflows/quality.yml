@@ -32,3 +32,4 @@ jobs:
           & ".\tests\test_handover_system.ps1"
           & ".\tests\test_story_package_generator.ps1"
           & ".\scripts\validate_private_synthetic_deployment.ps1"
+          & ".\scripts\validate_release_automation.ps1"
