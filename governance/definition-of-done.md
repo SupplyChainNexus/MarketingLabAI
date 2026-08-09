@@ -21,8 +21,9 @@ A feature is complete only when:
   adds an automated prevention check where reasonably achievable.
 - A temporary containment is recorded as incomplete and cannot close the
   defect, story, risk, technical debt, or gate without its durable follow-up.
-- Applicable release phases are executed through **Strong controls + automated sequencing + simple operator experience**: the canonical gate catalogue,
-  dependency-aware controller and immutable external run evidence.
+- Applicable release phases use the versioned gate catalogue for orchestration,
+  but controller state is never deployment authority. Deployable artifacts
+  require the independent evidence and infrastructure controls in ADR-0035.
 - A deployment phase cannot be closed by an out-of-order manual command or by
   evidence bound to a different commit, image, environment or release run.
 
@@ -60,3 +61,12 @@ are satisfied:
 - [ ] Product Capability Map maturity is reviewed.
 - [ ] Risks and technical debt are recorded when unresolved.
 - [ ] Documentation matches the implemented behaviour.
+## Zero-trust release evidence
+
+- Controller state is never accepted as deployment authority.
+- Deployable artifacts are digest-pinned and have authentic build provenance.
+- Gate evidence is independently signed, RFC 3161-timestamped and policy-bound.
+- A separate final release authority and infrastructure admission control are
+  required before deployment or traffic routing.
+- Legacy or incomplete runs remain non-deployable and are not repaired into
+  compliance.

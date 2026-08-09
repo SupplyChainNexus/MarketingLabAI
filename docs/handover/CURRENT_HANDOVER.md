@@ -197,9 +197,15 @@ billing, publishing, real-customer data, or real-data learning.
 
 ## Progressive release automation
 
-ADR-0034 and LDR-054 bind the operating model: **Strong controls + automated sequencing + simple operator experience**.
-`deployment/release_controller.py`
-and its ordered gate catalog are the release-state authority. The PowerShell
-wrapper is the operator entry point; each transition is prerequisite-checked and
-written to an external hash-chained evidence log. This implementation performs
-no cloud mutation and grants no deployment or activation authority.
+ADR-0035 and LDR-055 supersede controller release authority. The controller is
+an observational coordinator only. A permanent release requires hosted-build
+provenance, independently signed in-toto evidence, exact RFC 3161 timestamp
+coverage, independent policy verification, a separate final release signer and
+deployment-layer enforcement. Legacy ledgers remain unchanged and
+non-deployable; the 7e45958 run must not be backfilled into compliance.
+
+The repository currently implements the binding trust policy and a shadow-only
+independent verifier. It performs no cryptographic signing, cloud mutation,
+deployment or authorization. Next work is hosted-builder provenance and signing
+design, followed by separately authorized KMS, attestor and Binary Authorization
+infrastructure in audit mode before enforcement.

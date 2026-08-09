@@ -702,3 +702,20 @@ access, invitations, billing, publishing, real-customer data or real-data
 learning authority. Higher-risk controls are progressively implemented as hard
 gates before their corresponding boundaries open while local and controlled
 synthetic engineering continues.
+
+### LDR-055 — Zero-Trust Software-Supply-Chain Authority
+
+**Status:** Current / Binding governance; supersedes controller authority in LDR-054
+**Source:** ADR-0035 and founder approval on 2026-08-09
+
+The release controller is an untrusted coordinator and observational status
+projection. It cannot create deployment authority. Every deployable image must
+be bound by digest to authentic hosted-build provenance, independently signed
+in-toto gate attestations, exact RFC 3161 timestamp coverage, a versioned policy
+bundle, an isolated final release authority, and deployment-layer enforcement.
+
+Legacy controller runs and artifacts are historical and non-deployable.
+Backfills or repaired state may document a defect but cannot convert historical
+work into release authorization. Cloud Run Binary Authorization is the target
+enforcement control; the first enforced image must be rebuilt through the
+hardened provenance path.

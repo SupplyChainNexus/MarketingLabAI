@@ -276,3 +276,13 @@ development.
 Release sequencing and evidence must be machine-enforced where reasonably
 achievable. Operator memory and manually reconstructed commands are not a
 durable release authority.
+
+## 17. Zero-Trust Release Authority Principle
+
+Release orchestration is not release authority. Controller databases, mutable
+gate flags, reconstructed commands and retrospective backfills cannot make an
+artifact deployable. Deployment authority must be independently verifiable and
+bound to the exact source revision, artifact digest, environment, policy and
+gate evidence through separated cryptographic identities and deployment-layer
+enforcement. A legacy release with incomplete authority remains historical and
+non-deployable rather than being repaired into compliance.

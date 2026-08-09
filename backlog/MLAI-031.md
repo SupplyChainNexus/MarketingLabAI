@@ -90,3 +90,16 @@ Status: engineering implementation complete; external execution not authorized
 - Refuse skipped gates, in-repository run data, unclassified failures, and
   unauthorized mutation claims.
 - Execute the same no-mutation validation in CI.
+
+## MLAI-031.5 — Zero-Trust Software-Supply-Chain Foundation
+
+Status: founder-authorized repository foundation; cloud enforcement pending
+
+- Supersede controller state as release authority.
+- Lock the exact run, commit, image digest, gate, policy and timestamp binding.
+- Add a versioned shadow policy and independent no-mutation verifier.
+- Keep legacy runs and the 7e45958 artifact historical and non-deployable.
+- Target SLSA Build Level 3, independent in-toto/DSSE gate signatures, RFC 3161
+  timestamps, isolated final authorization and Cloud Run Binary Authorization.
+- Keep API enablement, KMS, attestors, organization policy, deployment and
+  traffic as separately authorized infrastructure stages.

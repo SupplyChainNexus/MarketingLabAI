@@ -1,0 +1,49 @@
+{
+  "storyId": "MLAI-031.5",
+  "title": "Zero-Trust Software Supply-Chain Foundation",
+  "slug": "zero_trust_software_supply_chain_foundation",
+  "baseline": "7e45958",
+  "projectRoot": "C:\\Ai Projects\\MarketingLabAI",
+  "sourceRoot": "C:\\Ai Projects\\MarketingLabAI",
+  "installFiles": [
+    ".github\\workflows\\quality.yml",
+    "AGENTS.md",
+    "backlog\\MLAI-031.md",
+    "deployment\\release_controller.py",
+    "deployment\\zero_trust_supply_chain.py",
+    "deployment\\zero_trust_supply_chain_policy.json",
+    "docs\\handover\\CURRENT_HANDOVER.md",
+    "docs\\zero-trust-software-supply-chain.md",
+    "governance\\adrs\\ADR-0035-zero-trust-software-supply-chain.md",
+    "governance\\definition-of-done.md",
+    "governance\\locked-decision-register.md",
+    "governance\\product-constitution.md",
+    "governance\\quality-gates.md",
+    "governance\\registers\\risk-register.md",
+    "governance\\registers\\technical-debt-register.md",
+    "scripts\\validate_zero_trust_supply_chain.ps1",
+    "story_packages\\MLAI-031.5.json",
+    "tests\\test_quality_governance.py",
+    "tests\\test_zero_trust_supply_chain.py"
+  ],
+  "newFiles": [
+    "deployment\\zero_trust_supply_chain.py",
+    "deployment\\zero_trust_supply_chain_policy.json",
+    "docs\\zero-trust-software-supply-chain.md",
+    "governance\\adrs\\ADR-0035-zero-trust-software-supply-chain.md",
+    "scripts\\validate_zero_trust_supply_chain.ps1",
+    "story_packages\\MLAI-031.5.json",
+    "tests\\test_zero_trust_supply_chain.py"
+  ],
+  "compileFiles": [
+    "deployment\\zero_trust_supply_chain.py",
+    "tests\\test_quality_governance.py",
+    "tests\\test_zero_trust_supply_chain.py"
+  ],
+  "focusedTestModules": [
+    "tests.test_zero_trust_supply_chain",
+    "tests.test_quality_governance"
+  ],
+  "importCommand": "from deployment.zero_trust_supply_chain import load_policy; assert load_policy()['mode'] == 'shadow'; print('MLAI-031.5 zero-trust imports OK')",
+  "expectedStatus": []
+}

@@ -216,6 +216,38 @@ class QualityGovernanceTests(unittest.TestCase):
         workflow = self.read(".github/workflows/quality.yml")
         self.assertIn("validate_release_automation.ps1", workflow)
 
+    def test_zero_trust_release_authority_supersedes_controller_state(self):
+        for source in (
+            "AGENTS.md",
+            "governance/product-constitution.md",
+            "governance/locked-decision-register.md",
+            "governance/definition-of-done.md",
+            "governance/quality-gates.md",
+            "governance/adrs/ADR-0035-zero-trust-software-supply-chain.md",
+            "docs/zero-trust-software-supply-chain.md",
+        ):
+            normalized = " ".join(self.read(source).split()).lower()
+            self.assertIn("controller", normalized, source)
+
+        decision = " ".join(
+            self.read(
+                "governance/adrs/ADR-0035-zero-trust-software-supply-chain.md"
+            ).split()
+        )
+        for required in (
+            "Controller state is observational",
+            "independently signed in-toto gate attestations",
+            "RFC 3161",
+            "Binary Authorization",
+            "historical and non-deployable",
+            "must be rebuilt through the hardened path",
+        ):
+            self.assertIn(required, decision)
+
+        workflow = self.read(".github/workflows/quality.yml")
+        self.assertIn("ruff check app deployment tests", workflow)
+        self.assertIn("black --check app deployment tests", workflow)
+
 
 if __name__ == "__main__":
     unittest.main()

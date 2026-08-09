@@ -1,4 +1,8 @@
-"""Dependency-aware, evidence-first controller for private synthetic releases."""
+"""Legacy observational coordinator for private synthetic release sequencing.
+
+ADR-0035 supersedes this controller as release authority. Its state cannot
+authorize deployment and must not be repaired or backfilled into compliance.
+"""
 
 from __future__ import annotations
 
@@ -8,7 +12,7 @@ import json
 import os
 import re
 import secrets
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Mapping, Sequence
@@ -131,6 +135,8 @@ def start_release(
         "image_digest": image_digest,
         "environment": environment,
         "operator": operator.strip(),
+        "controller_authoritative": False,
+        "deployment_authority_source": "external-zero-trust-admission",
         "catalog_sha256": hashlib.sha256(catalog_path.read_bytes()).hexdigest(),
         "application_deployment_authorized": False,
         "public_access_authorized": False,
@@ -154,7 +160,9 @@ def read_events(run_dir: Path) -> tuple[dict[str, object], ...]:
     if not path.is_file():
         raise ValueError("Release event ledger is missing.")
     events = []
-    for line_number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+    for line_number, line in enumerate(
+        path.read_text(encoding="utf-8").splitlines(), 1
+    ):
         if not line.strip():
             continue
         try:
@@ -191,9 +199,7 @@ def verify_run(
     return metadata
 
 
-def gate_status(
-    run_dir: Path, catalog_path: Path = DEFAULT_CATALOG
-) -> dict[str, str]:
+def gate_status(run_dir: Path, catalog_path: Path = DEFAULT_CATALOG) -> dict[str, str]:
     verify_run(run_dir, catalog_path)
     status = {gate.id: "pending" for gate in load_catalog(catalog_path)}
     for event in read_events(run_dir):
@@ -238,8 +244,7 @@ def record_gate(
     if mutation_performed and not authorization_reference.strip():
         raise ValueError("Cloud mutation requires an authorization reference.")
     if outcome == "failed" and not all(
-        item.strip()
-        for item in (failure_classification, remediation, safe_next_action)
+        item.strip() for item in (failure_classification, remediation, safe_next_action)
     ):
         raise ValueError(
             "Failed gates require classification, remediation and safe next action."

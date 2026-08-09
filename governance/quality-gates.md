@@ -43,9 +43,9 @@ failed and immutable; a correction starts a linked new run rather than overwriti
 or relabelling evidence. Only catalogue gates that explicitly permit mutation may
 record a cloud mutation, and they require a separate authorization reference.
 
-The controller is an evidence and sequencing authority. It does not itself grant
-deployment, private traffic, public access, invitations, billing, publishing,
-real-customer data or real-data learning authority.
+The controller is an observational sequencing aid, not evidence or deployment
+authority. Only independently verified cryptographic evidence and the final
+release authority may satisfy infrastructure admission policy.
 
 ## Intelligence Quality Gates
 
@@ -94,3 +94,10 @@ real-customer data or real-data learning authority.
 - Capability maturity must be reviewed after a major increment.
 - AI-generated assets must preserve provider and model audit data.
 - Technical debt and accepted risks must be recorded.
+## Zero-trust supply-chain gate
+
+Every change to release infrastructure must validate the versioned trust
+policy and independent shadow verifier. CI covers `deployment` with Ruff and
+Black. No repository test may claim that structural evidence validation is a
+cryptographic signature, RFC 3161 verification, final release authorization,
+Binary Authorization enforcement, or deployment permission.

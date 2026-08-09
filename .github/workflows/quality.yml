@@ -19,8 +19,8 @@ jobs:
       - run: pip install -r requirements.txt -r requirements-dev.txt
       - run: |
           printf 'GEMINI_API_KEY=ci-synthetic-key\nGEMINI_MODEL=gemini-3.6-flash\n' > .env
-      - run: python -m ruff check app tests
-      - run: python -m black --check app tests
+      - run: python -m ruff check app deployment tests
+      - run: python -m black --check app deployment tests
       - run: python -m unittest discover -s tests -p "test_*.py"
 
   powershell-continuity:
@@ -33,3 +33,4 @@ jobs:
           & ".\tests\test_story_package_generator.ps1"
           & ".\scripts\validate_private_synthetic_deployment.ps1"
           & ".\scripts\validate_release_automation.ps1"
+          & ".\scripts\validate_zero_trust_supply_chain.ps1"

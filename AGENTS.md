@@ -50,9 +50,11 @@ handover maintenance. The title grants responsibility, not unilateral authority.
   add automated prevention whenever a durable solution is reasonably
   achievable. A temporary containment may reduce immediate harm, but cannot
   close the defect, story, risk, or gate without a recorded durable follow-up.
-- Apply Progressive Release Assurance: use the canonical ordered gate catalog,
-  release controller, and append-only evidence chain. Never bypass, reorder, or
-  manually imply a passed gate; cloud mutations still require separate authority.
+- Apply Zero-Trust Release Authority: controller state is observational only.
+  A deployable artifact requires authentic provenance, independently signed and
+  timestamped gate evidence, independent policy verification, a separate final
+  release signature, and infrastructure admission enforcement. Legacy state
+  repair or retrospective backfill can never grant deployment authority.
 - Use complete PowerShell 5.1-compatible commands for the project owner.
 - Place generated packages, downloads, transcripts, build contexts, and
   temporary artifacts under `C:\Ai Projects\ToolkitTemp`, not the repository.

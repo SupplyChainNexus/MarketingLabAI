@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "mode": "shadow",
+  "environment": "cloud-synthetic",
+  "artifact_repository": "africa-south1-docker.pkg.dev/marketinglabai-identity-dev/mlai-synthetic/marketinglabai-pilot",
+  "required_gates": [
+    "SOURCE_VERIFIED",
+    "CI_PASSED",
+    "ARTIFACT_VERIFIED",
+    "CONFIGURATION_VALIDATED",
+    "CLOUD_PREFLIGHT_PASSED",
+    "STARTUP_VERIFIED",
+    "SMOKE_TESTS_PASSED"
+  ],
+  "required_claims": {
+    "dsse_signature_verified": true,
+    "rfc3161_timestamp_verified": true,
+    "subject_digest_verified": true,
+    "signer_identity_verified": true
+  },
+  "deployment": {
+    "platform": "cloud-run",
+    "enforcement": "binary-authorization",
+    "required_attestor": "mlai-private-synthetic-release-authority",
+    "digest_only": true,
+    "breakglass_is_incident_only": true
+  },
+  "legacy": {
+    "controller_state_authoritative": false,
+    "backfill_may_authorize_deployment": false,
+    "historical_runs_deployable": false
+  }
+}
