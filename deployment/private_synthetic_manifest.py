@@ -10,6 +10,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Mapping, Sequence
 
+from deployment.private_synthetic_bootstrap import APPROVED_INGRESS
+
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_TEMPLATE = ROOT / "deployment" / "cloud-run.private-synthetic.yaml.template"
 
@@ -58,6 +60,7 @@ EXPECTED_SECRET_BINDINGS = {
 }
 
 REQUIRED_STATIC_FRAGMENTS = (
+    f"run.googleapis.com/ingress: {APPROVED_INGRESS}",
     'marketinglabai/private-synthetic-only: "true"',
     'marketinglabai/public-access-authorized: "false"',
     'marketinglabai/real-data-authorized: "false"',
@@ -135,6 +138,14 @@ def validate_template(template: str) -> dict[str, object]:
     if len(names) != len(EXPECTED_ENVIRONMENT_NAMES):
         raise ValueError("Each Cloud Run environment variable must occur exactly once.")
 
+    ingress_values = _matches(
+        template, r"^\s*run\.googleapis\.com/ingress:\s*(\S+)\s*$"
+    )
+    if ingress_values != (APPROVED_INGRESS,):
+        raise ValueError(
+            "Cloud Run ingress must occur exactly once with the approved private value."
+        )
+
     for fragment in REQUIRED_STATIC_FRAGMENTS:
         if fragment not in template:
             raise ValueError(
@@ -158,6 +169,7 @@ def validate_template(template: str) -> dict[str, object]:
         "environment_variable_count": len(names),
         "placeholder_count": len(placeholders),
         "secret_binding_count": len(EXPECTED_SECRET_BINDINGS),
+        "ingress": ingress_values[0],
         "template_valid": True,
     }
 

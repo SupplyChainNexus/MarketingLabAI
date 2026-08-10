@@ -219,3 +219,11 @@ three meaningful decisions. The product targets 5-10 hours saved per week and
 qualified targets until representative customer-pilot evidence passes the
 measurement protocol. MLAI-032.1 is queued and does not interrupt the active
 hosting and zero-trust supply-chain storyline.
+
+## MLAI-031.7: Canonical private ingress correction
+
+- Correct the canonical template from public ingress to
+  `internal-and-cloud-load-balancing`.
+- Enforce one shared manifest/bootstrap contract and CI regression suite.
+- Preserve the 9630fad run and image as incomplete, non-deployable history.
+- After commit and CI, create a fresh image and observational release run.

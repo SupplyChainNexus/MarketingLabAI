@@ -94,3 +94,14 @@ are satisfied:
   authority and pilot exposure remain separate controls.
 - Direct VPC subnet capacity, database connection budget and load-balancer-only
   Cloud Armor ingress are binding production prerequisites in their applicable phases.
+
+## MLAI-031.7 canonical private ingress
+
+- The canonical Cloud Run template must declare exactly one
+  `internal-and-cloud-load-balancing` ingress annotation.
+- Public, internal-only, missing, duplicated or malformed ingress fails closed.
+- The manifest validator and first-service bootstrap planner must agree before
+  configuration validation or revision creation.
+- Run `run-20260810T210334Z-6f68e3ad` and the 9630fad image remain historical,
+  incomplete and non-deployable; they are never repaired, migrated or backfilled.
+- A fresh commit-bound image and release run are required after this correction.

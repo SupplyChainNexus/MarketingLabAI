@@ -1,0 +1,20 @@
+{
+  "story_id": "MLAI-031.7",
+  "title": "Enforce one canonical private ingress contract",
+  "status": "implemented_pending_commit",
+  "scope": [
+    "canonical Cloud Run ingress annotation",
+    "manifest validation",
+    "bootstrap cross-contract regression",
+    "CI and governance enforcement"
+  ],
+  "acceptance_criteria": [
+    "exactly one internal-and-cloud-load-balancing annotation",
+    "public, internal-only, missing, duplicate and malformed values fail closed",
+    "manifest and bootstrap planner share the approved ingress",
+    "9630fad run and image remain historical and non-deployable",
+    "fresh commit-bound provenance is required"
+  ],
+  "cloud_mutation": false,
+  "historical_release_run_modified": false
+}

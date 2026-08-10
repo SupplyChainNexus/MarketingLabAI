@@ -35,4 +35,5 @@ jobs:
           & ".\scripts\validate_release_automation.ps1"
           & ".\scripts\validate_zero_trust_supply_chain.ps1"
           & ".\scripts\validate_first_service_bootstrap.ps1"
+          & ".\scripts\validate_private_ingress_contract.ps1"
           & ".\scripts\validate_marketing_efficiency_governance.ps1"

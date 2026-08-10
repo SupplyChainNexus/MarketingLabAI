@@ -103,3 +103,11 @@ Status: founder-authorized repository foundation; cloud enforcement pending
   timestamps, isolated final authorization and Cloud Run Binary Authorization.
 - Keep API enablement, KMS, attestors, organization policy, deployment and
   traffic as separately authorized infrastructure stages.
+
+## MLAI-031.7: Canonical private ingress correction
+
+- Correct the canonical template from public ingress to
+  `internal-and-cloud-load-balancing`.
+- Enforce one shared manifest/bootstrap contract and CI regression suite.
+- Preserve the 9630fad run and image as incomplete, non-deployable history.
+- After commit and CI, create a fresh image and observational release run.
