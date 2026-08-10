@@ -1,4 +1,4 @@
-﻿# Quality Gates
+# Quality Gates
 
 Every production increment must pass:
 
@@ -117,3 +117,12 @@ Binary Authorization enforcement, or deployment permission.
 - Until representative pilot evidence passes, 5-10 hours saved per week and
   40-60% less repeatable campaign-preparation time remain qualified targets
   rather than guaranteed or proven outcomes.
+## Durable first-service private bootstrap
+
+- FIRST_PRIVATE_REVISION is permitted only when the canonical service is absent,
+  ingress is private, and public and pilot invoker grants are both zero.
+- ZERO_TRAFFIC_REVISION is required for an existing private canonical service.
+- Ambiguous or public service state fails closed. Platform routing, IAM invocation
+  authority and pilot exposure remain separate controls.
+- Direct VPC subnet capacity, database connection budget and load-balancer-only
+  Cloud Armor ingress are binding production prerequisites in their applicable phases.

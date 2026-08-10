@@ -85,3 +85,12 @@ are satisfied:
 - [ ] Synthetic evidence is labelled and never presented as customer evidence.
 - [ ] Public wording matches the achieved evidence level.
 - [ ] Human approval and compliance-review time remain included.
+## Durable first-service private bootstrap
+
+- FIRST_PRIVATE_REVISION is permitted only when the canonical service is absent,
+  ingress is private, and public and pilot invoker grants are both zero.
+- ZERO_TRAFFIC_REVISION is required for an existing private canonical service.
+- Ambiguous or public service state fails closed. Platform routing, IAM invocation
+  authority and pilot exposure remain separate controls.
+- Direct VPC subnet capacity, database connection budget and load-balancer-only
+  Cloud Armor ingress are binding production prerequisites in their applicable phases.

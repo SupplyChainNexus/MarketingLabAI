@@ -1,0 +1,19 @@
+{
+  "story_id": "MLAI-031.6",
+  "title": "Durable first-service private bootstrap",
+  "status": "implemented_pending_repository_validation",
+  "baseline_commit": "235233244eef39c4302ff389e61b1164310cfa35",
+  "cloud_mutation_authorized": false,
+  "deployment_authorized": false,
+  "objectives": [
+    "Model absent and existing Cloud Run service paths explicitly",
+    "Fail closed on public or ambiguous service state",
+    "Bind revision creation mode and post-state to evidence",
+    "Preserve separate founder authorization for private pilot traffic"
+  ],
+  "locked_follow_ups": [
+    "Direct VPC subnet-capacity gate",
+    "Database connection-budget and pooling gate",
+    "Cloud Armor load-balancer-only ingress gate"
+  ]
+}

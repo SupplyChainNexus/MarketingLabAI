@@ -17,6 +17,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Mapping, Sequence
 
+from deployment.private_synthetic_bootstrap import validate_revision_evidence
+
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_CATALOG = ROOT / "deployment" / "private_synthetic_release_gates.json"
 EVENTS_FILE = "events.jsonl"
@@ -31,6 +33,7 @@ class GateDefinition:
     depends_on: tuple[str, ...]
     may_mutate_cloud: bool
     purpose: str
+    revision_creation_modes: tuple[str, ...] = ()
 
 
 def _utc_now() -> str:
@@ -53,7 +56,7 @@ def _outside_repository(path: Path) -> bool:
 
 def load_catalog(path: Path = DEFAULT_CATALOG) -> tuple[GateDefinition, ...]:
     payload = json.loads(path.read_text(encoding="utf-8-sig"))
-    if payload.get("schema_version") != 1:
+    if payload.get("schema_version") != 2:
         raise ValueError("Unsupported release-gate catalogue schema.")
     raw_gates = payload.get("gates")
     if not isinstance(raw_gates, list) or not raw_gates:
@@ -79,12 +82,30 @@ def load_catalog(path: Path = DEFAULT_CATALOG) -> tuple[GateDefinition, ...]:
             depends_on=dependencies,
             may_mutate_cloud=bool(raw.get("may_mutate_cloud", False)),
             purpose=str(raw.get("purpose", "")),
+            revision_creation_modes=tuple(
+                str(item) for item in raw.get("revision_creation_modes", ())
+            ),
         )
         if not gate.kind or not gate.purpose:
             raise ValueError(f"Gate {gate_id} is incomplete.")
         gates.append(gate)
         known.add(gate_id)
+    revision_gate = next(
+        (gate for gate in gates if gate.id == "REVISION_CREATED"), None
+    )
+    expected_modes = ("FIRST_PRIVATE_REVISION", "ZERO_TRAFFIC_REVISION")
+    if revision_gate is None or revision_gate.revision_creation_modes != expected_modes:
+        raise ValueError("REVISION_CREATED must declare both bootstrap creation modes.")
     return tuple(gates)
+
+
+def _evidence_values(reference: str) -> dict[str, str]:
+    values: dict[str, str] = {}
+    for item in reference.split(";"):
+        key, separator, value = item.partition("=")
+        if separator and key.strip():
+            values[key.strip()] = value.strip()
+    return values
 
 
 def validate_release_identity(
@@ -243,6 +264,10 @@ def record_gate(
         raise ValueError(f"Gate {gate_id} may not record a cloud mutation.")
     if mutation_performed and not authorization_reference.strip():
         raise ValueError("Cloud mutation requires an authorization reference.")
+    if gate_id == "REVISION_CREATED" and outcome == "passed":
+        if not mutation_performed:
+            raise ValueError("REVISION_CREATED must record exactly one cloud mutation.")
+        validate_revision_evidence(_evidence_values(evidence_reference))
     if outcome == "failed" and not all(
         item.strip() for item in (failure_classification, remediation, safe_next_action)
     ):

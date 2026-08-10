@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "release": "private-synthetic",
   "gates": [
     {
@@ -42,7 +42,11 @@
       "kind": "authorized_cloud_mutation",
       "depends_on": ["CLOUD_PREFLIGHT_PASSED"],
       "may_mutate_cloud": true,
-      "purpose": "Create exactly one private no-traffic revision from the approved manifest."
+      "purpose": "Create exactly one digest-pinned private revision: bootstrap an absent service without public or pilot invocation authority, or create an existing-service revision with zero platform traffic.",
+      "revision_creation_modes": [
+        "FIRST_PRIVATE_REVISION",
+        "ZERO_TRAFFIC_REVISION"
+      ]
     },
     {
       "id": "STARTUP_VERIFIED",

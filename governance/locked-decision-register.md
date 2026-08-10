@@ -737,3 +737,13 @@ teams. These are measurable targets and may not be represented as proven,
 guaranteed or typical customer results until the governed evidence protocol is
 satisfied. MarketingLabAI does not claim to replace human accountability or a
 complete marketing department.
+
+## Durable first-service private bootstrap
+
+- FIRST_PRIVATE_REVISION is permitted only when the canonical service is absent,
+  ingress is private, and public and pilot invoker grants are both zero.
+- ZERO_TRAFFIC_REVISION is required for an existing private canonical service.
+- Ambiguous or public service state fails closed. Platform routing, IAM invocation
+  authority and pilot exposure remain separate controls.
+- Direct VPC subnet capacity, database connection budget and load-balancer-only
+  Cloud Armor ingress are binding production prerequisites in their applicable phases.

@@ -23,6 +23,24 @@ IMAGE = (
     "mlai-synthetic/marketinglabai-pilot@sha256:"
     "660f8aeb11b1e572e4e37a1db2d835c01b168f98ef2ae91339116d60f64636ba"
 )
+REVISION_EVIDENCE = ";".join(
+    (
+        "authorization_id=AUTH-TEST",
+        "pre_mutation_baseline_sha256=" + "a" * 64,
+        "post_mutation_state_sha256=" + "b" * 64,
+        "created_revision=marketinglabai-velani-pilot-00001-abc",
+        "service_existed_before=false",
+        "creation_mode=FIRST_PRIVATE_REVISION",
+        "image_digest=" + IMAGE,
+        "mutation_count=1",
+        "ingress=internal-and-cloud-load-balancing",
+        "public_principals=0",
+        "pilot_invoker_grants=0",
+        "created_revision_traffic_percent=100",
+        "cloud_run_operation_id=operation-1",
+        "configuration_evidence_sha256=" + "c" * 64,
+    )
+)
 
 
 class ReleaseControllerTests(unittest.TestCase):
@@ -130,7 +148,7 @@ class ReleaseControllerTests(unittest.TestCase):
                     run,
                     gate_id="REVISION_CREATED",
                     outcome="passed",
-                    evidence_reference="synthetic://revision",
+                    evidence_reference=REVISION_EVIDENCE,
                     operator="synthetic-test-operator",
                     mutation_performed=True,
                 )
@@ -138,7 +156,7 @@ class ReleaseControllerTests(unittest.TestCase):
                 run,
                 gate_id="REVISION_CREATED",
                 outcome="passed",
-                evidence_reference="synthetic://revision",
+                evidence_reference=REVISION_EVIDENCE,
                 operator="synthetic-test-operator",
                 mutation_performed=True,
                 authorization_reference="founder-approved synthetic revision",
