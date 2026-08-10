@@ -2,7 +2,8 @@ $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 
 $ProjectRoot = Split-Path -Parent $PSScriptRoot
-$Python = Join-Path $ProjectRoot ".venv\Scripts\python.exe"
+$PythonCommand = Get-Command python -ErrorAction Stop
+$Python = $PythonCommand.Source
 
 Write-Host ""
 Write-Host "## MarketingLabAI Canonical Private Ingress Contract"
@@ -10,9 +11,10 @@ Write-Host ""
 Write-Host "Historical release-run modification: false"
 Write-Host "Cloud mutation: false"
 Write-Host "Deployment execution: false"
+Write-Host "Python: $Python"
 
 if (-not (Test-Path -LiteralPath $Python -PathType Leaf)) {
-    throw "Project Python interpreter not found: $Python"
+    throw "Resolved Python interpreter does not exist: $Python"
 }
 
 Set-Location $ProjectRoot
