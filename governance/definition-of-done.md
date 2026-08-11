@@ -104,4 +104,15 @@ are satisfied:
   configuration validation or revision creation.
 - Run `run-20260810T210334Z-6f68e3ad` and the 9630fad image remain historical,
   incomplete and non-deployable; they are never repaired, migrated or backfilled.
+
+## Unified release-control completion
+
+- [ ] The operator uses one supported launcher and one Python control plane.
+- [ ] Runtime and dependency locks verify.
+- [ ] Plan generation is deterministic and stale plans fail closed.
+- [ ] Approval binds the exact plan, release identity and gate.
+- [ ] Evidence records and their SHA-256 sidecars verify.
+- [ ] Apply and resume tests prove duplicate prevention after interruption.
+- [ ] No local approval or controller record claims admission authority.
+- [ ] The complete PowerShell 5.1 and Python regression suite passes.
 - A fresh commit-bound image and release run are required after this correction.

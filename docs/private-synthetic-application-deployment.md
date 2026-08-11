@@ -18,14 +18,15 @@ the unchanged repository and external infrastructure gates pass.
 
 `deployment/cloud-run.private-synthetic.yaml.template` is the single tracked
 source for the service name, runtime identity, Cloud SQL attachment, resource
-bounds, application variables, and Secret Manager bindings. Validate it with:
+bounds, application variables, and Secret Manager bindings. Validate it through
+the pinned repository control plane:
 
 ```powershell
-& ".\scripts\validate_private_synthetic_deployment.ps1"
+& ".\scripts\mlai_release.ps1" validate-repository
 ```
 
-Render a commit-bound manifest with
-`python -m deployment.private_synthetic_manifest render`. The output must be
+Render a commit-bound manifest only through a repository-owned Python process
+selected by the pinned launcher. The output must be
 outside the repository and must use the immutable `marketinglabai-pilot` image
 digest. Do not manually reconstruct or patch environment variables in a
 `gcloud run deploy` or `gcloud run services update` command.

@@ -201,7 +201,7 @@ class QualityGovernanceTests(unittest.TestCase):
             self.assertIn(required, normalized)
 
         workflow = self.read(".github/workflows/quality.yml")
-        self.assertIn("validate_private_synthetic_deployment.ps1", workflow)
+        self.assertIn("python -m tools.release_control validate-repository", workflow)
 
     def test_progressive_release_automation_is_binding_and_ci_enforced(self):
         phrase = "Strong controls + automated sequencing + simple operator experience"
@@ -214,7 +214,7 @@ class QualityGovernanceTests(unittest.TestCase):
             self.assertIn(phrase, self.read(source), source)
 
         workflow = self.read(".github/workflows/quality.yml")
-        self.assertIn("validate_release_automation.ps1", workflow)
+        self.assertIn("python -m tools.release_control validate-repository", workflow)
 
     def test_zero_trust_release_authority_supersedes_controller_state(self):
         for source in (
@@ -247,6 +247,24 @@ class QualityGovernanceTests(unittest.TestCase):
         workflow = self.read(".github/workflows/quality.yml")
         self.assertIn("ruff check app deployment tests", workflow)
         self.assertIn("black --check app deployment tests", workflow)
+
+    def test_unified_release_control_plane_is_binding_and_ci_enforced(self):
+        decision = self.read(
+            "governance/adrs/ADR-0039-unified-release-control-plane.md"
+        )
+        normalized = " ".join(decision.split())
+        for required in (
+            "one supported release operator entry point",
+            "one-plan",
+            "idempotent",
+            "observational history only",
+            "independent admission authority",
+        ):
+            self.assertIn(required, normalized)
+
+        workflow = self.read(".github/workflows/quality.yml")
+        self.assertIn("python -m tools.release_control validate-repository", workflow)
+        self.assertIn("scripts\\mlai_release.ps1", workflow)
 
 
 if __name__ == "__main__":

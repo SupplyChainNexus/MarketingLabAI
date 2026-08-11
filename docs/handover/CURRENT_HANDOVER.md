@@ -8,7 +8,7 @@
 - Last completed epic: MLAI-029 Marketing Strategy Intelligence
 - Active epic: MLAI-031 Controlled Pilot Hosting
 - Last completed story: MLAI-031.2 Repository-Wide PostgreSQL Compatibility and Migration
-- Active story: MLAI-031.3 Controlled Private Synthetic Application Deployment
+- Active story: MLAI-031.8 Unified Release Control Plane
 
 ## Product direction
 
@@ -227,3 +227,22 @@ hosting and zero-trust supply-chain storyline.
 - Enforce one shared manifest/bootstrap contract and CI regression suite.
 - Preserve the 9630fad run and image as incomplete, non-deployable history.
 - After commit and CI, create a fresh image and observational release run.
+
+## MLAI-031.8: Unified release-control repair
+
+Founder authorization on 2026-08-12 initiates durable remediation of the
+release operator path after more than four hours of PowerShell, path, parsing,
+evidence and authorization-handoff failures. The Cloud Build itself succeeded.
+
+The verified `2239244` image, build evidence and observational release run are
+preserved. `SOURCE_VERIFIED`, `CI_PASSED` and `ARTIFACT_VERIFIED` remain passed;
+`CONFIGURATION_VALIDATED` is the continuation point. No rebuild, duplicate run,
+cloud mutation or retrospective admission authority is permitted.
+
+ADR-0039 introduces `deployment.release_control`, one stable external evidence
+index and `scripts/mlai_release.ps1` as the only supported operator entry point.
+The next engineer action is complete repository validation, Windows PowerShell
+5.1 journey validation and read-only adoption of the preserved release. Only
+then may the one plan and one approval interface record configuration
+validation. Binary Authorization enforcement still requires a later hardened
+build under ADR-0035.

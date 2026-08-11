@@ -22,6 +22,7 @@ jobs:
       - run: python -m ruff check app deployment tests
       - run: python -m black --check app deployment tests
       - run: python -m unittest discover -s tests -p "test_*.py"
+      - run: python -m tools.release_control validate-repository
 
   powershell-continuity:
     runs-on: windows-latest
@@ -31,9 +32,8 @@ jobs:
         run: |
           & ".\tests\test_handover_system.ps1"
           & ".\tests\test_story_package_generator.ps1"
-          & ".\scripts\validate_private_synthetic_deployment.ps1"
-          & ".\scripts\validate_release_automation.ps1"
-          & ".\scripts\validate_zero_trust_supply_chain.ps1"
+          $PythonPath = (Get-Command "python.exe" -ErrorAction Stop).Source
+          & ".\scripts\mlai_release.ps1" -PythonPath $PythonPath validate-repository
           & ".\scripts\validate_first_service_bootstrap.ps1"
           & ".\scripts\validate_private_ingress_contract.ps1"
           & ".\scripts\validate_marketing_efficiency_governance.ps1"

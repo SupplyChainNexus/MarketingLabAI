@@ -29,3 +29,10 @@ Existing controller ledgers are retained unchanged as historical evidence.
 They are not repaired into deployable releases. The current 7e45958 release run
 and its image remain non-deployable under the new architecture. The first
 enforced artifact must be rebuilt under the hardened provenance path.
+
+## Unified operator path
+
+ADR-0039 places plan, approval, status, idempotency and recovery behind
+`tools.release_control`. That module may verify and coordinate evidence,
+but it cannot sign it or satisfy Binary Authorization. The legacy controller is
+not exposed as a supported operator interface.

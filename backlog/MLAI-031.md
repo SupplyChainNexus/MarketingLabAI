@@ -111,3 +111,26 @@ Status: founder-authorized repository foundation; cloud enforcement pending
 - Enforce one shared manifest/bootstrap contract and CI regression suite.
 - Preserve the 9630fad run and image as incomplete, non-deployable history.
 - After commit and CI, create a fresh image and observational release run.
+
+## MLAI-031.8 — Unified Release Control Plane
+
+Status: founder-authorized durable remediation; implementation in validation
+
+### Purpose
+
+Replace fragmented release scripts with one repository-owned operator path
+while preserving the gate catalogue, observational ledger and independent
+zero-trust admission authority.
+
+### Acceptance
+
+- One thin PowerShell 5.1 launcher invokes one pinned Python control plane.
+- State uses a stable product-named root with no MLAI story number.
+- Status, plan, approval, apply, resume and verify share one release identity.
+- Plans are deterministic and approvals bind the exact plan digest.
+- External evidence is unified, indexed, atomically written and SHA-256 checked.
+- Repeated or interrupted application safely resumes without duplicate gates.
+- The legacy controller remains observational and has no supported direct UI.
+- The verified `2239244` state is adopted without rebuilding or granting
+  deployment authority.
+- Cloud mutation and Binary Authorization enforcement remain separately gated.

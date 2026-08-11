@@ -136,4 +136,17 @@ Binary Authorization enforcement, or deployment permission.
   configuration validation or revision creation.
 - Run `run-20260810T210334Z-6f68e3ad` and the 9630fad image remain historical,
   incomplete and non-deployable; they are never repaired, migrated or backfilled.
+
+## Unified release-control gate
+
+- `scripts/mlai_release.ps1` is the only supported operator entry point.
+- Python and dependency versions are pinned and verified before release work.
+- Every transition has one deterministic plan and one approval bound to its
+  SHA-256 digest.
+- External state uses atomic writes, integrity sidecars and a process lock.
+- A repeated or interrupted apply resumes the same transition and cannot append
+  a duplicate terminal gate result.
+- The observational ledger, orchestration control plane and cryptographic
+  admission authority remain distinct.
+- CI runs `python -m tools.release_control validate-repository`.
 - A fresh commit-bound image and release run are required after this correction.

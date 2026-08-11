@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "control_plane_version": "1.0",
+  "environment": "cloud-synthetic",
+  "artifact_repository": "africa-south1-docker.pkg.dev/marketinglabai-identity-dev/mlai-synthetic/marketinglabai-pilot",
+  "state_root_environment_variable": "MLAI_RELEASE_STATE_ROOT",
+  "default_windows_state_root": "C:\\Ai Projects\\ToolkitTemp\\MarketingLabAI\\release-control",
+  "python": {
+    "minimum": [3, 11],
+    "maximum_exclusive": [3, 15]
+  },
+  "dependency_lock_hash_mode": "utf8-sig-lf-v1",
+  "dependency_locks": {
+    "requirements.txt": "2486c20f92127d00a860650c9ecfa28f73b92b323385e3db56b2e00fee72a31a",
+    "requirements-dev.txt": "cb659888e4e132174dfc1c7a2d3eb06fa21e8b9ba33940eec81f104d62239114"
+  },
+  "authorities": {
+    "orchestration": "tools.release_control",
+    "observational_history": "deployment.release_controller",
+    "admission": "external-zero-trust-binary-authorization"
+  },
+  "supported_apply_gates": [
+    "CONFIGURATION_VALIDATED"
+  ],
+  "forbidden_authority_claims": {
+    "controller_authoritative": false,
+    "legacy_backfill_deployable": false,
+    "local_approval_is_admission_authority": false
+  }
+}

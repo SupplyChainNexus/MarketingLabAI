@@ -1,27 +1,73 @@
-# Private Synthetic Release Automation
+# Unified Private Synthetic Release Control
 
-MarketingLabAI uses **Strong controls + automated sequencing + simple operator experience**
-for the private synthetic release lifecycle.
+MarketingLabAI uses **Strong controls + automated sequencing + simple operator
+experience** through one supported entry point:
 
-The canonical state machine is `deployment/private_synthetic_release_gates.json`.
-`deployment/release_controller.py` validates prerequisites and writes immutable
-release identity plus append-only, hash-chained events to a unique directory
-outside the repository. `scripts/release_private_synthetic.ps1` is the supported
-PowerShell 5.1 operator entry point.
+```powershell
+& ".\scripts\mlai_release.ps1" status
+```
 
-The controller does not execute cloud commands. A mutation-capable gate can only
-record a mutation when its catalog entry permits it and the operator supplies a
-separate authorization reference. Public access, real-customer data, invitations,
-billing, publishing, and real-data learning remain false in every run.
+The launcher resolves the active repository virtual environment and forwards
+arguments unchanged to `python -m tools.release_control`. It does not
+parse JSON, select gates, maintain evidence or execute cloud commands.
+Dependency-lock hashes use the documented `utf8-sig-lf-v1` canonical text mode,
+so LF and CRLF materializations verify identically without relaxing exact pins.
 
-Typical operation:
+## Authority separation
 
-1. Run `-Action Validate`.
-2. Run `-Action Start` with the full commit, digest-qualified image, and operator.
-3. Use `-Action Status` to display the next eligible gate.
-4. Run the gate's separately reviewed procedure.
-5. Record `passed` or `failed`; failures require classification, remediation, and
-   the next safe action.
-6. Run `-Action Verify` before relying on the evidence chain.
+| Responsibility | Component |
+| --- | --- |
+| Planning, approval binding, idempotency and recovery | `tools.release_control` |
+| Append-only gate history | `tools.release_controller` |
+| Cryptographic release and deployment admission | External final signer and Binary Authorization |
 
-Release evidence belongs under `C:\Ai Projects\ToolkitTemp`, never in Git.
+Controller state and local approval are never deployment authority.
+
+## Normal operator journey
+
+```powershell
+& ".\scripts\mlai_release.ps1" status
+& ".\scripts\mlai_release.ps1" plan
+& ".\scripts\mlai_release.ps1" approve `
+    --plan "<plan-digest>" `
+    --operator "<operator>" `
+    --authorization-reference "<approval-reference>"
+& ".\scripts\mlai_release.ps1" apply --plan "<plan-digest>"
+& ".\scripts\mlai_release.ps1" status
+```
+
+`resume` re-enters the same approved plan. It cannot silently create a second
+build, release run or terminal gate result. `status --audit` exposes hashes and
+evidence paths through progressive disclosure.
+
+## External state
+
+The default Windows state root is:
+
+```text
+C:\Ai Projects\ToolkitTemp\MarketingLabAI\release-control
+```
+
+It contains one release index, deterministic plans, plan-bound approvals,
+operation journals and evidence. Every JSON record has a SHA-256 sidecar and is
+written atomically. A process lock is released automatically if execution is
+interrupted.
+
+The root can be overridden with `MLAI_RELEASE_STATE_ROOT` or `--state-root`.
+It may never be inside the repository or coupled to an MLAI story number.
+
+## One-time adoption
+
+An existing observational run is adopted only after its chain, build summary,
+post-build assessment, commit and image digest verify. Adoption indexes
+evidence; it does not rewrite it or make the image deployable.
+
+```powershell
+& ".\scripts\mlai_release.ps1" adopt `
+    --run "<observational-run-directory>" `
+    --build-summary "<controlled-build-summary.json>" `
+    --post-build-assessment "<post-build-evidence-assessment.json>" `
+    --operator "<operator>"
+```
+
+Direct use of `scripts/release_private_synthetic.ps1` is retired.

@@ -758,3 +758,20 @@ complete marketing department.
 - Run `run-20260810T210334Z-6f68e3ad` and the 9630fad image remain historical,
   incomplete and non-deployable; they are never repaired, migrated or backfilled.
 - A fresh commit-bound image and release run are required after this correction.
+
+### LDR-057 — Unified release control plane
+
+**Status:** Current / Binding governance
+**Source:** ADR-0039 and founder approval on 2026-08-12
+
+Material private-synthetic release work uses one repository-owned Python
+control plane through one thin PowerShell 5.1 launcher. It produces one
+deterministic plan, one plan-bound local approval, one operator status and one
+integrity-checked external evidence index. Application is idempotent and
+interrupted work resumes the same transition rather than repeating it.
+
+The existing release controller remains an internal observational ledger. The
+control plane cannot issue cryptographic release authority, make a legacy image
+deployable or bypass signed attestations, final release signing and Binary
+Authorization. State paths are product-named and never coupled to MLAI story
+numbers.

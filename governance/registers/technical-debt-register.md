@@ -36,6 +36,7 @@
 | TD-032 | Deployment command drift | Manual Cloud Run commands duplicated the tracked configuration contract and produced successive failed revisions. | Critical | Resolved in repository by canonical manifest rendering, configuration invariants, PowerShell 5.1 validation and CI enforcement; external deployment evidence remains pending |
 | TD-033 | Manual release sequencing | Deployment gates were individually sound but lacked one machine-enforced progression and operator status surface. | Critical | Resolved by MLAI-031.4's ordered gate catalog, release controller, PowerShell wrapper, hash-chained evidence and CI regression |
 | TD-034 | Cryptographic signing, RFC 3161 verification, isolated release authority and Binary Authorization are not yet implemented; the repository verifier is shadow-only. | High | Complete ADR-0035 phases before any new private traffic is routed. | Open |
+| TD-035 | Release execution depended on mixed Python/PowerShell orchestration, stale story-numbered paths and temporary scripts. | Critical | Replaced by ADR-0039's one Python control plane and thin pinned launcher; validate the full Windows operator journey before closure. | In validation |
 
 ## MLAI-031.7 retired ingress mismatch
 
