@@ -8,7 +8,7 @@
 - Last completed epic: MLAI-029 Marketing Strategy Intelligence
 - Active epic: MLAI-031 Controlled Pilot Hosting
 - Last completed story: MLAI-031.2 Repository-Wide PostgreSQL Compatibility and Migration
-- Active story: MLAI-031.8 Unified Release Control Plane
+- Active story: MLAI-031.9 Permanent Read-Only Cloud Preflight
 
 ## Product direction
 
@@ -239,10 +239,23 @@ preserved. `SOURCE_VERIFIED`, `CI_PASSED` and `ARTIFACT_VERIFIED` remain passed;
 `CONFIGURATION_VALIDATED` is the continuation point. No rebuild, duplicate run,
 cloud mutation or retrospective admission authority is permitted.
 
-ADR-0039 introduces `deployment.release_control`, one stable external evidence
-index and `scripts/mlai_release.ps1` as the only supported operator entry point.
-The next engineer action is complete repository validation, Windows PowerShell
-5.1 journey validation and read-only adoption of the preserved release. Only
-then may the one plan and one approval interface record configuration
-validation. Binary Authorization enforcement still requires a later hardened
-build under ADR-0035.
+ADR-0039 introduced `tools.release_control`, one stable external evidence index
+and `scripts/mlai_release.ps1` as the only supported operator entry point. Its
+repository validation, Windows PowerShell 5.1 journey, read-only adoption and
+configuration gate have passed. Binary Authorization enforcement still
+requires a later hardened build under ADR-0035.
+
+## MLAI-031.9: Permanent read-only cloud preflight
+
+MLAI-031.8 is committed at `9d2093157fd439de9fdedbb4475cd246f8cfc8e2`,
+GitHub Actions run 34 passed, the verified `2239244` observations were adopted,
+and `CONFIGURATION_VALIDATED` passed through plan
+`87bcde478b4691f1464f13b1afcc7fc352f135be600b97b980cf7c89bb4c0046`.
+Apply/resume idempotency and the indexed evidence chain both verified.
+
+ADR-0040 extends the same control plane through read-only cloud preflight. It
+uses exact non-mutating `gcloud` verbs, pinned resource identities, minimized
+hash-indexed evidence and no secret payload access. Installation and CI perform
+no cloud operation. After commit and CI, create one preflight plan and stop for
+the exact plan approval. Do not proceed to `REVISION_CREATED`; ADR-0035 still
+requires the hardened independent admission path before cloud mutation.

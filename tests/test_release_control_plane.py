@@ -8,6 +8,7 @@ import unittest
 from pathlib import Path
 
 from deployment.release_controller import record_gate, start_release
+from tests.test_cloud_preflight import FakeCloudReader
 from tools.release_control.config import (
     ROOT,
     canonical_dependency_lock_sha256,
@@ -134,10 +135,42 @@ class ReleaseControlPlaneTests(unittest.TestCase):
         second = self.control.apply(plan_digest=plan["plan_digest"])
         resumed = self.control.resume()
         self.assertEqual(first, second)
-        self.assertEqual(first, resumed)
+        self.assertEqual("awaiting_approval", resumed["state"])
+        self.assertEqual("CLOUD_PREFLIGHT_PASSED", resumed["next_eligible_gate"])
         self.assertEqual("completed", first["status"])
         self.assertEqual("CLOUD_PREFLIGHT_PASSED", first["next_eligible_gate"])
         self.assertFalse(first["cloud_mutation_performed"])
+
+    def test_cloud_preflight_apply_and_resume_are_idempotent(self):
+        self.control.cloud_reader = FakeCloudReader(image_digest=IMAGE)
+        self.adopt()
+        configuration_plan = self.control.plan()
+        self.control.approve(
+            plan_digest=configuration_plan["plan_digest"],
+            operator="synthetic-approver",
+            authorization_reference="AUTH-SYNTHETIC-CONFIGURATION",
+        )
+        self.control.apply(plan_digest=configuration_plan["plan_digest"])
+        preflight_plan = self.control.plan()
+        self.assertEqual("CLOUD_PREFLIGHT_PASSED", preflight_plan["gate"])
+        self.assertFalse(preflight_plan["may_mutate_cloud"])
+        self.control.approve(
+            plan_digest=preflight_plan["plan_digest"],
+            operator="synthetic-approver",
+            authorization_reference="AUTH-SYNTHETIC-CLOUD-PREFLIGHT",
+        )
+        first = self.control.apply(plan_digest=preflight_plan["plan_digest"])
+        second = self.control.apply(plan_digest=preflight_plan["plan_digest"])
+        resumed = self.control.resume()
+        self.assertEqual(first, second)
+        self.assertEqual(first, resumed)
+        self.assertEqual("REVISION_CREATED", first["next_eligible_gate"])
+        self.assertFalse(first["cloud_mutation_performed"])
+        audit = self.control.status(audit=True)["audit"]
+        indexed_kinds = {record["kind"] for record in audit["evidence_records"]}
+        self.assertIn("gate_evidence:CONFIGURATION_VALIDATED", indexed_kinds)
+        self.assertIn("gate_evidence:CLOUD_PREFLIGHT_PASSED", indexed_kinds)
+        self.assertTrue(self.control.verify()["indexed_evidence_valid"])
 
     def test_resume_waits_for_one_approval(self):
         self.adopt()

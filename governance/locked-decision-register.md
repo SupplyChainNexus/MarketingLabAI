@@ -775,3 +775,18 @@ control plane cannot issue cryptographic release authority, make a legacy image
 deployable or bypass signed attestations, final release signing and Binary
 Authorization. State paths are product-named and never coupled to MLAI story
 numbers.
+
+### LDR-058 — Read-only cloud preflight stays on the paved path
+
+**Status:** Current / Binding governance
+**Source:** ADR-0040 and founder authorization to resume the release on 2026-08-12
+
+`CLOUD_PREFLIGHT_PASSED` is executed only by the unified Python release control
+plane. Cloud commands are restricted to exact read-only verbs, receive pinned
+resource identities, return JSON and produce hash-indexed minimized evidence.
+Secret values are never read. Public or ambiguous Cloud Run state and any
+required-resource drift fail closed.
+
+The gate is observational. It never authorizes or performs revision creation,
+deployment, IAM modification, traffic routing, rebuilding or cryptographic
+admission. ADR-0035 remains authoritative before any cloud mutation.

@@ -37,6 +37,7 @@
 | TD-033 | Manual release sequencing | Deployment gates were individually sound but lacked one machine-enforced progression and operator status surface. | Critical | Resolved by MLAI-031.4's ordered gate catalog, release controller, PowerShell wrapper, hash-chained evidence and CI regression |
 | TD-034 | Cryptographic signing, RFC 3161 verification, isolated release authority and Binary Authorization are not yet implemented; the repository verifier is shadow-only. | High | Complete ADR-0035 phases before any new private traffic is routed. | Open |
 | TD-035 | Release execution depended on mixed Python/PowerShell orchestration, stale story-numbered paths and temporary scripts. | Critical | Replaced by ADR-0039's one Python control plane and thin pinned launcher; validate the full Windows operator journey before closure. | In validation |
+| TD-036 | Read-only cloud preflight was not implemented in the paved control plane and would require temporary operator scripts. | Critical | Resolved in repository by ADR-0040's exact command allowlist, pinned observations and idempotent plan/apply/resume integration; Windows execution remains to be validated. | In validation |
 
 ## MLAI-031.7 retired ingress mismatch
 

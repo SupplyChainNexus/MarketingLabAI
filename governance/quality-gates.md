@@ -150,3 +150,15 @@ Binary Authorization enforcement, or deployment permission.
   admission authority remain distinct.
 - CI runs `python -m tools.release_control validate-repository`.
 - A fresh commit-bound image and release run are required after this correction.
+
+## Read-only cloud-preflight gate
+
+- `CLOUD_PREFLIGHT_PASSED` runs only inside `tools.release_control` after an
+  exact plan-bound approval.
+- Only exact read-only `gcloud` verbs are permitted; subprocess execution never
+  uses a shell and JSON formatting is owned by the executor.
+- Pinned APIs, identities, immutable artifact, database, secret metadata/access
+  and canonical Cloud Run target state must all match.
+- Secret payload access, cloud mutation, deployment and admission authority are
+  prohibited; public or ambiguous target state fails closed.
+- Tests must prove mutating nested command verbs are rejected before execution.

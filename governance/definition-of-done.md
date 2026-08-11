@@ -74,6 +74,11 @@ are satisfied:
   required before deployment or traffic routing.
 - Legacy or incomplete runs remain non-deployable and are not repaired into
   compliance.
+- A cloud-preflight implementation allowlists exact read-only verbs, hashes
+  minimized observations, never reads secret values and proves mutation verbs
+  are rejected before subprocess execution.
+- Passing read-only preflight does not authorize revision creation, deployment,
+  IAM changes, traffic routing or admission.
 
 ## Customer Outcome Evidence Checklist
 

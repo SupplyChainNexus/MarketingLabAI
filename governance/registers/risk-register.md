@@ -33,6 +33,7 @@
 | RISK-029 | Release sequencing and operator error | Manual gate tracking can run valid checks out of order, reuse stale evidence, or obscure the next safe action. | A later deployment step could proceed on an incomplete or mismatched foundation. | Enforce ADR-0034's ordered catalog, prerequisite controller, unique external run, hash-chained events, explicit failure classification, and CI validation. | Controlled - automation implemented |
 | RISK-030 | Treating mutable controller state or retrospective repair as release authority could admit an unverified artifact. | Critical | Controller authority is superseded by ADR-0035; legacy runs remain non-deployable; introduce signed in-toto evidence, RFC 3161 timestamps, independent verification and Binary Authorization progressively. | Open |
 | RISK-031 | Fragmented release scripts, shell-specific behaviour and manual evidence transfer can cause duplicate or incorrect operator actions. | Critical | ADR-0039 provides one pinned Python control plane, deterministic plan-bound approval, atomic indexed evidence, process locking and idempotent resume. | Reduced — repository validation pending |
+| RISK-032 | Cloud preflight assembled from ad hoc shell commands could leak secret values, accept drifted infrastructure or accidentally mutate cloud state. | Critical | ADR-0040 pins resources, allowlists exact read-only verbs, owns JSON capture, forbids secret payload access and tests rejection before subprocess execution. | Reduced — implementation validation pending |
 
 ## MLAI-031.7 private-ingress contract split
 

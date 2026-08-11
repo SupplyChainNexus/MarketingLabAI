@@ -69,6 +69,37 @@ def load_config(path: Path = DEFAULT_CONFIG) -> ControlConfig:
     }
     if authorities != expected:
         raise ValueError("Release-control authority separation has drifted.")
+    preflight = payload.get("cloud_preflight")
+    if not isinstance(preflight, dict):
+        raise ValueError("Cloud preflight configuration is missing.")
+    expected_preflight = {
+        "project": "marketinglabai-identity-dev",
+        "region": "africa-south1",
+        "service": "marketinglabai-velani-pilot",
+        "repository": "mlai-synthetic",
+        "runtime_service_account": (
+            "mlai-synthetic-runtime@marketinglabai-identity-dev.iam.gserviceaccount.com"
+        ),
+        "builder_service_account": (
+            "mlai-synthetic-builder@marketinglabai-identity-dev.iam.gserviceaccount.com"
+        ),
+        "cloud_sql_instance": "mlai-synthetic-pg18-jhb",
+        "cloud_sql_version": "POSTGRES_18",
+    }
+    if any(preflight.get(key) != value for key, value in expected_preflight.items()):
+        raise ValueError("Cloud preflight resource identities have drifted.")
+    required_apis = preflight.get("required_apis")
+    secrets = preflight.get("secrets")
+    if not isinstance(required_apis, list) or len(required_apis) != len(
+        set(required_apis)
+    ):
+        raise ValueError("Cloud preflight API contract is invalid.")
+    if (
+        not isinstance(secrets, list)
+        or len(secrets) != 4
+        or len(secrets) != len(set(secrets))
+    ):
+        raise ValueError("Cloud preflight secret metadata contract is invalid.")
     forbidden = payload.get("forbidden_authority_claims")
     if not isinstance(forbidden, dict) or any(
         value is not False for value in forbidden.values()

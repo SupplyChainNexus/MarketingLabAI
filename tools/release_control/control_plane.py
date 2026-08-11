@@ -15,6 +15,11 @@ from deployment.release_controller import (
     release_summary,
     verify_run,
 )
+from tools.release_control.cloud_preflight import (
+    CloudJsonReader,
+    GcloudJsonReader,
+    run_cloud_preflight,
+)
 from tools.release_control.config import ControlConfig, validate_repository
 from tools.release_control.store import (
     RunLock,
@@ -59,9 +64,16 @@ def _first_string(payload: Mapping[str, object], *names: str) -> str:
 class ReleaseControlPlane:
     """Coordinate one release without becoming its admission authority."""
 
-    def __init__(self, config: ControlConfig, state_root: Path):
+    def __init__(
+        self,
+        config: ControlConfig,
+        state_root: Path,
+        *,
+        cloud_reader: CloudJsonReader | None = None,
+    ):
         self.config = config
         self.state_root = state_root.expanduser().resolve()
+        self.cloud_reader = cloud_reader
         if not _outside_repository(self.state_root, config.repository_root):
             raise ValueError(
                 "Release-control state must remain outside the repository."
@@ -210,6 +222,69 @@ class ReleaseControlPlane:
             if sha256_file(path) != record.get("sha256"):
                 raise ValueError(f"Indexed evidence digest changed: {path}")
 
+        if index.get("control_plane_version") == self.config.payload.get(
+            "control_plane_version"
+        ):
+            indexed_paths = {str(record.get("path")) for record in records}
+            run_dir = Path(str(index["observational_run"]))
+            for event in read_events(run_dir):
+                reference = str(event.get("evidence_reference", ""))
+                if not reference.startswith("release-control://"):
+                    continue
+                relative, marker, _ = reference.removeprefix(
+                    "release-control://"
+                ).partition("#sha256=")
+                if not marker:
+                    raise ValueError("Local gate evidence reference is malformed.")
+                if str(self._record_path(relative)) not in indexed_paths:
+                    raise ValueError("Local gate evidence is absent from the index.")
+
+    def _index_gate_evidence(
+        self,
+        index: dict[str, object],
+        *,
+        kind: str,
+        path: Path,
+        expected_sha256: str,
+    ) -> None:
+        resolved = path.resolve()
+        if not resolved.is_file() or sha256_file(resolved) != expected_sha256:
+            raise ValueError(f"Gate evidence failed integrity verification: {resolved}")
+        records = index.get("evidence")
+        if not isinstance(records, list):
+            raise ValueError("Unified evidence index is invalid.")
+        matching = [record for record in records if record.get("path") == str(resolved)]
+        expected = {
+            "kind": kind,
+            "path": str(resolved),
+            "length": resolved.stat().st_size,
+            "sha256": expected_sha256,
+        }
+        if matching:
+            if len(matching) != 1 or matching[0] != expected:
+                raise ValueError("Indexed gate evidence conflicts with the record.")
+            return
+        records.append(expected)
+
+    def _migrate_local_gate_evidence(
+        self, index: dict[str, object], run_dir: Path
+    ) -> None:
+        for event in read_events(run_dir):
+            reference = str(event.get("evidence_reference", ""))
+            if not reference.startswith("release-control://"):
+                continue
+            relative, marker, expected = reference.removeprefix(
+                "release-control://"
+            ).partition("#sha256=")
+            if not marker or len(expected) != 64:
+                raise ValueError("Local gate evidence reference is malformed.")
+            self._index_gate_evidence(
+                index,
+                kind=f"gate_evidence:{event['gate_id']}",
+                path=self._record_path(relative),
+                expected_sha256=expected,
+            )
+
     def verify(self) -> dict[str, object]:
         index = self._load_index()
         self._verify_evidence_index(index)
@@ -282,7 +357,10 @@ class ReleaseControlPlane:
             raise ValueError(
                 f"The paved path does not yet implement {gate}; no command was run."
             )
-        action = {"CONFIGURATION_VALIDATED": "validate_configuration"}[gate]
+        action = {
+            "CONFIGURATION_VALIDATED": "validate_configuration",
+            "CLOUD_PREFLIGHT_PASSED": "inspect_cloud_preflight",
+        }[gate]
         return {
             "schema_version": 1,
             "kind": "release-transition-plan",
@@ -430,6 +508,30 @@ class ReleaseControlPlane:
             "deployment_authorized": False,
         }
 
+    def _cloud_preflight_evidence(
+        self, plan: Mapping[str, object]
+    ) -> dict[str, object]:
+        selected = self.config.payload.get("cloud_preflight")
+        if not isinstance(selected, dict):
+            raise ValueError("Cloud preflight configuration is missing.")
+        release = plan.get("release")
+        if not isinstance(release, dict):
+            raise ValueError("Cloud preflight plan release identity is missing.")
+        reader = self.cloud_reader or GcloudJsonReader.from_environment()
+        evidence = run_cloud_preflight(
+            selected,
+            image_digest=_required_string(
+                release.get("image_digest"), "Release image digest"
+            ),
+            reader=reader,
+        )
+        return {
+            **evidence,
+            "completed_at": _utc_now(),
+            "plan_digest": plan["plan_digest"],
+            "release": release,
+        }
+
     def apply(self, *, plan_digest: str) -> dict[str, object]:
         with RunLock(self.state_root / "control-plane.lock"):
             plan = self._load_plan(plan_digest, require_current=False)
@@ -460,10 +562,18 @@ class ReleaseControlPlane:
                 }
                 write_json_atomic(operation_path, operation)
 
-            if plan["gate"] != "CONFIGURATION_VALIDATED":
+            gate = str(plan["gate"])
+            evidence_folders = {
+                "CONFIGURATION_VALIDATED": "configuration",
+                "CLOUD_PREFLIGHT_PASSED": "cloud-preflight",
+            }
+            if gate not in evidence_folders:
                 raise ValueError("The selected gate has no paved executor.")
             evidence_path = (
-                self.state_root / "evidence" / "configuration" / f"{plan_digest}.json"
+                self.state_root
+                / "evidence"
+                / evidence_folders[gate]
+                / f"{plan_digest}.json"
             )
             index = self._load_index()
             run_dir = Path(str(index["observational_run"]))
@@ -472,45 +582,56 @@ class ReleaseControlPlane:
                 read_json_verified(evidence_path)
                 evidence_hash = sha256_file(evidence_path)
             else:
-                if status["CONFIGURATION_VALIDATED"] != "pending":
-                    raise ValueError(
-                        "Configuration gate changed before evidence was committed."
-                    )
+                if status[gate] != "pending":
+                    raise ValueError(f"{gate} changed before evidence was committed.")
                 current = self._build_plan()
                 if self._plan_digest(current) != plan_digest:
                     raise ValueError(
                         "Plan is stale because the release state has changed."
                     )
-                evidence = self._configuration_evidence(plan)
+                evidence = (
+                    self._configuration_evidence(plan)
+                    if gate == "CONFIGURATION_VALIDATED"
+                    else self._cloud_preflight_evidence(plan)
+                )
                 evidence_hash = write_json_atomic(evidence_path, evidence)
             reference = (
                 f"release-control://{self._relative_record(evidence_path)}"
                 f"#sha256={evidence_hash}"
             )
-            if status["CONFIGURATION_VALIDATED"] == "pending":
+            self._migrate_local_gate_evidence(index, run_dir)
+            self._index_gate_evidence(
+                index,
+                kind=f"gate_evidence:{gate}",
+                path=evidence_path,
+                expected_sha256=evidence_hash,
+            )
+            index["control_plane_version"] = self.config.payload[
+                "control_plane_version"
+            ]
+            write_json_atomic(self.index_path, index)
+            if status[gate] == "pending":
                 record_gate(
                     run_dir,
-                    gate_id="CONFIGURATION_VALIDATED",
+                    gate_id=gate,
                     outcome="passed",
                     evidence_reference=reference,
                     operator=str(approval["approved_by"]),
                     authorization_reference=str(approval["authorization_reference"]),
                 )
-            elif status["CONFIGURATION_VALIDATED"] == "passed":
+            elif status[gate] == "passed":
                 matching = [
                     event
                     for event in read_events(run_dir)
-                    if event.get("gate_id") == "CONFIGURATION_VALIDATED"
+                    if event.get("gate_id") == gate
                 ]
                 if (
                     len(matching) != 1
                     or matching[0].get("evidence_reference") != reference
                 ):
-                    raise ValueError(
-                        "Configuration gate already passed with different evidence."
-                    )
+                    raise ValueError(f"{gate} already passed with different evidence.")
             else:
-                raise ValueError("Configuration gate is terminal but did not pass.")
+                raise ValueError(f"{gate} is terminal but did not pass.")
 
             completed = {
                 **operation,
@@ -527,11 +648,28 @@ class ReleaseControlPlane:
             return completed
 
     def resume(self) -> dict[str, object]:
-        operations = sorted((self.state_root / "operations").glob("*.json"))
-        if operations:
-            latest = read_json_verified(operations[-1])
+        operations = [
+            read_json_verified(path)
+            for path in (self.state_root / "operations").glob("*.json")
+        ]
+        latest = (
+            max(
+                operations,
+                key=lambda item: str(
+                    item.get("completed_at") or item.get("started_at") or ""
+                ),
+            )
+            if operations
+            else None
+        )
+        if latest is not None and latest.get("status") != "completed":
             return self.apply(plan_digest=str(latest["plan_digest"]))
-        plan = self.plan()
+        try:
+            plan = self.plan()
+        except ValueError as error:
+            if latest is not None and "does not yet implement" in str(error):
+                return latest
+            raise
         approval_path = self.state_root / "approvals" / f"{plan['plan_digest']}.json"
         if not approval_path.exists():
             return {

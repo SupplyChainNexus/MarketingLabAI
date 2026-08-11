@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "control_plane_version": "1.0",
+  "control_plane_version": "1.1",
   "environment": "cloud-synthetic",
   "artifact_repository": "africa-south1-docker.pkg.dev/marketinglabai-identity-dev/mlai-synthetic/marketinglabai-pilot",
   "state_root_environment_variable": "MLAI_RELEASE_STATE_ROOT",
@@ -20,8 +20,32 @@
     "admission": "external-zero-trust-binary-authorization"
   },
   "supported_apply_gates": [
-    "CONFIGURATION_VALIDATED"
+    "CONFIGURATION_VALIDATED",
+    "CLOUD_PREFLIGHT_PASSED"
   ],
+  "cloud_preflight": {
+    "project": "marketinglabai-identity-dev",
+    "region": "africa-south1",
+    "service": "marketinglabai-velani-pilot",
+    "repository": "mlai-synthetic",
+    "runtime_service_account": "mlai-synthetic-runtime@marketinglabai-identity-dev.iam.gserviceaccount.com",
+    "builder_service_account": "mlai-synthetic-builder@marketinglabai-identity-dev.iam.gserviceaccount.com",
+    "cloud_sql_instance": "mlai-synthetic-pg18-jhb",
+    "cloud_sql_version": "POSTGRES_18",
+    "required_apis": [
+      "artifactregistry.googleapis.com",
+      "cloudbuild.googleapis.com",
+      "run.googleapis.com",
+      "secretmanager.googleapis.com",
+      "sqladmin.googleapis.com"
+    ],
+    "secrets": [
+      "mlai-database-url",
+      "mlai-founder-invitation-hashes",
+      "mlai-gemini-api-key",
+      "mlai-session-secret"
+    ]
+  },
   "forbidden_authority_claims": {
     "controller_authoritative": false,
     "legacy_backfill_deployable": false,

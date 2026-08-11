@@ -39,6 +39,10 @@ evidence or packages. The exact commit, immutable image digest, non-root runtime
 IAM denial, health, database contract, tenant isolation, rollback, recovery and
 cost must be recorded before the deployment gate passes.
 
+The read-only preflight inspects secret metadata, enabled-version counts and IAM
+bindings only. It never invokes Secret Manager payload access. Passing preflight
+is an observation, not permission to create a revision or deploy.
+
 ## Still frozen
 
 The deployment never self-authorizes Velani access, other invitations, public

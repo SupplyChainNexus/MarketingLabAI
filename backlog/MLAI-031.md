@@ -114,7 +114,7 @@ Status: founder-authorized repository foundation; cloud enforcement pending
 
 ## MLAI-031.8 — Unified Release Control Plane
 
-Status: founder-authorized durable remediation; implementation in validation
+Status: implemented, committed, CI verified and adopted
 
 ### Purpose
 
@@ -134,3 +134,26 @@ zero-trust admission authority.
 - The verified `2239244` state is adopted without rebuilding or granting
   deployment authority.
 - Cloud mutation and Binary Authorization enforcement remain separately gated.
+
+## MLAI-031.9 — Permanent Read-Only Cloud Preflight
+
+Status: implementation in validation
+
+### Purpose
+
+Extend the paved release path through `CLOUD_PREFLIGHT_PASSED` without reviving
+temporary scripts or granting deployment authority.
+
+### Acceptance
+
+- The Python control plane owns all cloud-preflight orchestration.
+- Exact read-only `gcloud` verbs are allowlisted and invoked without a shell.
+- Project, API, identity, artifact, database, secret-access and target-service
+  observations are pinned, minimized, hashed and indexed.
+- Secret values are never accessed or emitted.
+- Public, ambiguous, missing or drifted prerequisites fail closed.
+- One deterministic plan, one approval and idempotent apply/resume remain the
+  only supported operator journey.
+- Installation, validation and CI perform no cloud operation.
+- Revision creation, deployment, IAM mutation, traffic and admission authority
+  remain unsupported and separately gated.

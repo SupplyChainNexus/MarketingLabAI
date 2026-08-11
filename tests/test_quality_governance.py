@@ -266,6 +266,23 @@ class QualityGovernanceTests(unittest.TestCase):
         self.assertIn("python -m tools.release_control validate-repository", workflow)
         self.assertIn("scripts\\mlai_release.ps1", workflow)
 
+    def test_read_only_cloud_preflight_is_binding_and_fail_closed(self):
+        decision = self.read(
+            "governance/adrs/ADR-0040-read-only-cloud-preflight-executor.md"
+        )
+        normalized = " ".join(decision.split())
+        for required in (
+            "exact read-only command prefixes",
+            "shell=False",
+            "never reads secret values",
+            "public or ambiguous target fails closed",
+            "REVISION_CREATED remains unsupported",
+        ):
+            self.assertIn(required, normalized)
+
+        gates = self.read("governance/quality-gates.md")
+        self.assertIn("mutating nested command verbs", gates)
+
 
 if __name__ == "__main__":
     unittest.main()

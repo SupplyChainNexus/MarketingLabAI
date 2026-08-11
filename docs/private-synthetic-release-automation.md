@@ -18,7 +18,7 @@ so LF and CRLF materializations verify identically without relaxing exact pins.
 | Responsibility | Component |
 | --- | --- |
 | Planning, approval binding, idempotency and recovery | `tools.release_control` |
-| Append-only gate history | `tools.release_controller` |
+| Append-only gate history | `deployment.release_controller` |
 | Cryptographic release and deployment admission | External final signer and Binary Authorization |
 
 Controller state and local approval are never deployment authority.
@@ -71,3 +71,17 @@ evidence; it does not rewrite it or make the image deployable.
 ```
 
 Direct use of `scripts/release_private_synthetic.ps1` is retired.
+
+## Read-only cloud preflight
+
+After `CONFIGURATION_VALIDATED`, `plan` produces the deterministic
+`CLOUD_PREFLIGHT_PASSED` transition. Approval and application use the same
+normal journey. Apply inspects only pinned cloud resources through exact
+read-only `gcloud` verbs and stores minimized, hash-indexed evidence.
+
+The executor verifies project and API state, service accounts, immutable
+artifact identity, Cloud SQL, Secret Manager metadata/access and the canonical
+Cloud Run service boundary. It never accesses secret payloads. It cannot create
+a revision, deploy, modify IAM, route traffic, rebuild or issue admission
+authority. `REVISION_CREATED` remains unsupported and requires later explicit
+architecture and authorization work under ADR-0035.
