@@ -1,0 +1,42 @@
+{
+  "storyId": "MLAI-031.12",
+  "title": "First-Service Origin Bootstrap Correction",
+  "slug": "first_service_origin_bootstrap_correction",
+  "baseline": "98a90b0",
+  "projectRoot": "C:\\Ai Projects\\MarketingLabAI",
+  "installFiles": [
+    "backlog\\MLAI-031.md",
+    "deployment\\private_synthetic_manifest.py",
+    "docs\\handover\\CURRENT_HANDOVER.md",
+    "docs\\private-synthetic-release-automation.md",
+    "governance\\adrs\\ADR-0044-first-service-origin-bootstrap-correction.md",
+    "governance\\locked-decision-register.md",
+    "story_packages\\MLAI-031.12.json",
+    "tests\\test_release_control_plane.py",
+    "tools\\release_control\\revision.py",
+    "tools\\release_control_plane.json"
+  ],
+  "newFiles": [
+    "governance\\adrs\\ADR-0044-first-service-origin-bootstrap-correction.md",
+    "story_packages\\MLAI-031.12.json"
+  ],
+  "compileFiles": [
+    "deployment\\private_synthetic_manifest.py",
+    "tests\\test_release_control_plane.py",
+    "tools\\release_control\\revision.py"
+  ],
+  "focusedTestModules": [
+    "tests.test_release_control_plane",
+    "tests.test_private_synthetic_deployment",
+    "tests.test_private_ingress_contract",
+    "tests.test_quality_governance"
+  ],
+  "cloudOperationDuringInstallation": false,
+  "releaseStateModifiedDuringInstallation": false,
+  "cloudCliExecutionDuringInstallation": false,
+  "cloudMutationAuthorized": false,
+  "deploymentAuthorized": false,
+  "rebuildAuthorized": false,
+  "revisionCreationAuthorized": false,
+  "admissionAuthorityGranted": false
+}

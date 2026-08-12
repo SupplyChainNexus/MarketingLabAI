@@ -7,6 +7,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from deployment.private_synthetic_manifest import FIRST_BOOTSTRAP_ORIGIN
 from deployment.release_controller import record_gate, start_release
 from tests.test_cloud_preflight import FakeCloudReader
 from tools.release_control.config import (
@@ -26,7 +27,7 @@ IMAGE = (
 )
 BUILD_ID = "f9ad9f0d-b93d-429e-9ea9-f89b538ebea8"
 EXECUTOR_PROVENANCE = {
-    "control_plane_version": "1.3",
+    "control_plane_version": "1.4",
     "repository_commit": "b" * 40,
     "executor_contract_sha256": "c" * 64,
     "platform_adapter": "windows-gcloud-cmd-v2",
@@ -206,13 +207,15 @@ class ReleaseControlPlaneTests(unittest.TestCase):
         self.control.apply(plan_digest=preflight_plan["plan_digest"])
         prepared = self.control.prepare_revision(
             output_root=self.root / "revision-output",
-            origin=ORIGIN,
+            origin=FIRST_BOOTSTRAP_ORIGIN,
             browser_api_key=BROWSER_API_KEY,
             oauth_client_id=OAUTH_CLIENT_ID,
         )
         self.assertEqual("REVISION_CREATION_PREPARED", prepared["result"])
         self.assertEqual("REVISION_CREATED", prepared["gate"])
         self.assertEqual("FIRST_PRIVATE_REVISION", prepared["expected_creation_mode"])
+        self.assertTrue(prepared["first_bootstrap_origin"])
+        self.assertTrue(prepared["requires_origin_reconciliation"])
         self.assertEqual(100, prepared["expected_new_revision_traffic_percent"])
         self.assertFalse(prepared["cloud_cli_executed"])
         self.assertFalse(prepared["cloud_mutation_performed"])
@@ -222,7 +225,49 @@ class ReleaseControlPlaneTests(unittest.TestCase):
         self.assertTrue(Path(str(prepared["revision_plan_path"])).is_file())
         manifest = Path(str(prepared["manifest_path"])).read_text(encoding="utf-8")
         self.assertIn(IMAGE, manifest)
+        self.assertIn(FIRST_BOOTSTRAP_ORIGIN, manifest)
         self.assertIn("internal-and-cloud-load-balancing", manifest)
+
+    def test_revision_preparation_refuses_bootstrap_origin_for_existing_service(self):
+        from tests.test_cloud_preflight import passing_payloads
+
+        payloads = passing_payloads(image_digest=IMAGE)
+        payloads["cloud_run_services"] = [
+            {
+                "metadata": {
+                    "name": "marketinglabai-velani-pilot",
+                    "annotations": {
+                        "run.googleapis.com/ingress": (
+                            "internal-and-cloud-load-balancing"
+                        )
+                    },
+                }
+            }
+        ]
+        payloads["cloud_run_target_iam"] = {"bindings": []}
+        self.control.cloud_reader = FakeCloudReader(payloads)
+        self.adopt()
+        configuration_plan = self.control.plan()
+        self.control.approve(
+            plan_digest=configuration_plan["plan_digest"],
+            operator="synthetic-approver",
+            authorization_reference="AUTH-SYNTHETIC-CONFIGURATION",
+        )
+        self.control.apply(plan_digest=configuration_plan["plan_digest"])
+        preflight_plan = self.control.plan()
+        self.control.approve(
+            plan_digest=preflight_plan["plan_digest"],
+            operator="synthetic-approver",
+            authorization_reference="AUTH-SYNTHETIC-CLOUD-PREFLIGHT",
+        )
+        self.control.apply(plan_digest=preflight_plan["plan_digest"])
+        with self.assertRaisesRegex(ValueError, "first-service bootstrap"):
+            self.control.prepare_revision(
+                output_root=self.root / "revision-output",
+                origin=FIRST_BOOTSTRAP_ORIGIN,
+                browser_api_key=BROWSER_API_KEY,
+                oauth_client_id=OAUTH_CLIENT_ID,
+            )
 
     def test_revision_preparation_refuses_repository_output(self):
         self.control.cloud_reader = FakeCloudReader(image_digest=IMAGE)

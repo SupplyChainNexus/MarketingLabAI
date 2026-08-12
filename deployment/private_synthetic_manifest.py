@@ -14,6 +14,10 @@ from deployment.private_synthetic_bootstrap import APPROVED_INGRESS
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_TEMPLATE = ROOT / "deployment" / "cloud-run.private-synthetic.yaml.template"
+FIRST_BOOTSTRAP_ORIGIN = "https://marketinglabai-velani-pilot-first-bootstrap.invalid"
+SERVICE_ORIGIN_PATTERN = re.compile(
+    r"https://[a-z0-9-]+-[0-9]+\.africa-south1\.run\.app"
+)
 
 EXPECTED_PLACEHOLDERS = frozenset(
     {
@@ -105,9 +109,9 @@ def _validate_render_values(values: ManifestRenderValues) -> None:
     )
     if not re.fullmatch(image_pattern, values.immutable_image_digest):
         raise ValueError("The image must be the approved package pinned by digest.")
-    if not re.fullmatch(
-        r"https://[a-z0-9-]+-[0-9]+\.africa-south1\.run\.app",
-        values.private_service_origin,
+    if (
+        not SERVICE_ORIGIN_PATTERN.fullmatch(values.private_service_origin)
+        and values.private_service_origin != FIRST_BOOTSTRAP_ORIGIN
     ):
         raise ValueError("The private service origin must be the HTTPS Cloud Run URL.")
     if not re.fullmatch(r"[0-9a-f]{40}", values.full_git_commit):

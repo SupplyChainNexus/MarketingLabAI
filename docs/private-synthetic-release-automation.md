@@ -105,6 +105,14 @@ intent. It performs no Cloud CLI execution, cloud mutation, traffic routing,
 rebuild, deployment, admission-authority action or Secret Manager payload
 access. Applying `REVISION_CREATED` remains a separate approval boundary.
 
+For first-service bootstrap, the canonical service has no Cloud Run `status.url`
+until the first revision creates the service. In that one case only,
+preparation may render
+`https://marketinglabai-velani-pilot-first-bootstrap.invalid` and mark
+`requires_origin_reconciliation: true`. Existing services must use the actual
+Cloud Run URL. Startup and smoke gates remain blocked until the real URL is
+observed and reconciled.
+
 ## Windows Cloud SDK and safe recovery
 
 `doctor-cloud` uses the same adapter as cloud preflight and verifies the exact

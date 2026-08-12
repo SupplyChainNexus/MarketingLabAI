@@ -2,19 +2,18 @@
 
 from __future__ import annotations
 
-import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Mapping
 
 from deployment.private_synthetic_bootstrap import APPROVED_INGRESS
 from deployment.private_synthetic_manifest import (
+    FIRST_BOOTSTRAP_ORIGIN,
+    SERVICE_ORIGIN_PATTERN,
     ManifestRenderValues,
     render_manifest,
 )
 from tools.release_control.store import sha256_bytes, sha256_file, write_json_atomic
-
-ORIGIN_PATTERN = re.compile(r"https://[a-z0-9-]+-[0-9]+\.africa-south1\.run\.app")
 
 
 @dataclass(frozen=True, slots=True)
@@ -38,6 +37,27 @@ def _validated_mapping(value: object, label: str) -> Mapping[str, object]:
     return value
 
 
+def _validated_origin(origin: str, cloud_run: Mapping[str, object]) -> tuple[str, bool]:
+    creation_mode = str(
+        _validated_mapping(
+            cloud_run.get("revision_creation_plan"), "cloud preflight revision plan"
+        ).get("creation_mode", "")
+    )
+    service_state = str(cloud_run.get("service_state", ""))
+    if SERVICE_ORIGIN_PATTERN.fullmatch(origin):
+        return origin, False
+    if (
+        origin == FIRST_BOOTSTRAP_ORIGIN
+        and creation_mode == "FIRST_PRIVATE_REVISION"
+        and service_state == "ABSENT"
+    ):
+        return origin, True
+    raise ValueError(
+        "Private service origin must be the real Cloud Run URL, except for the "
+        "first-service bootstrap placeholder when the service is absent."
+    )
+
+
 def prepare_revision_creation(
     *,
     configuration: Mapping[str, object],
@@ -53,8 +73,6 @@ def prepare_revision_creation(
         raise ValueError(
             "Revision preparation output must remain outside the repository."
         )
-    if not ORIGIN_PATTERN.fullmatch(inputs.private_service_origin):
-        raise ValueError("Private service origin must be the Cloud Run HTTPS URL.")
     if cloud_preflight_evidence.get("result") != "CLOUD_PREFLIGHT_PASSED":
         raise ValueError("CLOUD_PREFLIGHT_PASSED evidence is required.")
     if cloud_preflight_evidence.get("cloud_mutation_performed") is not False:
@@ -62,6 +80,9 @@ def prepare_revision_creation(
 
     cloud_run = _validated_mapping(
         cloud_preflight_evidence.get("cloud_run"), "cloud preflight Cloud Run state"
+    )
+    service_origin, first_bootstrap_origin = _validated_origin(
+        inputs.private_service_origin, cloud_run
     )
     revision_plan = _validated_mapping(
         cloud_run.get("revision_creation_plan"), "cloud preflight revision plan"
@@ -85,7 +106,7 @@ def prepare_revision_creation(
         template,
         ManifestRenderValues(
             immutable_image_digest=image,
-            private_service_origin=inputs.private_service_origin,
+            private_service_origin=service_origin,
             full_git_commit=commit,
             restricted_browser_api_key=inputs.restricted_browser_api_key,
             google_oauth_client_id=inputs.google_oauth_client_id,
@@ -123,6 +144,9 @@ def prepare_revision_creation(
         "manifest_template_sha256": sha256_file(template_path),
         "command": command,
         "expected_creation_mode": revision_plan["creation_mode"],
+        "private_service_origin": service_origin,
+        "first_bootstrap_origin": first_bootstrap_origin,
+        "requires_origin_reconciliation": first_bootstrap_origin,
         "expected_new_revision_traffic_percent": revision_plan[
             "expected_new_revision_traffic_percent"
         ],

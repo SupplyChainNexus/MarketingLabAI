@@ -835,3 +835,19 @@ Intent routing, visual formatting, opportunity detection, attribution, Cloud
 Tasks, social platforms, email, Shopify and analytics integrations are adapters
 or later capabilities. They must not become competing owners of campaign state,
 approval authority, spend rules or learning evidence.
+
+### LDR-062 — First-service origin bootstrap is temporary and reconciled
+
+**Status:** Current / Binding release governance
+**Source:** MLAI-031.12 founder authorization on 2026-08-13
+
+When the canonical private Cloud Run service is absent, first revision
+preparation may use the named bootstrap origin
+`https://marketinglabai-velani-pilot-first-bootstrap.invalid`. This is allowed
+only for `FIRST_PRIVATE_REVISION` and only when read-only cloud preflight proved
+the service is absent.
+
+The bootstrap origin is not a production or smoke-test URL. Startup and smoke
+gates must not pass until the real Cloud Run `status.url` is observed and
+reconciled. Existing-service revision preparation must use the actual Cloud Run
+URL and must reject the bootstrap placeholder.

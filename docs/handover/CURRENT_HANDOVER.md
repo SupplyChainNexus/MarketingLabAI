@@ -289,6 +289,15 @@ mutating cloud, routing traffic, rebuilding, deploying or reading Secret
 Manager payloads. The actual `REVISION_CREATED` mutation still requires
 separate plan-bound approval after CI.
 
+## MLAI-031.12: First-service origin bootstrap correction
+
+The Cloud Run origin readiness check on 2026-08-13 returned `Cannot find
+service [marketinglabai-velani-pilot]`. The first revision therefore cannot use
+a real Cloud Run `status.url` yet. MLAI-031.12 allows the named first-bootstrap
+origin only for `FIRST_PRIVATE_REVISION` after preflight proves the service is
+absent, and marks the prepared evidence as requiring origin reconciliation.
+Existing services still require the real Cloud Run URL.
+
 ## MLAI-033: Durable marketing workflow spine
 
 Founder instruction on 2026-08-13 locks MLAI-033 as the next core

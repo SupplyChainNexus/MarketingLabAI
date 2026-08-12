@@ -206,3 +206,24 @@ approved.
   release index, observational event head and executor provenance.
 - Installation, validation and CI perform no Cloud CLI execution, cloud
   mutation, deployment, traffic routing, rebuild or admission-authority action.
+
+## MLAI-031.12 — First-Service Origin Bootstrap Correction
+
+Status: founder-authorized durable repair
+
+### Purpose
+
+Correct the private revision-preparation contract for the first Cloud Run
+service creation. A real Cloud Run `status.url` cannot exist before the service
+exists, so first-service preparation must not require a guessed origin.
+
+### Acceptance
+
+- A named first-bootstrap origin is allowed only when cloud preflight proved the
+  canonical service is absent and the revision plan is `FIRST_PRIVATE_REVISION`.
+- Existing-service revision preparation still requires the actual Cloud Run URL.
+- Prepared revision evidence records whether origin reconciliation is required.
+- Startup and smoke gates must not pass until the real service URL is observed
+  and reconciled.
+- The correction performs no Cloud CLI execution, cloud mutation, release-state
+  modification, deployment or rebuild.
