@@ -26,11 +26,14 @@ IMAGE = (
 )
 BUILD_ID = "f9ad9f0d-b93d-429e-9ea9-f89b538ebea8"
 EXECUTOR_PROVENANCE = {
-    "control_plane_version": "1.2",
+    "control_plane_version": "1.3",
     "repository_commit": "b" * 40,
     "executor_contract_sha256": "c" * 64,
     "platform_adapter": "windows-gcloud-cmd-v2",
 }
+ORIGIN = "https://marketinglabai-velani-pilot-123456.africa-south1.run.app"
+BROWSER_API_KEY = "AIza" + "A" * 32
+OAUTH_CLIENT_ID = "1234567890-" + "a" * 32 + ".apps.googleusercontent.com"
 
 
 class ReleaseControlPlaneTests(unittest.TestCase):
@@ -183,6 +186,68 @@ class ReleaseControlPlaneTests(unittest.TestCase):
         self.assertIn("gate_evidence:CONFIGURATION_VALIDATED", indexed_kinds)
         self.assertIn("gate_evidence:CLOUD_PREFLIGHT_PASSED", indexed_kinds)
         self.assertTrue(self.control.verify()["indexed_evidence_valid"])
+
+    def test_revision_preparation_is_manifest_bound_without_cloud_mutation(self):
+        self.control.cloud_reader = FakeCloudReader(image_digest=IMAGE)
+        self.adopt()
+        configuration_plan = self.control.plan()
+        self.control.approve(
+            plan_digest=configuration_plan["plan_digest"],
+            operator="synthetic-approver",
+            authorization_reference="AUTH-SYNTHETIC-CONFIGURATION",
+        )
+        self.control.apply(plan_digest=configuration_plan["plan_digest"])
+        preflight_plan = self.control.plan()
+        self.control.approve(
+            plan_digest=preflight_plan["plan_digest"],
+            operator="synthetic-approver",
+            authorization_reference="AUTH-SYNTHETIC-CLOUD-PREFLIGHT",
+        )
+        self.control.apply(plan_digest=preflight_plan["plan_digest"])
+        prepared = self.control.prepare_revision(
+            output_root=self.root / "revision-output",
+            origin=ORIGIN,
+            browser_api_key=BROWSER_API_KEY,
+            oauth_client_id=OAUTH_CLIENT_ID,
+        )
+        self.assertEqual("REVISION_CREATION_PREPARED", prepared["result"])
+        self.assertEqual("REVISION_CREATED", prepared["gate"])
+        self.assertEqual("FIRST_PRIVATE_REVISION", prepared["expected_creation_mode"])
+        self.assertEqual(100, prepared["expected_new_revision_traffic_percent"])
+        self.assertFalse(prepared["cloud_cli_executed"])
+        self.assertFalse(prepared["cloud_mutation_performed"])
+        self.assertFalse(prepared["deployment_authorized"])
+        self.assertFalse(prepared["traffic_routing_authorized"])
+        self.assertTrue(Path(str(prepared["manifest_path"])).is_file())
+        self.assertTrue(Path(str(prepared["revision_plan_path"])).is_file())
+        manifest = Path(str(prepared["manifest_path"])).read_text(encoding="utf-8")
+        self.assertIn(IMAGE, manifest)
+        self.assertIn("internal-and-cloud-load-balancing", manifest)
+
+    def test_revision_preparation_refuses_repository_output(self):
+        self.control.cloud_reader = FakeCloudReader(image_digest=IMAGE)
+        self.adopt()
+        configuration_plan = self.control.plan()
+        self.control.approve(
+            plan_digest=configuration_plan["plan_digest"],
+            operator="synthetic-approver",
+            authorization_reference="AUTH-SYNTHETIC-CONFIGURATION",
+        )
+        self.control.apply(plan_digest=configuration_plan["plan_digest"])
+        preflight_plan = self.control.plan()
+        self.control.approve(
+            plan_digest=preflight_plan["plan_digest"],
+            operator="synthetic-approver",
+            authorization_reference="AUTH-SYNTHETIC-CLOUD-PREFLIGHT",
+        )
+        self.control.apply(plan_digest=preflight_plan["plan_digest"])
+        with self.assertRaisesRegex(ValueError, "outside the repository"):
+            self.control.prepare_revision(
+                output_root=ROOT / "tmp-revision-output",
+                origin=ORIGIN,
+                browser_api_key=BROWSER_API_KEY,
+                oauth_client_id=OAUTH_CLIENT_ID,
+            )
 
     def test_resume_waits_for_one_approval(self):
         self.adopt()

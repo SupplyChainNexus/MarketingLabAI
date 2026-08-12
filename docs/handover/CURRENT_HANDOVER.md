@@ -274,3 +274,17 @@ supersession of the old operation before a fresh plan and approval. Installation
 must not alter the external release state. After commit and CI, run
 `doctor-cloud`, formally supersede plan `178f09fa673e1edefeb7034245879e1275fbb517b685a22a244a4f29d1983db6`,
 then use `resume` to create—but not approve—the replacement plan.
+
+## MLAI-031.11: Deterministic private revision preparation
+
+MLAI-031.10 commit `ccd0f3d374e0ca8c96fb29fc40040eb48451b4d1` passed CI,
+`doctor-cloud` passed, the stale preflight operation was superseded, and the
+new provenance-bound `CLOUD_PREFLIGHT_PASSED` plan completed with evidence
+SHA-256 `d2b779001a76aebec269b91a0db79c3839874753a2da54aabc93ae11fb998818`.
+`REVISION_CREATED` is now the next eligible gate.
+
+ADR-0042 introduces `prepare-revision` to render the exact private Cloud Run
+manifest and command intent under ToolkitTemp without executing Cloud CLI,
+mutating cloud, routing traffic, rebuilding, deploying or reading Secret
+Manager payloads. The actual `REVISION_CREATED` mutation still requires
+separate plan-bound approval after CI.

@@ -83,8 +83,27 @@ The executor verifies project and API state, service accounts, immutable
 artifact identity, Cloud SQL, Secret Manager metadata/access and the canonical
 Cloud Run service boundary. It never accesses secret payloads. It cannot create
 a revision, deploy, modify IAM, route traffic, rebuild or issue admission
-authority. `REVISION_CREATED` remains unsupported and requires later explicit
-architecture and authorization work under ADR-0035.
+authority.
+
+## Private revision preparation
+
+After `CLOUD_PREFLIGHT_PASSED`, `prepare-revision` renders the exact private
+Cloud Run manifest outside the repository and records the intended
+`gcloud run services replace` command without executing it:
+
+```powershell
+& ".\scripts\mlai_release.ps1" prepare-revision `
+    --output-root "C:\Ai Projects\ToolkitTemp\MarketingLabAI\revision-prep\<stamp>" `
+    --origin "<private-cloud-run-origin>" `
+    --browser-api-key "<restricted-browser-api-key>" `
+    --oauth-client-id "<google-oauth-web-client-id>"
+```
+
+The record binds the release index, observational event head, executor
+provenance, manifest hash, template hash, expected traffic outcome and command
+intent. It performs no Cloud CLI execution, cloud mutation, traffic routing,
+rebuild, deployment, admission-authority action or Secret Manager payload
+access. Applying `REVISION_CREATED` remains a separate approval boundary.
 
 ## Windows Cloud SDK and safe recovery
 

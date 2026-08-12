@@ -1,0 +1,47 @@
+{
+  "storyId": "MLAI-031.11",
+  "title": "Deterministic Private Revision Preparation",
+  "slug": "deterministic_private_revision_preparation",
+  "baseline": "ccd0f3d374e0ca8c96fb29fc40040eb48451b4d1",
+  "projectRoot": "C:\\Ai Projects\\MarketingLabAI",
+  "installFiles": [
+    "backlog\\MLAI-031.md",
+    "docs\\handover\\CURRENT_HANDOVER.md",
+    "docs\\private-synthetic-release-automation.md",
+    "governance\\adrs\\ADR-0042-deterministic-private-revision-preparation.md",
+    "governance\\locked-decision-register.md",
+    "governance\\quality-gates.md",
+    "story_packages\\MLAI-031.11.json",
+    "tests\\test_release_control_plane.py",
+    "tools\\release_control\\cli.py",
+    "tools\\release_control\\config.py",
+    "tools\\release_control\\control_plane.py",
+    "tools\\release_control\\revision.py",
+    "tools\\release_control_plane.json"
+  ],
+  "newFiles": [
+    "governance\\adrs\\ADR-0042-deterministic-private-revision-preparation.md",
+    "story_packages\\MLAI-031.11.json",
+    "tools\\release_control\\revision.py"
+  ],
+  "compileFiles": [
+    "tests\\test_release_control_plane.py",
+    "tools\\release_control\\cli.py",
+    "tools\\release_control\\config.py",
+    "tools\\release_control\\control_plane.py",
+    "tools\\release_control\\revision.py"
+  ],
+  "focusedTestModules": [
+    "tests.test_release_control_plane",
+    "tests.test_quality_governance"
+  ],
+  "importCommand": "from tools.release_control.revision import prepare_revision_creation; print('MLAI-031.11 imports OK')",
+  "cloudOperationDuringInstallation": false,
+  "releaseStateModifiedDuringInstallation": false,
+  "cloudCliExecutionDuringInstallation": false,
+  "cloudMutationAuthorized": false,
+  "deploymentAuthorized": false,
+  "rebuildAuthorized": false,
+  "revisionCreationAuthorized": false,
+  "admissionAuthorityGranted": false
+}

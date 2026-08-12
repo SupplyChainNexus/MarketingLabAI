@@ -25,6 +25,11 @@ from tools.release_control.provenance import (
     build_executor_provenance,
     validate_executor_provenance,
 )
+from tools.release_control.revision import (
+    RevisionInputs,
+    prepare_revision_creation,
+    write_revision_plan,
+)
 from tools.release_control.store import (
     RunLock,
     canonical_json,
@@ -412,6 +417,75 @@ class ReleaseControlPlane:
         result["release_state_modified"] = False
         result["cloud_mutation_performed"] = False
         return result
+
+    def _latest_gate_evidence(self, gate: str) -> tuple[Path, dict[str, object]]:
+        index = self._load_index()
+        self._verify_evidence_index(index)
+        matches = [
+            record
+            for record in index["evidence"]
+            if isinstance(record, dict)
+            and record.get("kind") == f"gate_evidence:{gate}"
+        ]
+        if len(matches) != 1:
+            raise ValueError(f"Exactly one indexed {gate} evidence record is required.")
+        path = Path(_required_string(matches[0].get("path"), f"{gate} evidence path"))
+        evidence = read_json_verified(path)
+        evidence["_source_path"] = str(path)
+        return path, evidence
+
+    def prepare_revision(
+        self,
+        *,
+        output_root: Path,
+        origin: str,
+        browser_api_key: str,
+        oauth_client_id: str,
+    ) -> dict[str, object]:
+        """Prepare the REVISION_CREATED mutation package without executing it."""
+
+        with RunLock(self.state_root / "control-plane.lock"):
+            index = self._load_index()
+            self._verify_evidence_index(index)
+            run_dir = Path(str(index["observational_run"]))
+            summary = release_summary(run_dir)
+            if summary["eligible_gates"] != ["REVISION_CREATED"]:
+                raise ValueError("REVISION_CREATED is not the single eligible gate.")
+            _, preflight = self._latest_gate_evidence("CLOUD_PREFLIGHT_PASSED")
+            configuration = self.config.payload.get("revision_creation")
+            if not isinstance(configuration, dict):
+                raise ValueError("Revision-creation configuration is missing.")
+            prepared = prepare_revision_creation(
+                configuration=configuration,
+                release=index["release"],
+                cloud_preflight_evidence=preflight,
+                repository_root=self.config.repository_root,
+                output_root=output_root,
+                inputs=RevisionInputs(
+                    private_service_origin=origin,
+                    restricted_browser_api_key=browser_api_key,
+                    google_oauth_client_id=oauth_client_id,
+                ),
+            )
+            envelope = {
+                **prepared,
+                "prepared_at": _utc_now(),
+                "gate": "REVISION_CREATED",
+                "release_index_sha256": sha256_file(self.index_path),
+                "observational_event_head": self._event_head(run_dir),
+                "executor_provenance": self._executor_provenance(),
+                "approval_required_before_apply": True,
+                "release_state_modified": False,
+            }
+            digest = sha256_bytes(canonical_json(envelope))
+            envelope["revision_plan_digest"] = digest
+            plan_path = self.state_root / "revision-plans" / f"{digest}.json"
+            write_revision_plan(plan_path, envelope)
+            return {
+                **envelope,
+                "revision_plan_path": str(plan_path.resolve()),
+                "revision_plan_sha256": sha256_file(plan_path),
+            }
 
     def _build_plan(self) -> dict[str, object]:
         index = self._load_index()

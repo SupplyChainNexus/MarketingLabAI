@@ -179,3 +179,30 @@ for the interrupted cloud-preflight operation.
 - Formal supersession preserves the old operation without changing a gate or cloud.
 - Resume returns one safe next action and never silently reuses stale approval.
 - Installation and validation perform no cloud operation or release-state change.
+
+## MLAI-031.11 — Deterministic Private Revision Preparation
+
+Status: founder-authorized durable preparation
+
+### Purpose
+
+Prepare the first `REVISION_CREATED` mutation boundary without executing it.
+The operator receives one manifest, one command intent and one hash-indexed
+revision-preparation record before any cloud mutation can be separately
+approved.
+
+### Acceptance
+
+- Preparation is available only after `CLOUD_PREFLIGHT_PASSED`.
+- The rendered manifest is written outside the repository under ToolkitTemp.
+- The manifest is bound to the verified release digest, source commit, private
+  origin, runtime service account, Cloud SQL attachment, private ingress,
+  resource bounds and Secret Manager bindings.
+- Secret Manager payloads are not read and public IAM principals remain
+  prohibited.
+- The command intent is recorded as `gcloud run services replace` with pinned
+  region and managed platform, but is not executed by preparation.
+- The revision-preparation record has an integrity sidecar and binds the
+  release index, observational event head and executor provenance.
+- Installation, validation and CI perform no Cloud CLI execution, cloud
+  mutation, deployment, traffic routing, rebuild or admission-authority action.

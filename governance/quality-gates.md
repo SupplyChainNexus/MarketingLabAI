@@ -173,3 +173,16 @@ Binary Authorization enforcement, or deployment permission.
 - Plans must bind clean repository and executor provenance.
 - Executor drift requires formal supersession and a fresh approval.
 - Supersession must preserve evidence and modify neither gate nor cloud state.
+
+## Private revision-preparation gate
+
+- `REVISION_CREATED` preparation is allowed only after
+  `CLOUD_PREFLIGHT_PASSED`.
+- The rendered manifest must be outside the repository and hash-indexed.
+- The manifest must remain digest-pinned, private-ingress only and bound to the
+  canonical service, runtime identity, Cloud SQL attachment, resource limits and
+  Secret Manager bindings.
+- Secret Manager payloads, public IAM principals, rebuilds, traffic routing and
+  admission-authority claims are prohibited during preparation.
+- The command intent is evidence; it is not executed until a separate mutation
+  approval exists.

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "control_plane_version": "1.2",
+  "control_plane_version": "1.3",
   "environment": "cloud-synthetic",
   "artifact_repository": "africa-south1-docker.pkg.dev/marketinglabai-identity-dev/mlai-synthetic/marketinglabai-pilot",
   "state_root_environment_variable": "MLAI_RELEASE_STATE_ROOT",
@@ -52,6 +52,17 @@
       "mlai-gemini-api-key",
       "mlai-session-secret"
     ]
+  },
+  "revision_creation": {
+    "project": "marketinglabai-identity-dev",
+    "region": "africa-south1",
+    "service": "marketinglabai-velani-pilot",
+    "runtime_service_account": "mlai-synthetic-runtime@marketinglabai-identity-dev.iam.gserviceaccount.com",
+    "manifest_template": "deployment/cloud-run.private-synthetic.yaml.template",
+    "command": "gcloud run services replace",
+    "traffic_routing_authorized": false,
+    "public_access_authorized": false,
+    "secret_value_access_authorized": false
   },
   "forbidden_authority_claims": {
     "controller_authoritative": false,

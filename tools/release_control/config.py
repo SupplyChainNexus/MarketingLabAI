@@ -98,6 +98,22 @@ def load_config(path: Path = DEFAULT_CONFIG) -> ControlConfig:
     }
     if cloud_cli != expected_cloud_cli:
         raise ValueError("Pinned Cloud CLI execution context has drifted.")
+    revision_creation = payload.get("revision_creation")
+    expected_revision_creation = {
+        "project": "marketinglabai-identity-dev",
+        "region": "africa-south1",
+        "service": "marketinglabai-velani-pilot",
+        "runtime_service_account": (
+            "mlai-synthetic-runtime@marketinglabai-identity-dev.iam.gserviceaccount.com"
+        ),
+        "manifest_template": "deployment/cloud-run.private-synthetic.yaml.template",
+        "command": "gcloud run services replace",
+        "traffic_routing_authorized": False,
+        "public_access_authorized": False,
+        "secret_value_access_authorized": False,
+    }
+    if revision_creation != expected_revision_creation:
+        raise ValueError("Cloud Run revision-creation contract has drifted.")
     required_apis = preflight.get("required_apis")
     secrets = preflight.get("secrets")
     if not isinstance(required_apis, list) or len(required_apis) != len(
@@ -187,6 +203,7 @@ def validate_repository(config: ControlConfig) -> dict[str, object]:
         "template": template_report,
         "authority_separation": dict(config.payload["authorities"]),
         "cloud_cli": dict(config.payload["cloud_cli"]),
+        "revision_creation": dict(config.payload["revision_creation"]),
         "cloud_mutation_performed": False,
         "deployment_authorized": False,
     }

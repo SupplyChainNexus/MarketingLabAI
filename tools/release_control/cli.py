@@ -44,6 +44,11 @@ def _parser() -> argparse.ArgumentParser:
     supersede.add_argument("--operator", required=True)
     supersede.add_argument("--reason", required=True)
     supersede.add_argument("--authorization-reference", required=True)
+    prepare_revision = commands.add_parser("prepare-revision")
+    prepare_revision.add_argument("--output-root", type=Path, required=True)
+    prepare_revision.add_argument("--origin", required=True)
+    prepare_revision.add_argument("--browser-api-key", required=True)
+    prepare_revision.add_argument("--oauth-client-id", required=True)
     commands.add_parser("resume")
     commands.add_parser("verify")
     return parser
@@ -93,6 +98,15 @@ def main(arguments: Sequence[str] | None = None) -> int:
                 operator=selected.operator,
                 reason=selected.reason,
                 authorization_reference=selected.authorization_reference,
+            )
+        )
+    elif selected.command == "prepare-revision":
+        _print(
+            control.prepare_revision(
+                output_root=selected.output_root,
+                origin=selected.origin,
+                browser_api_key=selected.browser_api_key,
+                oauth_client_id=selected.oauth_client_id,
             )
         )
     elif selected.command == "resume":

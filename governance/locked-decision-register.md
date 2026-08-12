@@ -804,3 +804,19 @@ tested adapter with pinned account, configuration and project.
 Interrupted incompatible work is preserved and formally superseded. It is never
 deleted, edited in place or retried under stale approval. Supersession changes no
 release gate, cloud resource, deployment state or admission authority.
+
+### LDR-060 — Revision creation requires prepared manifest evidence
+
+**Status:** Current / Binding governance
+**Source:** ADR-0042 and founder authorization for MLAI-031.11 on 2026-08-13
+
+`REVISION_CREATED` may not be reached from an ad hoc Cloud Run command. The
+paved path first prepares the exact rendered private manifest, command intent,
+release identity, executor provenance, traffic expectation and hashes outside
+the repository. Preparation reads no Secret Manager payloads, executes no Cloud
+CLI command and performs no cloud mutation.
+
+The resulting revision-preparation record is review evidence only. Actual
+revision creation remains a separate plan-bound mutation approval and cannot
+grant public access, traffic routing beyond the approved bootstrap mode,
+deployment admission authority, rebuild authority or real-customer-data access.
