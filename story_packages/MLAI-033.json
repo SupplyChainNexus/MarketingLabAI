@@ -1,0 +1,26 @@
+{
+  "storyId": "MLAI-033",
+  "title": "Durable Marketing Workflow Spine",
+  "slug": "durable_marketing_workflow_spine",
+  "baseline": "98a90b0",
+  "classification": "Core",
+  "rabbit": false,
+  "projectRoot": "C:\\Ai Projects\\MarketingLabAI",
+  "installFiles": [
+    "backlog\\MLAI-033.md",
+    "docs\\architecture\\ARCHITECTURE_PRINCIPLES.md",
+    "docs\\handover\\CURRENT_HANDOVER.md",
+    "governance\\adrs\\ADR-0043-durable-marketing-workflow-spine.md",
+    "governance\\locked-decision-register.md",
+    "story_packages\\MLAI-033.json"
+  ],
+  "newFiles": [
+    "backlog\\MLAI-033.md",
+    "governance\\adrs\\ADR-0043-durable-marketing-workflow-spine.md",
+    "story_packages\\MLAI-033.json"
+  ],
+  "cloudOperationDuringInstallation": false,
+  "releaseStateModifiedDuringInstallation": false,
+  "implementationIncluded": false,
+  "notes": "Governance lock-in only. Implementation must start with deterministic workflow state, idempotency, approvals and evidence before autonomous agents."
+}

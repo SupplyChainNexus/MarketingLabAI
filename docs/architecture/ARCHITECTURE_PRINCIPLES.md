@@ -102,4 +102,19 @@ Customer information must remain isolated at every layer of the application.
 
 Security, privacy, and data protection should be considered architectural requirements rather than optional enhancements.
 
+## 8. Durable Workflow Spine
+
+MarketingLabAI workflows should be durable, resumable, auditable and
+idempotent before they become autonomous.
+
+Campaign planning, approvals, publishing, paid boosting, provider execution,
+failure recovery and learning handoff must pass through one workflow state
+model. Agents and external providers may recommend or execute actions, but they
+do not own core workflow state, approval policy, budget rules or evidence.
+
+Cloud Tasks, social platforms, email providers, Shopify, analytics systems and
+future execution tools are adapters around the workflow spine. The product core
+owns state transitions, idempotency keys, approval boundaries, failure classes,
+evidence and operator status.
+
 ---

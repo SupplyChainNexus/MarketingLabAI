@@ -288,3 +288,16 @@ manifest and command intent under ToolkitTemp without executing Cloud CLI,
 mutating cloud, routing traffic, rebuilding, deploying or reading Secret
 Manager payloads. The actual `REVISION_CREATED` mutation still requires
 separate plan-bound approval after CI.
+
+## MLAI-033: Durable marketing workflow spine
+
+Founder instruction on 2026-08-13 locks MLAI-033 as the next core
+product-architecture epic after the private synthetic deployment reaches a safe
+checkpoint. It is not Rabbit work. The durable workflow spine will own campaign
+state, approval boundaries, idempotency, evidence, failure classification,
+retry semantics, budget guardrails and operator status.
+
+Agents remain downstream capabilities. Intent routing is next-core after the
+spine; visual formatting, opportunity boosting and attribution remain future
+work until the spine, tenant boundaries, approvals, budget controls and audit
+evidence are proven.

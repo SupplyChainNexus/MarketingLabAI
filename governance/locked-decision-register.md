@@ -820,3 +820,18 @@ The resulting revision-preparation record is review evidence only. Actual
 revision creation remains a separate plan-bound mutation approval and cannot
 grant public access, traffic routing beyond the approved bootstrap mode,
 deployment admission authority, rebuild authority or real-customer-data access.
+
+### LDR-061 — Durable marketing workflow spine is core architecture
+
+**Status:** Current / Binding product architecture
+**Source:** Founder instruction to lock MLAI-033 on 2026-08-13
+
+MarketingLabAI requires one durable marketing workflow spine before autonomous
+execution agents scale. The spine owns workflow state, idempotency, approval
+boundaries, evidence, retry semantics, failure classification, budget guardrails
+and operator status. It is Core product architecture, not Rabbit work.
+
+Intent routing, visual formatting, opportunity detection, attribution, Cloud
+Tasks, social platforms, email, Shopify and analytics integrations are adapters
+or later capabilities. They must not become competing owners of campaign state,
+approval authority, spend rules or learning evidence.
