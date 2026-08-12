@@ -283,6 +283,25 @@ class QualityGovernanceTests(unittest.TestCase):
         gates = self.read("governance/quality-gates.md")
         self.assertIn("mutating nested command verbs", gates)
 
+    def test_windows_cloud_cli_adapter_and_executor_provenance_are_binding(self):
+        decision = self.read(
+            "governance/adrs/ADR-0041-provenance-bound-windows-cloud-cli-adapter.md"
+        )
+        normalized = " ".join(decision.split())
+        for required in (
+            "one deliberate `cmd.exe` boundary",
+            "doctor-cloud",
+            "clean repository commit",
+            "executor-contract SHA-256",
+            "supersede-operation",
+            "new plan and new approval",
+        ):
+            self.assertIn(required, normalized)
+
+        gates = self.read("governance/quality-gates.md")
+        self.assertIn("space-containing executable path", gates)
+        self.assertIn("formal supersession", gates)
+
 
 if __name__ == "__main__":
     unittest.main()

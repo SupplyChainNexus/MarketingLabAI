@@ -1,0 +1,58 @@
+{
+  "storyId": "MLAI-031.10",
+  "title": "Provenance-Bound Windows Cloud CLI Recovery",
+  "slug": "provenance_bound_windows_cloud_cli_recovery",
+  "baseline": "261f06c056ac239c34b61cb898fc4e6a04c8ffea",
+  "projectRoot": "C:\\Ai Projects\\MarketingLabAI",
+  "installFiles": [
+    "backlog\\MLAI-031.md",
+    "docs\\handover\\CURRENT_HANDOVER.md",
+    "docs\\private-synthetic-release-automation.md",
+    "governance\\adrs\\ADR-0040-read-only-cloud-preflight-executor.md",
+    "governance\\adrs\\ADR-0041-provenance-bound-windows-cloud-cli-adapter.md",
+    "governance\\definition-of-done.md",
+    "governance\\locked-decision-register.md",
+    "governance\\quality-gates.md",
+    "governance\\registers\\risk-register.md",
+    "governance\\registers\\technical-debt-register.md",
+    "story_packages\\MLAI-031.10.json",
+    "tests\\test_cloud_preflight.py",
+    "tests\\test_quality_governance.py",
+    "tests\\test_release_control_plane.py",
+    "tools\\release_control\\cli.py",
+    "tools\\release_control\\cloud_preflight.py",
+    "tools\\release_control\\config.py",
+    "tools\\release_control\\control_plane.py",
+    "tools\\release_control\\provenance.py",
+    "tools\\release_control_plane.json"
+  ],
+  "newFiles": [
+    "governance\\adrs\\ADR-0041-provenance-bound-windows-cloud-cli-adapter.md",
+    "story_packages\\MLAI-031.10.json",
+    "tools\\release_control\\provenance.py"
+  ],
+  "compileFiles": [
+    "tests\\test_cloud_preflight.py",
+    "tests\\test_quality_governance.py",
+    "tests\\test_release_control_plane.py",
+    "tools\\release_control\\cli.py",
+    "tools\\release_control\\cloud_preflight.py",
+    "tools\\release_control\\config.py",
+    "tools\\release_control\\control_plane.py",
+    "tools\\release_control\\provenance.py"
+  ],
+  "focusedTestModules": [
+    "tests.test_cloud_preflight",
+    "tests.test_release_control_plane",
+    "tests.test_quality_governance"
+  ],
+  "importCommand": "from tools.release_control.cloud_preflight import GcloudJsonReader; from tools.release_control.provenance import build_executor_provenance; print('MLAI-031.10 imports OK')",
+  "cloudOperationDuringInstallation": false,
+  "releaseStateModifiedDuringInstallation": false,
+  "supersessionDuringInstallation": false,
+  "cloudMutationAuthorized": false,
+  "deploymentAuthorized": false,
+  "rebuildAuthorized": false,
+  "revisionCreationAuthorized": false,
+  "admissionAuthorityGranted": false
+}

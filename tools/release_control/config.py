@@ -88,6 +88,16 @@ def load_config(path: Path = DEFAULT_CONFIG) -> ControlConfig:
     }
     if any(preflight.get(key) != value for key, value in expected_preflight.items()):
         raise ValueError("Cloud preflight resource identities have drifted.")
+    cloud_cli = payload.get("cloud_cli")
+    expected_cloud_cli = {
+        "account": "info@supplychainnexus.co.za",
+        "configuration": "default",
+        "project": "marketinglabai-identity-dev",
+        "executable_environment_variable": "MLAI_GCLOUD_EXECUTABLE",
+        "platform_adapter": "windows-gcloud-cmd-v2",
+    }
+    if cloud_cli != expected_cloud_cli:
+        raise ValueError("Pinned Cloud CLI execution context has drifted.")
     required_apis = preflight.get("required_apis")
     secrets = preflight.get("secrets")
     if not isinstance(required_apis, list) or len(required_apis) != len(
@@ -176,6 +186,7 @@ def validate_repository(config: ControlConfig) -> dict[str, object]:
         "policy_mode": policy["mode"],
         "template": template_report,
         "authority_separation": dict(config.payload["authorities"]),
+        "cloud_cli": dict(config.payload["cloud_cli"]),
         "cloud_mutation_performed": False,
         "deployment_authorized": False,
     }

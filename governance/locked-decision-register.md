@@ -790,3 +790,17 @@ required-resource drift fail closed.
 The gate is observational. It never authorizes or performs revision creation,
 deployment, IAM modification, traffic routing, rebuilding or cryptographic
 admission. ADR-0035 remains authoritative before any cloud mutation.
+
+### LDR-059 — Executor provenance and Windows adapter are release inputs
+
+**Status:** Current / Binding governance
+**Source:** ADR-0041 and founder authorization for MLAI-031.10 on 2026-08-12
+
+Every release plan binds the clean repository commit, control-plane version,
+executor-contract digest and platform adapter. Changed executor code invalidates
+the prior operational approval. Windows Cloud SDK batch execution uses the one
+tested adapter with pinned account, configuration and project.
+
+Interrupted incompatible work is preserved and formally superseded. It is never
+deleted, edited in place or retried under stale approval. Supersession changes no
+release gate, cloud resource, deployment state or admission authority.

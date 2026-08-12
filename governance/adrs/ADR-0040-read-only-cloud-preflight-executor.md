@@ -13,7 +13,7 @@ transfer and multiple operational truths at the first cloud-aware gate.
 ## Decision
 
 `tools.release_control` owns one permanent cloud-preflight executor. It invokes
-`gcloud` through Python argument arrays with `shell=False`, permits only exact
+native `gcloud` binaries through Python argument arrays with `shell=False`, permits only exact
 read-only command prefixes, requires JSON output and records hashes of the raw
 observations. Resource identities are pinned in
 `tools/release_control_plane.json` and validated before execution.
@@ -39,3 +39,7 @@ route traffic, rebuild an image or grant admission authority.
 - REVISION_CREATED remains unsupported and separately authorized.
 - ADR-0035 still blocks deployment of historical or observational artifacts
   until the independent cryptographic admission path is complete.
+
+ADR-0041 supersedes the Windows batch-entry implementation detail. A `.cmd`
+entry point uses one explicit, quoted `cmd.exe` adapter boundary while retaining
+the same read-only allowlist and fail-closed contract.

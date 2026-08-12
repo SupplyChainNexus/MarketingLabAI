@@ -19,6 +19,7 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--state-root", type=Path)
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser("doctor")
+    commands.add_parser("doctor-cloud")
     commands.add_parser("validate-repository")
 
     adopt = commands.add_parser("adopt")
@@ -38,6 +39,11 @@ def _parser() -> argparse.ArgumentParser:
 
     apply = commands.add_parser("apply")
     apply.add_argument("--plan", required=True)
+    supersede = commands.add_parser("supersede-operation")
+    supersede.add_argument("--plan", required=True)
+    supersede.add_argument("--operator", required=True)
+    supersede.add_argument("--reason", required=True)
+    supersede.add_argument("--authorization-reference", required=True)
     commands.add_parser("resume")
     commands.add_parser("verify")
     return parser
@@ -55,7 +61,9 @@ def main(arguments: Sequence[str] | None = None) -> int:
         return 0
     state_root = config.state_root(selected.state_root)
     control = ReleaseControlPlane(config, state_root)
-    if selected.command == "adopt":
+    if selected.command == "doctor-cloud":
+        _print(control.doctor_cloud())
+    elif selected.command == "adopt":
         _print(
             control.adopt(
                 run_dir=selected.run,
@@ -78,6 +86,15 @@ def main(arguments: Sequence[str] | None = None) -> int:
         )
     elif selected.command == "apply":
         _print(control.apply(plan_digest=selected.plan))
+    elif selected.command == "supersede-operation":
+        _print(
+            control.supersede_operation(
+                plan_digest=selected.plan,
+                operator=selected.operator,
+                reason=selected.reason,
+                authorization_reference=selected.authorization_reference,
+            )
+        )
     elif selected.command == "resume":
         _print(control.resume())
     elif selected.command == "verify":

@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import copy
+import json
+import subprocess
 import unittest
 
 from tools.release_control.cloud_preflight import (
@@ -19,6 +21,8 @@ IMAGE = (
 )
 RUNTIME = "mlai-synthetic-runtime@marketinglabai-identity-dev.iam.gserviceaccount.com"
 BUILDER = "mlai-synthetic-builder@marketinglabai-identity-dev.iam.gserviceaccount.com"
+ACCOUNT = "info@supplychainnexus.co.za"
+PROJECT = "marketinglabai-identity-dev"
 
 
 def passing_payloads(*, image_digest: str = IMAGE) -> dict[str, object]:
@@ -81,6 +85,17 @@ class FakeCloudReader:
     ):
         self.payloads = payloads or passing_payloads(image_digest=image_digest)
         self.calls: list[tuple[str, tuple[str, ...]]] = []
+
+    def doctor(self):
+        return {
+            "schema_version": 1,
+            "result": "CLOUD_CLI_DOCTOR_PASSED",
+            "adapter": "synthetic-cloud-reader-v1",
+            "account": ACCOUNT,
+            "configuration": "default",
+            "project": PROJECT,
+            "cloud_mutation_performed": False,
+        }
 
     def read(self, label: str, arguments) -> CloudJsonResult:
         self.calls.append((label, tuple(arguments)))
@@ -157,7 +172,12 @@ class CloudPreflightTests(unittest.TestCase):
             )
 
     def test_mutating_command_is_rejected_before_execution(self):
-        reader = GcloudJsonReader("gcloud.cmd")
+        reader = GcloudJsonReader(
+            "gcloud.cmd",
+            account=ACCOUNT,
+            configuration="default",
+            project=PROJECT,
+        )
         with self.assertRaisesRegex(ValueError, "read-only allowlist"):
             reader.read("forbidden", ("run", "deploy", "service"))
         with self.assertRaisesRegex(ValueError, "read-only allowlist"):
@@ -165,6 +185,79 @@ class CloudPreflightTests(unittest.TestCase):
                 "nested_forbidden",
                 ("iam", "service-accounts", "delete", RUNTIME),
             )
+
+    def test_windows_batch_adapter_preserves_space_path_and_pins_context(self):
+        calls = []
+
+        def runner(arguments, **keywords):
+            calls.append((arguments, keywords))
+            return subprocess.CompletedProcess(
+                arguments,
+                0,
+                stdout=json.dumps({"projectId": PROJECT, "lifecycleState": "ACTIVE"}),
+                stderr="",
+            )
+
+        reader = GcloudJsonReader(
+            r"C:\Program Files\Google\Cloud SDK\gcloud.cmd",
+            account=ACCOUNT,
+            configuration="default",
+            project=PROJECT,
+            platform_name="nt",
+            runner=runner,
+        )
+        reader.read("project", ("projects", "describe", PROJECT))
+        command, keywords = calls[0]
+        self.assertIsInstance(command, str)
+        self.assertIn('"C:\\Program Files\\Google\\Cloud SDK\\gcloud.cmd"', command)
+        self.assertIn(f"--account={ACCOUNT}", command)
+        self.assertIn("--configuration=default", command)
+        self.assertIn(f"--project={PROJECT}", command)
+        self.assertTrue(keywords["shell"])
+
+    def test_cloud_doctor_uses_same_adapter_and_requires_exact_context(self):
+        calls = []
+
+        def runner(arguments, **keywords):
+            calls.append(arguments)
+            selected = str(arguments)
+            payload = (
+                [{"account": ACCOUNT, "status": "ACTIVE"}]
+                if "auth list" in selected
+                else {
+                    "name": "default",
+                    "properties": {"core": {"account": ACCOUNT, "project": PROJECT}},
+                }
+            )
+            return subprocess.CompletedProcess(
+                arguments, 0, stdout=json.dumps(payload), stderr=""
+            )
+
+        reader = GcloudJsonReader(
+            r"C:\Program Files\Google\Cloud SDK\gcloud.cmd",
+            account=ACCOUNT,
+            configuration="default",
+            project=PROJECT,
+            platform_name="nt",
+            runner=runner,
+        )
+        result = reader.doctor()
+        self.assertEqual("CLOUD_CLI_DOCTOR_PASSED", result["result"])
+        self.assertEqual("windows-gcloud-cmd-v2", result["adapter"])
+        self.assertEqual(2, len(calls))
+        self.assertFalse(result["cloud_mutation_performed"])
+
+    def test_adapter_rejects_shell_metacharacters_and_owned_flags(self):
+        reader = GcloudJsonReader(
+            "gcloud.cmd",
+            account=ACCOUNT,
+            configuration="default",
+            project=PROJECT,
+        )
+        with self.assertRaisesRegex(ValueError, "unsafe"):
+            reader.read("project", ("projects", "describe", "project&whoami"))
+        with self.assertRaisesRegex(ValueError, "adapter-owned"):
+            reader.read("project", ("projects", "describe", PROJECT, "--quiet"))
 
 
 if __name__ == "__main__":

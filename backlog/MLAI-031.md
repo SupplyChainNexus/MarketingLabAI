@@ -157,3 +157,25 @@ temporary scripts or granting deployment authority.
 - Installation, validation and CI perform no cloud operation.
 - Revision creation, deployment, IAM mutation, traffic and admission authority
   remain unsupported and separately gated.
+
+## MLAI-031.10 — Provenance-Bound Windows Cloud CLI Recovery
+
+Status: founder-authorized durable repair
+
+### Purpose
+
+Repair the actual Windows Python-to-Cloud-SDK boundary, prevent changed
+executor code from reusing an old approval, and provide one safe recovery path
+for the interrupted cloud-preflight operation.
+
+### Acceptance
+
+- The Windows `.cmd` adapter is explicit and tested with a space-containing path.
+- Account, configuration, project, quiet mode and JSON format are adapter-owned.
+- A same-adapter doctor passes before any operation journal is created.
+- Plans bind the clean repository commit, control-plane version, executor hash
+  and platform adapter.
+- Missing or changed executor provenance fails closed.
+- Formal supersession preserves the old operation without changing a gate or cloud.
+- Resume returns one safe next action and never silently reuses stale approval.
+- Installation and validation perform no cloud operation or release-state change.

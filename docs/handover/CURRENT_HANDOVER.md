@@ -8,7 +8,7 @@
 - Last completed epic: MLAI-029 Marketing Strategy Intelligence
 - Active epic: MLAI-031 Controlled Pilot Hosting
 - Last completed story: MLAI-031.2 Repository-Wide PostgreSQL Compatibility and Migration
-- Active story: MLAI-031.9 Permanent Read-Only Cloud Preflight
+- Active story: MLAI-031.10 Provenance-Bound Windows Cloud CLI Recovery
 
 ## Product direction
 
@@ -259,3 +259,18 @@ hash-indexed evidence and no secret payload access. Installation and CI perform
 no cloud operation. After commit and CI, create one preflight plan and stop for
 the exact plan approval. Do not proceed to `REVISION_CREATED`; ADR-0035 still
 requires the hardened independent admission path before cloud mutation.
+
+## MLAI-031.10: Windows Cloud CLI recovery
+
+The approved MLAI-031.9 plan stopped twice before any cloud observation because
+Python did not preserve the authenticated context when launching `gcloud.cmd`.
+Direct diagnostics confirmed the expected account, default configuration and
+project. The operation remains `running`, the gate remains pending, and no cloud
+mutation occurred.
+
+ADR-0041 makes the Windows batch adapter explicit, adds same-adapter local
+diagnostics, binds plans to executor provenance and requires formal
+supersession of the old operation before a fresh plan and approval. Installation
+must not alter the external release state. After commit and CI, run
+`doctor-cloud`, formally supersede plan `178f09fa673e1edefeb7034245879e1275fbb517b685a22a244a4f29d1983db6`,
+then use `resume` to create—but not approve—the replacement plan.

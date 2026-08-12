@@ -4,11 +4,12 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import shutil
 import subprocess
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Mapping, Protocol, Sequence
+from typing import Callable, Mapping, Protocol, Sequence
 
 from deployment.private_synthetic_bootstrap import (
     APPROVED_INGRESS,
@@ -32,6 +33,16 @@ READ_ONLY_COMMAND_PREFIXES = {
     ("run", "services", "list"),
     ("run", "services", "get-iam-policy"),
 }
+OWNED_GLOBAL_FLAG_PREFIXES = (
+    "--account",
+    "--configuration",
+    "--format",
+    "--project",
+    "--quiet",
+)
+SAFE_ARGUMENT = re.compile(r"^[A-Za-z0-9@._:/=,+-]+$")
+WINDOWS_ADAPTER = "windows-gcloud-cmd-v2"
+DIRECT_ADAPTER = "direct-gcloud-binary-v1"
 PUBLIC_MEMBERS = {"allUsers", "allAuthenticatedUsers"}
 
 
@@ -42,28 +53,159 @@ class CloudJsonResult:
 
 
 class CloudJsonReader(Protocol):
+    def doctor(self) -> Mapping[str, object]: ...
+
     def read(self, label: str, arguments: Sequence[str]) -> CloudJsonResult: ...
 
 
 class GcloudJsonReader:
-    """Execute an explicit allowlist of JSON-producing read-only commands."""
+    """Pinned adapter for local diagnostics and read-only cloud inspection."""
 
-    def __init__(self, executable: str, *, timeout_seconds: int = 90):
+    def __init__(
+        self,
+        executable: str,
+        *,
+        account: str,
+        configuration: str,
+        project: str,
+        timeout_seconds: int = 90,
+        platform_name: str | None = None,
+        runner: Callable[..., subprocess.CompletedProcess[str]] = subprocess.run,
+    ):
         self.executable = executable
+        self.account = account
+        self.configuration = configuration
+        self.project = project
         self.timeout_seconds = timeout_seconds
+        self.platform_name = platform_name or os.name
+        self.runner = runner
+        suffix = Path(executable).suffix.lower()
+        self.adapter = (
+            WINDOWS_ADAPTER
+            if self.platform_name == "nt" and suffix in {".cmd", ".bat"}
+            else DIRECT_ADAPTER
+        )
 
     @classmethod
-    def from_environment(cls) -> "GcloudJsonReader":
+    def from_config(cls, cloud_cli: Mapping[str, object]) -> "GcloudJsonReader":
         configured = os.environ.get("MLAI_GCLOUD_EXECUTABLE", "").strip()
         executable = configured or shutil.which("gcloud.cmd") or shutil.which("gcloud")
         if not executable:
             raise ValueError(
                 "Pinned gcloud executable was not found; set MLAI_GCLOUD_EXECUTABLE."
             )
-        return cls(str(Path(executable).resolve()))
+        return cls(
+            str(Path(executable).resolve()),
+            account=str(cloud_cli["account"]),
+            configuration=str(cloud_cli["configuration"]),
+            project=str(cloud_cli["project"]),
+        )
+
+    def _validate_arguments(self, arguments: Sequence[str]) -> tuple[str, ...]:
+        selected = tuple(str(item) for item in arguments)
+        for argument in selected:
+            if not argument or not SAFE_ARGUMENT.fullmatch(argument):
+                raise ValueError("Cloud command contains an unsafe argument.")
+            if argument.startswith(OWNED_GLOBAL_FLAG_PREFIXES):
+                raise ValueError(
+                    "Cloud CLI identity, project, format and quiet flags are adapter-owned."
+                )
+        return selected
+
+    def _command(self, arguments: Sequence[str]) -> list[str]:
+        return [
+            self.executable,
+            *arguments,
+            f"--account={self.account}",
+            f"--configuration={self.configuration}",
+            f"--project={self.project}",
+            "--quiet",
+            "--format=json",
+        ]
+
+    def _execute(self, label: str, arguments: Sequence[str]) -> CloudJsonResult:
+        selected = self._validate_arguments(arguments)
+        command = self._command(selected)
+        if self.adapter == WINDOWS_ADAPTER:
+            invocation: str | list[str] = subprocess.list2cmdline(command)
+            use_shell = True
+        else:
+            invocation = command
+            use_shell = False
+        completed = self.runner(
+            invocation,
+            check=False,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=self.timeout_seconds,
+            shell=use_shell,
+        )
+        if completed.returncode != 0:
+            detail = completed.stderr.strip() or "no diagnostic was returned"
+            raise ValueError(
+                f"Cloud CLI adapter failed for {label} via {self.adapter}: {detail}"
+            )
+        try:
+            payload = json.loads(completed.stdout)
+        except json.JSONDecodeError as error:
+            raise ValueError(
+                f"Cloud CLI adapter returned invalid JSON for {label}."
+            ) from error
+        return CloudJsonResult(
+            payload=payload,
+            sha256=sha256_bytes(canonical_json(payload)),
+        )
+
+    def doctor(self) -> Mapping[str, object]:
+        """Verify the exact local Cloud SDK context through this same adapter."""
+
+        accounts_result = self._execute("authenticated accounts", ("auth", "list"))
+        config_result = self._execute(
+            "active configuration",
+            ("config", "configurations", "describe", self.configuration),
+        )
+        if not isinstance(accounts_result.payload, list):
+            raise ValueError("Cloud CLI doctor expected an account list.")
+        matching_accounts = [
+            row
+            for row in accounts_result.payload
+            if isinstance(row, dict)
+            and row.get("account") == self.account
+            and row.get("status") == "ACTIVE"
+        ]
+        if len(matching_accounts) != 1:
+            raise ValueError(
+                f"Cloud CLI doctor did not find one active pinned account: {self.account}"
+            )
+        if not isinstance(config_result.payload, dict):
+            raise ValueError("Cloud CLI doctor expected a configuration object.")
+        properties = config_result.payload.get("properties")
+        core = properties.get("core") if isinstance(properties, dict) else None
+        if not isinstance(core, dict):
+            raise ValueError(
+                "Cloud CLI doctor could not read configuration core properties."
+            )
+        if core.get("account") != self.account or core.get("project") != self.project:
+            raise ValueError("Cloud CLI doctor found account or project drift.")
+        return {
+            "schema_version": 1,
+            "result": "CLOUD_CLI_DOCTOR_PASSED",
+            "adapter": self.adapter,
+            "executable": str(Path(self.executable).resolve()),
+            "account": self.account,
+            "configuration": self.configuration,
+            "project": self.project,
+            "account_metadata_sha256": accounts_result.sha256,
+            "configuration_metadata_sha256": config_result.sha256,
+            "credential_created": False,
+            "account_changed": False,
+            "cloud_mutation_performed": False,
+        }
 
     def read(self, label: str, arguments: Sequence[str]) -> CloudJsonResult:
-        selected = tuple(str(item) for item in arguments)
+        selected = self._validate_arguments(arguments)
         permitted = any(
             selected[: len(prefix)] == prefix for prefix in READ_ONLY_COMMAND_PREFIXES
         )
@@ -71,34 +213,7 @@ class GcloudJsonReader:
             raise ValueError(
                 f"Cloud command is not on the read-only allowlist: {label}"
             )
-        if any(item.startswith("--format") for item in selected):
-            raise ValueError("Cloud command format is owned by the JSON reader.")
-        completed = subprocess.run(
-            [self.executable, *selected, "--format=json"],
-            check=False,
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            errors="replace",
-            timeout=self.timeout_seconds,
-            shell=False,
-        )
-        if completed.returncode != 0:
-            detail = completed.stderr.strip().splitlines()
-            summary = detail[-1] if detail else "no diagnostic was returned"
-            raise ValueError(
-                f"Read-only cloud inspection failed for {label}: {summary}"
-            )
-        try:
-            payload = json.loads(completed.stdout)
-        except json.JSONDecodeError as error:
-            raise ValueError(
-                f"Cloud inspection returned invalid JSON: {label}"
-            ) from error
-        return CloudJsonResult(
-            payload=payload,
-            sha256=sha256_bytes(canonical_json(payload)),
-        )
+        return self._execute(label, selected)
 
 
 def _mapping(value: object, label: str) -> Mapping[str, object]:
@@ -163,9 +278,7 @@ def run_cloud_preflight(
         raise ValueError("Google Cloud project is not ACTIVE.")
 
     service_rows = _list(
-        inspect(
-            "enabled_apis", "services", "list", "--enabled", f"--project={project}"
-        ),
+        inspect("enabled_apis", "services", "list", "--enabled"),
         "enabled APIs",
     )
     enabled_apis = {
@@ -185,7 +298,6 @@ def run_cloud_preflight(
                 "service-accounts",
                 "describe",
                 email,
-                f"--project={project}",
             ),
             f"{kind} identity",
         )
@@ -201,7 +313,6 @@ def run_cloud_preflight(
             "describe",
             repository,
             f"--location={region}",
-            f"--project={project}",
         ),
         "artifact repository",
     )
@@ -219,7 +330,6 @@ def run_cloud_preflight(
             "images",
             "describe",
             image_digest,
-            f"--project={project}",
         ),
         "artifact image",
     )
@@ -236,7 +346,6 @@ def run_cloud_preflight(
             "instances",
             "describe",
             sql_instance,
-            f"--project={project}",
         ),
         "Cloud SQL",
     )
@@ -272,7 +381,6 @@ def run_cloud_preflight(
                 "secrets",
                 "describe",
                 secret,
-                f"--project={project}",
             ),
             f"secret {secret}",
         )
@@ -285,7 +393,6 @@ def run_cloud_preflight(
                 "versions",
                 "list",
                 secret,
-                f"--project={project}",
                 "--filter=state=ENABLED",
             ),
             f"secret versions {secret}",
@@ -303,7 +410,6 @@ def run_cloud_preflight(
                 "secrets",
                 "get-iam-policy",
                 secret,
-                f"--project={project}",
             ),
             f"secret IAM {secret}",
         )
@@ -322,7 +428,6 @@ def run_cloud_preflight(
             "run",
             "services",
             "list",
-            f"--project={project}",
             f"--region={region}",
             "--platform=managed",
         ),
@@ -351,7 +456,6 @@ def run_cloud_preflight(
                 "services",
                 "get-iam-policy",
                 service,
-                f"--project={project}",
                 f"--region={region}",
                 "--platform=managed",
             ),

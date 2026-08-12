@@ -120,4 +120,7 @@ are satisfied:
 - [ ] Apply and resume tests prove duplicate prevention after interruption.
 - [ ] No local approval or controller record claims admission authority.
 - [ ] The complete PowerShell 5.1 and Python regression suite passes.
+- [ ] Windows Cloud SDK execution passes its real adapter contract.
+- [ ] Every executable plan is commit- and executor-bound.
+- [ ] Interrupted incompatible operations are formally superseded and preserved.
 - A fresh commit-bound image and release run are required after this correction.

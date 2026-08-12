@@ -155,10 +155,21 @@ Binary Authorization enforcement, or deployment permission.
 
 - `CLOUD_PREFLIGHT_PASSED` runs only inside `tools.release_control` after an
   exact plan-bound approval.
-- Only exact read-only `gcloud` verbs are permitted; subprocess execution never
-  uses a shell and JSON formatting is owned by the executor.
+- Only exact read-only `gcloud` verbs are permitted; native binaries use
+  `shell=False`, the Windows batch entry uses the tested ADR-0041 adapter, and
+  JSON formatting is owned by the executor.
 - Pinned APIs, identities, immutable artifact, database, secret metadata/access
   and canonical Cloud Run target state must all match.
 - Secret payload access, cloud mutation, deployment and admission authority are
   prohibited; public or ambiguous target state fails closed.
 - Tests must prove mutating nested command verbs are rejected before execution.
+
+## Provenance-bound Cloud CLI adapter gate
+
+- Windows batch execution must be tested with a space-containing executable path.
+- Account, configuration, project, quiet and JSON flags are adapter-owned.
+- Unsafe argument tokens fail before process execution.
+- The same adapter must pass local context diagnostics before journaling cloud work.
+- Plans must bind clean repository and executor provenance.
+- Executor drift requires formal supersession and a fresh approval.
+- Supersession must preserve evidence and modify neither gate nor cloud state.

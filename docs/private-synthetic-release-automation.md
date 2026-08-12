@@ -85,3 +85,28 @@ Cloud Run service boundary. It never accesses secret payloads. It cannot create
 a revision, deploy, modify IAM, route traffic, rebuild or issue admission
 authority. `REVISION_CREATED` remains unsupported and requires later explicit
 architecture and authorization work under ADR-0035.
+
+## Windows Cloud SDK and safe recovery
+
+`doctor-cloud` uses the same adapter as cloud preflight and verifies the exact
+pinned account, configuration and project before an operation journal exists:
+
+```powershell
+& ".\scripts\mlai_release.ps1" doctor-cloud
+```
+
+Every plan is bound to the clean repository commit and executor contract. If
+executor code changes while an operation is running, `status` and `resume`
+return `supersession_required`. The old plan and approval cannot be reused.
+After explicit authorization, close it without changing release or cloud state:
+
+```powershell
+& ".\scripts\mlai_release.ps1" supersede-operation `
+    --plan "<old-plan-digest>" `
+    --operator "<operator>" `
+    --reason "<durable-repair-reason>" `
+    --authorization-reference "<supersession-authorization>"
+```
+
+Then `resume` creates the new provenance-bound plan and stops for its new exact
+approval. Supersession is never an admission decision and never executes cloud.

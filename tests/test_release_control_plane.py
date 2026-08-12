@@ -16,6 +16,7 @@ from tools.release_control.config import (
     validate_repository,
 )
 from tools.release_control.control_plane import ReleaseControlPlane
+from tools.release_control.store import write_json_atomic
 
 COMMIT = "22392443177c67b7252ae51182b335e7491357f5"
 IMAGE = (
@@ -24,6 +25,12 @@ IMAGE = (
     "2f20534cff7b7ae8e6fdaef6272b8cee793317b3113f88958bd69889e9213486"
 )
 BUILD_ID = "f9ad9f0d-b93d-429e-9ea9-f89b538ebea8"
+EXECUTOR_PROVENANCE = {
+    "control_plane_version": "1.2",
+    "repository_commit": "b" * 40,
+    "executor_contract_sha256": "c" * 64,
+    "platform_adapter": "windows-gcloud-cmd-v2",
+}
 
 
 class ReleaseControlPlaneTests(unittest.TestCase):
@@ -62,7 +69,11 @@ class ReleaseControlPlaneTests(unittest.TestCase):
             json.dumps({"result": "POST_BUILD_EVIDENCE_ASSESSMENT_PASSED_READ_ONLY"}),
             encoding="utf-8",
         )
-        self.control = ReleaseControlPlane(load_config(), self.state_root)
+        self.control = ReleaseControlPlane(
+            load_config(),
+            self.state_root,
+            executor_provenance=EXECUTOR_PROVENANCE,
+        )
 
     def tearDown(self):
         self.temporary.cleanup()
@@ -115,6 +126,7 @@ class ReleaseControlPlaneTests(unittest.TestCase):
         self.assertEqual(first, second)
         self.assertEqual("CONFIGURATION_VALIDATED", first["gate"])
         self.assertFalse(first["may_mutate_cloud"])
+        self.assertEqual(EXECUTOR_PROVENANCE, first["executor_provenance"])
         approval = self.control.approve(
             plan_digest=first["plan_digest"],
             operator="synthetic-approver",
@@ -187,6 +199,87 @@ class ReleaseControlPlaneTests(unittest.TestCase):
     def test_state_inside_repository_is_refused(self):
         with self.assertRaisesRegex(ValueError, "outside the repository"):
             ReleaseControlPlane(load_config(), ROOT / "release-control")
+
+    def test_cloud_doctor_is_same_reader_and_does_not_modify_release_state(self):
+        reader = FakeCloudReader(image_digest=IMAGE)
+        self.control.cloud_reader = reader
+        result = self.control.doctor_cloud()
+        self.assertEqual("CLOUD_CLI_DOCTOR_PASSED", result["result"])
+        self.assertEqual(EXECUTOR_PROVENANCE, result["executor_provenance"])
+        self.assertFalse(result["release_state_modified"])
+        self.assertFalse(self.state_root.exists())
+
+    def test_failed_cloud_doctor_does_not_create_operation_journal(self):
+        class FailingDoctorReader(FakeCloudReader):
+            def doctor(self):
+                raise ValueError("synthetic adapter failure")
+
+        self.control.cloud_reader = FailingDoctorReader(image_digest=IMAGE)
+        self.adopt()
+        configuration_plan = self.control.plan()
+        self.control.approve(
+            plan_digest=configuration_plan["plan_digest"],
+            operator="synthetic-approver",
+            authorization_reference="AUTH-SYNTHETIC-CONFIGURATION",
+        )
+        self.control.apply(plan_digest=configuration_plan["plan_digest"])
+        preflight_plan = self.control.plan()
+        self.control.approve(
+            plan_digest=preflight_plan["plan_digest"],
+            operator="synthetic-approver",
+            authorization_reference="AUTH-SYNTHETIC-CLOUD-PREFLIGHT",
+        )
+        with self.assertRaisesRegex(ValueError, "synthetic adapter failure"):
+            self.control.apply(plan_digest=preflight_plan["plan_digest"])
+        operation = (
+            self.state_root / "operations" / f"{preflight_plan['plan_digest']}.json"
+        )
+        self.assertFalse(operation.exists())
+
+    def test_executor_change_requires_formal_supersession_and_new_plan(self):
+        self.adopt()
+        plan = self.control.plan()
+        approval = self.control.approve(
+            plan_digest=plan["plan_digest"],
+            operator="synthetic-approver",
+            authorization_reference="AUTH-SYNTHETIC-CONFIGURATION",
+        )
+        operation_path = self.state_root / "operations" / f"{plan['plan_digest']}.json"
+        write_json_atomic(
+            operation_path,
+            {
+                "schema_version": 1,
+                "plan_digest": plan["plan_digest"],
+                "approval_digest": approval["approval_digest"],
+                "gate": plan["gate"],
+                "status": "running",
+                "started_at": "2026-08-12T21:26:16+00:00",
+                "cloud_mutation_performed": False,
+            },
+        )
+        replacement_provenance = {
+            **EXECUTOR_PROVENANCE,
+            "executor_contract_sha256": "d" * 64,
+        }
+        repaired = ReleaseControlPlane(
+            load_config(),
+            self.state_root,
+            executor_provenance=replacement_provenance,
+        )
+        with self.assertRaisesRegex(ValueError, "formally superseded"):
+            repaired.apply(plan_digest=plan["plan_digest"])
+        closed = repaired.supersede_operation(
+            plan_digest=plan["plan_digest"],
+            operator="synthetic-operator",
+            reason="Windows Cloud SDK adapter contract was replaced.",
+            authorization_reference="AUTH-SYNTHETIC-SUPERSEDE",
+        )
+        self.assertEqual("superseded", closed["status"])
+        self.assertFalse(closed["release_gate_modified"])
+        self.assertFalse(closed["cloud_mutation_performed"])
+        resumed = repaired.resume()
+        self.assertEqual("awaiting_approval", resumed["state"])
+        self.assertNotEqual(plan["plan_digest"], resumed["plan_digest"])
 
     def test_story_numbered_state_path_is_absent_from_configuration(self):
         text = (ROOT / "tools" / "release_control_plane.json").read_text(

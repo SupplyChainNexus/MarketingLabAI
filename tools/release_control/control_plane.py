@@ -21,6 +21,10 @@ from tools.release_control.cloud_preflight import (
     run_cloud_preflight,
 )
 from tools.release_control.config import ControlConfig, validate_repository
+from tools.release_control.provenance import (
+    build_executor_provenance,
+    validate_executor_provenance,
+)
 from tools.release_control.store import (
     RunLock,
     canonical_json,
@@ -70,10 +74,16 @@ class ReleaseControlPlane:
         state_root: Path,
         *,
         cloud_reader: CloudJsonReader | None = None,
+        executor_provenance: Mapping[str, object] | None = None,
     ):
         self.config = config
         self.state_root = state_root.expanduser().resolve()
         self.cloud_reader = cloud_reader
+        self._provenance_override = (
+            validate_executor_provenance(executor_provenance)
+            if executor_provenance is not None
+            else None
+        )
         if not _outside_repository(self.state_root, config.repository_root):
             raise ValueError(
                 "Release-control state must remain outside the repository."
@@ -302,6 +312,23 @@ class ReleaseControlPlane:
             "cloud_mutation_performed": False,
         }
 
+    def _latest_operation(self) -> dict[str, object] | None:
+        operations_root = self.state_root / "operations"
+        operations = [
+            read_json_verified(path) for path in operations_root.glob("*.json")
+        ]
+        if not operations:
+            return None
+        return max(
+            operations,
+            key=lambda item: str(
+                item.get("completed_at")
+                or item.get("superseded_at")
+                or item.get("started_at")
+                or ""
+            ),
+        )
+
     def status(self, *, audit: bool = False) -> dict[str, object]:
         index = self._load_index()
         self._verify_evidence_index(index)
@@ -317,6 +344,23 @@ class ReleaseControlPlane:
         else:
             state = "complete" if summary["release_closed"] else "waiting"
             next_action = "No release transition is currently eligible."
+        latest_operation = self._latest_operation()
+        if latest_operation is not None and latest_operation.get("status") == "running":
+            try:
+                self._load_plan(
+                    str(latest_operation["plan_digest"]), require_current=False
+                )
+            except ValueError as error:
+                if "provenance" not in str(error) and "superseded" not in str(error):
+                    raise
+                state = "supersession_required"
+                next_action = (
+                    "Formally supersede the interrupted operation, then create a new "
+                    "provenance-bound plan."
+                )
+            else:
+                state = "resume_available"
+                next_action = "Resume the approved operation through the paved path."
         result: dict[str, object] = {
             "schema_version": 1,
             "state": state,
@@ -330,6 +374,15 @@ class ReleaseControlPlane:
             "deployment_authorized": False,
             "cloud_mutation_performed": False,
         }
+        if latest_operation is not None:
+            result["latest_operation"] = {
+                "plan_digest": latest_operation.get("plan_digest"),
+                "gate": latest_operation.get("gate"),
+                "status": latest_operation.get("status"),
+                "cloud_mutation_performed": latest_operation.get(
+                    "cloud_mutation_performed", False
+                ),
+            }
         if audit:
             result["audit"] = {
                 "release": index["release"],
@@ -343,6 +396,22 @@ class ReleaseControlPlane:
     def _event_head(self, run_dir: Path) -> str:
         events = read_events(run_dir)
         return str(events[-1]["event_hash"]) if events else ZERO_HASH
+
+    def _executor_provenance(self) -> dict[str, object]:
+        return self._provenance_override or build_executor_provenance(self.config)
+
+    def _cloud_reader(self) -> CloudJsonReader:
+        selected = self.config.payload.get("cloud_cli")
+        if not isinstance(selected, dict):
+            raise ValueError("Cloud CLI execution context is missing.")
+        return self.cloud_reader or GcloudJsonReader.from_config(selected)
+
+    def doctor_cloud(self) -> dict[str, object]:
+        result = dict(self._cloud_reader().doctor())
+        result["executor_provenance"] = self._executor_provenance()
+        result["release_state_modified"] = False
+        result["cloud_mutation_performed"] = False
+        return result
 
     def _build_plan(self) -> dict[str, object]:
         index = self._load_index()
@@ -369,6 +438,7 @@ class ReleaseControlPlane:
             "observational_event_head": self._event_head(run_dir),
             "gate": gate,
             "action": action,
+            "executor_provenance": self._executor_provenance(),
             "may_mutate_cloud": False,
             "approval_required": True,
             "controller_authoritative": False,
@@ -396,7 +466,11 @@ class ReleaseControlPlane:
         return plan
 
     def _load_plan(
-        self, digest: str, *, require_current: bool = True
+        self,
+        digest: str,
+        *,
+        require_current: bool = True,
+        require_executor: bool = True,
     ) -> dict[str, object]:
         if len(digest) != 64 or any(
             character not in "0123456789abcdef" for character in digest
@@ -406,6 +480,12 @@ class ReleaseControlPlane:
         plan = read_json_verified(path)
         if plan.get("plan_digest") != digest or self._plan_digest(plan) != digest:
             raise ValueError("Plan digest verification failed.")
+        if require_executor:
+            recorded = validate_executor_provenance(plan.get("executor_provenance"))
+            if recorded != self._executor_provenance():
+                raise ValueError(
+                    "Plan executor provenance has changed and must be formally superseded."
+                )
         if require_current and plan != self.plan():
             raise ValueError("Plan is stale because the release state has changed.")
         return plan
@@ -509,7 +589,11 @@ class ReleaseControlPlane:
         }
 
     def _cloud_preflight_evidence(
-        self, plan: Mapping[str, object]
+        self,
+        plan: Mapping[str, object],
+        *,
+        reader: CloudJsonReader,
+        doctor: Mapping[str, object],
     ) -> dict[str, object]:
         selected = self.config.payload.get("cloud_preflight")
         if not isinstance(selected, dict):
@@ -517,7 +601,6 @@ class ReleaseControlPlane:
         release = plan.get("release")
         if not isinstance(release, dict):
             raise ValueError("Cloud preflight plan release identity is missing.")
-        reader = self.cloud_reader or GcloudJsonReader.from_environment()
         evidence = run_cloud_preflight(
             selected,
             image_digest=_required_string(
@@ -530,6 +613,7 @@ class ReleaseControlPlane:
             "completed_at": _utc_now(),
             "plan_digest": plan["plan_digest"],
             "release": release,
+            "cloud_cli_doctor": dict(doctor),
         }
 
     def apply(self, *, plan_digest: str) -> dict[str, object]:
@@ -540,11 +624,20 @@ class ReleaseControlPlane:
                 raise ValueError(
                     "This control-plane version cannot execute cloud mutation."
                 )
+            reader: CloudJsonReader | None = None
+            doctor: Mapping[str, object] | None = None
+            if plan["gate"] == "CLOUD_PREFLIGHT_PASSED":
+                reader = self._cloud_reader()
+                doctor = reader.doctor()
             operation_path = self.state_root / "operations" / f"{plan_digest}.json"
             if operation_path.exists():
                 operation = read_json_verified(operation_path)
                 if operation.get("status") == "completed":
                     return operation
+                if operation.get("status") == "superseded":
+                    raise ValueError(
+                        "Operation was superseded; create and approve the current plan."
+                    )
             else:
                 current = self._build_plan()
                 if self._plan_digest(current) != plan_digest:
@@ -560,6 +653,10 @@ class ReleaseControlPlane:
                     "started_at": _utc_now(),
                     "cloud_mutation_performed": False,
                 }
+                if doctor is not None:
+                    operation["cloud_cli_doctor_sha256"] = sha256_bytes(
+                        canonical_json(doctor)
+                    )
                 write_json_atomic(operation_path, operation)
 
             gate = str(plan["gate"])
@@ -589,11 +686,16 @@ class ReleaseControlPlane:
                     raise ValueError(
                         "Plan is stale because the release state has changed."
                     )
-                evidence = (
-                    self._configuration_evidence(plan)
-                    if gate == "CONFIGURATION_VALIDATED"
-                    else self._cloud_preflight_evidence(plan)
-                )
+                if gate == "CONFIGURATION_VALIDATED":
+                    evidence = self._configuration_evidence(plan)
+                else:
+                    if reader is None or doctor is None:
+                        raise AssertionError(
+                            "Cloud preflight adapter was not initialized."
+                        )
+                    evidence = self._cloud_preflight_evidence(
+                        plan, reader=reader, doctor=doctor
+                    )
                 evidence_hash = write_json_atomic(evidence_path, evidence)
             reference = (
                 f"release-control://{self._relative_record(evidence_path)}"
@@ -647,22 +749,63 @@ class ReleaseControlPlane:
             write_json_atomic(operation_path, completed)
             return completed
 
-    def resume(self) -> dict[str, object]:
-        operations = [
-            read_json_verified(path)
-            for path in (self.state_root / "operations").glob("*.json")
-        ]
-        latest = (
-            max(
-                operations,
-                key=lambda item: str(
-                    item.get("completed_at") or item.get("started_at") or ""
-                ),
+    def supersede_operation(
+        self,
+        *,
+        plan_digest: str,
+        operator: str,
+        reason: str,
+        authorization_reference: str,
+    ) -> dict[str, object]:
+        """Close an interrupted operation without altering gates or cloud state."""
+
+        operator = _required_string(operator, "Operator")
+        reason = _required_string(reason, "Supersession reason")
+        reference = _required_string(authorization_reference, "Authorization reference")
+        with RunLock(self.state_root / "control-plane.lock"):
+            plan = self._load_plan(
+                plan_digest, require_current=False, require_executor=False
             )
-            if operations
-            else None
-        )
-        if latest is not None and latest.get("status") != "completed":
+            approval = self._load_approval(plan)
+            operation_path = self.state_root / "operations" / f"{plan_digest}.json"
+            operation = read_json_verified(operation_path)
+            if operation.get("status") == "superseded":
+                return operation
+            if operation.get("status") != "running":
+                raise ValueError("Only a running operation may be superseded.")
+            if operation.get("approval_digest") != approval.get("approval_digest"):
+                raise ValueError("Operation approval integrity verification failed.")
+            superseded = {
+                **operation,
+                "status": "superseded",
+                "superseded_at": _utc_now(),
+                "superseded_by": operator,
+                "supersession_reason": reason,
+                "supersession_authorization_reference": reference,
+                "replacement_plan_required": True,
+                "release_gate_modified": False,
+                "cloud_mutation_performed": False,
+            }
+            write_json_atomic(operation_path, superseded)
+            return superseded
+
+    def resume(self) -> dict[str, object]:
+        latest = self._latest_operation()
+        if latest is not None and latest.get("status") == "running":
+            try:
+                self._load_plan(str(latest["plan_digest"]), require_current=False)
+            except ValueError as error:
+                if "provenance" not in str(error) and "superseded" not in str(error):
+                    raise
+                return {
+                    **self.status(),
+                    "state": "supersession_required",
+                    "plan_digest": latest["plan_digest"],
+                    "next_action": (
+                        "Formally supersede the interrupted operation; its approval "
+                        "cannot authorize changed executor code."
+                    ),
+                }
             return self.apply(plan_digest=str(latest["plan_digest"]))
         try:
             plan = self.plan()

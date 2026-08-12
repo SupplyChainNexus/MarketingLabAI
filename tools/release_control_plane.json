@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "control_plane_version": "1.1",
+  "control_plane_version": "1.2",
   "environment": "cloud-synthetic",
   "artifact_repository": "africa-south1-docker.pkg.dev/marketinglabai-identity-dev/mlai-synthetic/marketinglabai-pilot",
   "state_root_environment_variable": "MLAI_RELEASE_STATE_ROOT",
@@ -23,6 +23,13 @@
     "CONFIGURATION_VALIDATED",
     "CLOUD_PREFLIGHT_PASSED"
   ],
+  "cloud_cli": {
+    "account": "info@supplychainnexus.co.za",
+    "configuration": "default",
+    "project": "marketinglabai-identity-dev",
+    "executable_environment_variable": "MLAI_GCLOUD_EXECUTABLE",
+    "platform_adapter": "windows-gcloud-cmd-v2"
+  },
   "cloud_preflight": {
     "project": "marketinglabai-identity-dev",
     "region": "africa-south1",
