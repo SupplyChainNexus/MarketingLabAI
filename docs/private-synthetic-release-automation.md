@@ -143,3 +143,10 @@ approval. Supersession is never an admission decision and never executes cloud.
 First-service bootstrap may use the approved placeholder origin only until the generated Cloud Run service URL is known. ORIGIN_RECONCILED must replace that placeholder with the observed real URL before STARTUP_VERIFIED.
 
 No startup or smoke gate may pass while MLAI_PUBLIC_ORIGIN is https://marketinglabai-velani-pilot-first-bootstrap.invalid.
+
+## MLAI-031.14: Release tooling hardening
+
+Release transitions must be executed through the Python release-control CLI.
+PowerShell scripts are thin launchers only and may not embed Python source.
+`ORIGIN_RECONCILED` planning must use `python -m tools.release_control
+prepare-origin-reconciliation`.

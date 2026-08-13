@@ -1,6 +1,6 @@
 # MarketingLabAI Locked Decision Register
 
-Status: Founder-ratified baseline — approved 2026-08-05 via PDR-0001
+Status: Founder-ratified baseline Ã¢â‚¬â€ approved 2026-08-05 via PDR-0001
 
 ## Authority notation
 
@@ -14,10 +14,10 @@ decision can be traced back to its surrounding discussion.
 
 ## A. Product identity and scope
 
-### LDR-001 — Core identity
+### LDR-001 Ã¢â‚¬â€ Core identity
 
 **Status:** Current
-**Sources:** 1128–1131, 1220–1223, 1571–1582
+**Sources:** 1128Ã¢â‚¬â€œ1131, 1220Ã¢â‚¬â€œ1223, 1571Ã¢â‚¬â€œ1582
 
 MarketingLabAI is a **Marketing Intelligence Operating System** and the **AI
 Marketing Department for growing businesses**. It is not an AI copywriter,
@@ -28,19 +28,19 @@ Its core mission is to help businesses plan, execute, optimize, and improve
 marketing. Adjacent executive-intelligence capabilities may later exist as a
 premium extension, but they must not displace the marketing core.
 
-### LDR-002 — Primary customers
+### LDR-002 Ã¢â‚¬â€ Primary customers
 
 **Status:** Current
-**Source:** 1571–1574
+**Source:** 1571Ã¢â‚¬â€œ1574
 
 The primary market is small businesses, SMEs, entrepreneurs, marketing managers,
 and agencies. Enterprise capability may grow later, but the core product must
 first succeed for growing businesses.
 
-### LDR-003 — Product promise
+### LDR-003 Ã¢â‚¬â€ Product promise
 
 **Status:** Current
-**Sources:** 1573–1580
+**Sources:** 1573Ã¢â‚¬â€œ1580
 
 Every paying customer should experience the promise:
 
@@ -49,10 +49,10 @@ Every paying customer should experience the promise:
 Customers should feel that a capable marketing department is working behind the
 scenes. AI is the engine, not the headline.
 
-### LDR-004 — Mission and vision
+### LDR-004 Ã¢â‚¬â€ Mission and vision
 
 **Status:** Current
-**Sources:** 1220–1223, 1571–1580
+**Sources:** 1220Ã¢â‚¬â€œ1223, 1571Ã¢â‚¬â€œ1580
 
 Mission: make world-class marketing intelligence accessible to businesses of
 every size, beginning with growing businesses.
@@ -61,13 +61,13 @@ Vision: become a trusted Marketing Intelligence Operating System that gives
 businesses the knowledge, consistency, governance, execution support, and
 continuous improvement of a high-performing marketing organization.
 
-### LDR-005 — Product positioning
+### LDR-005 Ã¢â‚¬â€ Product positioning
 
 **Status:** Current
-**Sources:** 1220–1223, 1579–1580
+**Sources:** 1220Ã¢â‚¬â€œ1223, 1579Ã¢â‚¬â€œ1580
 
-The customer-facing position is “a whole marketing team behind you,” not “an AI
-writer.” Internally the system may use terms such as Marketing Brief, Prompt
+The customer-facing position is Ã¢â‚¬Å“a whole marketing team behind you,Ã¢â‚¬Â not Ã¢â‚¬Å“an AI
+writer.Ã¢â‚¬Â Internally the system may use terms such as Marketing Brief, Prompt
 Pack, Compliance Engine, and Campaign Planner. Externally it should use clear
 outcome language such as Strategy, Brand Playbooks, Brand Review, and Marketing
 Strategist.
@@ -81,19 +81,19 @@ improvement.
 
 ## B. Product constitution and commercial laws
 
-### LDR-006 — Outcomes before features
+### LDR-006 Ã¢â‚¬â€ Outcomes before features
 
 **Status:** Current / Governance
-**Sources:** 728–775, 1579–1580
+**Sources:** 728Ã¢â‚¬â€œ775, 1579Ã¢â‚¬â€œ1580
 
 Every landing page, pricing page, advertisement, demo, sales presentation, and
 product surface must lead with the customer outcome. Technical features support
 the promise; they are not the promise.
 
-### LDR-007 — Complete experience at every tier
+### LDR-007 Ã¢â‚¬â€ Complete experience at every tier
 
 **Status:** Current / Governance
-**Sources:** 1573–1580
+**Sources:** 1573Ã¢â‚¬â€œ1580
 
 Lower tiers must never be intentionally crippled. Every tier must deliver a
 complete experience for its intended customer. Quality, correct compliance,
@@ -109,50 +109,50 @@ Golden rule:
 > Customers should upgrade because their business has grown, not because the
 > lower tier was artificially made inadequate.
 
-### LDR-008 — Founding pricing
+### LDR-008 Ã¢â‚¬â€ Founding pricing
 
 **Status:** Current principle; exact packaging requires confirmation
-**Sources:** 768–775
+**Sources:** 768Ã¢â‚¬â€œ775
 
 Launch prices are founding offers rather than permanent pricing. Recovered
 prices were R399, R999, R2,499, and custom enterprise pricing. Future pricing
 may evolve with product value, while early-customer trust must be protected by a
 clear commercial policy.
 
-### LDR-009 — Marketing maturity progression
+### LDR-009 Ã¢â‚¬â€ Marketing maturity progression
 
 **Status:** Current
-**Sources:** 691–775
+**Sources:** 691Ã¢â‚¬â€œ775
 
 MarketingLabAI sells progression in marketing maturity rather than prompt counts
 or token consumption. Product packaging must communicate increasing business
 capability and organizational scale. Usage limits may manage costs, but must not
 be the primary value proposition.
 
-### LDR-010 — Marketing Intelligence Score
+### LDR-010 Ã¢â‚¬â€ Marketing Intelligence Score
 
 **Status:** Future
-**Sources:** 728–733
+**Sources:** 728Ã¢â‚¬â€œ733
 
 A proprietary Marketing Intelligence Score should help customers understand
 the completeness and maturity of their marketing system, guide improvement, and
 communicate value. It may consider Company Brain completeness, voice, memory,
 channels, automation, agents, analytics, compliance, optimization, and learning.
 
-### LDR-011 — Customer success platform
+### LDR-011 Ã¢â‚¬â€ Customer success platform
 
 **Status:** Future
-**Sources:** 728–733
+**Sources:** 728Ã¢â‚¬â€œ733
 
 The future customer-success layer includes the Marketing Intelligence Score,
 MarketingLabAI Academy, an in-product AI coach, guided walkthroughs,
 context-sensitive help, a success centre, a voice-of-customer hub, and an
 opt-in beta programme.
 
-### LDR-012 — Product-led growth infrastructure
+### LDR-012 Ã¢â‚¬â€ Product-led growth infrastructure
 
 **Status:** Future
-**Sources:** 891–895
+**Sources:** 891Ã¢â‚¬â€œ895
 
 Plans, subscriptions, billing status, entitlements, trials, usage controls,
 promotional access, and feature flags belong to a dedicated subscription domain.
@@ -161,10 +161,10 @@ Promotions and previews should be configuration rather than scattered code.
 
 ## C. Intelligence and domain architecture
 
-### LDR-013 — Intelligence hierarchy
+### LDR-013 Ã¢â‚¬â€ Intelligence hierarchy
 
 **Status:** Current / Partially implemented
-**Sources:** 1089–1131
+**Sources:** 1089Ã¢â‚¬â€œ1131
 
 The enduring hierarchy is:
 
@@ -182,10 +182,10 @@ No intelligence layer bypasses required lower layers without an explicit ADR.
 Executive Intelligence is later expansion work, not a reason to leave the core
 marketing roadmap.
 
-### LDR-014 — Deterministic first
+### LDR-014 Ã¢â‚¬â€ Deterministic first
 
 **Status:** Current / Governance
-**Sources:** 1128–1131
+**Sources:** 1128Ã¢â‚¬â€œ1131
 
 The reasoning order is:
 
@@ -199,64 +199,64 @@ Missing business context remains explicit and is never silently invented.
 Generation is an output of structured intelligence, not a replacement for
 domain design.
 
-### LDR-015 — Company Brain authority
+### LDR-015 Ã¢â‚¬â€ Company Brain authority
 
 **Status:** Current / Implemented foundation
-**Sources:** 178–180, 1128–1131
+**Sources:** 178Ã¢â‚¬â€œ180, 1128Ã¢â‚¬â€œ1131
 
 Company Brain is the structured source of business knowledge. It evolves by
 adding intelligence domains rather than spawning parallel knowledge systems.
 The AI must act from Company Brain context, never from an isolated prompt alone.
 
-### LDR-016 — Prompt builders are renderers
+### LDR-016 Ã¢â‚¬â€ Prompt builders are renderers
 
 **Status:** Current / Implemented
-**Sources:** 1113–1131
+**Sources:** 1113Ã¢â‚¬â€œ1131
 
 Prompt builders format approved intelligence. They do not own strategy,
 unsupported reasoning, persistence, or domain decisions. Business reasoning
 belongs in domain builders and services.
 
-### LDR-017 — Modular intelligence builders
+### LDR-017 Ã¢â‚¬â€ Modular intelligence builders
 
 **Status:** Current / Implemented pattern
-**Sources:** 1113–1131
+**Sources:** 1113Ã¢â‚¬â€œ1131
 
 Major intelligence domains use modular builders with narrow responsibilities,
 deterministic outputs, and composable sections. Exceptions require an ADR.
 
-### LDR-018 — Learning follows real execution
+### LDR-018 Ã¢â‚¬â€ Learning follows real execution
 
 **Status:** Current / Future implementation
-**Sources:** 1128–1131
+**Sources:** 1128Ã¢â‚¬â€œ1131
 
 Learning engines depend on real campaign execution, analytics, customer
 behaviour, compliance history, experiments, and business outcomes. The platform
 must not fabricate synthetic learning before production evidence exists.
 
-### LDR-019 — Provider neutrality
+### LDR-019 Ã¢â‚¬â€ Provider neutrality
 
 **Status:** Current / Implemented
-**Sources:** 483–486, 923–1000, 1648–1649
+**Sources:** 483Ã¢â‚¬â€œ486, 923Ã¢â‚¬â€œ1000, 1648Ã¢â‚¬â€œ1649
 
 AI providers and external platforms are replaceable adapters. Core domains must
 not contain provider-specific classes or SDK concepts. Provider selection,
 capability matching, normalized responses, audit metadata, and bootstrap belong
 behind explicit contracts.
 
-### LDR-020 — Connector isolation
+### LDR-020 Ã¢â‚¬â€ Connector isolation
 
 **Status:** Current principle / Future implementation
-**Sources:** 557–620, 633–636
+**Sources:** 557Ã¢â‚¬â€œ620, 633Ã¢â‚¬â€œ636
 
 Meta, Google, TikTok, LinkedIn, Shopify, WordPress, email, CRM, analytics, and
 future platforms connect through adapters or a Connector SDK. External platform
 semantics must not leak into core domain models.
 
-### LDR-021 — Event-driven, decision-aware automation
+### LDR-021 Ã¢â‚¬â€ Event-driven, decision-aware automation
 
 **Status:** Future
-**Sources:** 633–636
+**Sources:** 633Ã¢â‚¬â€œ636
 
 Automation is informed by intelligence and business events. The platform asks
 whether an action should occur before determining whether it can occur.
@@ -268,10 +268,10 @@ Workflows support three trust modes:
 
 Every execution feeds institutional knowledge. Humans define the guardrails.
 
-### LDR-022 — Connected and Autonomous Marketing
+### LDR-022 Ã¢â‚¬â€ Connected and Autonomous Marketing
 
 **Status:** Future
-**Sources:** 691–694
+**Sources:** 691Ã¢â‚¬â€œ694
 
 The long-term customer capability model has two major stages:
 
@@ -281,13 +281,13 @@ The long-term customer capability model has two major stages:
   optimization, experimentation, continuous learning, and self-improving
   workflows.
 
-Autonomous means observe, reason, decide, act, and learn—not merely “when X,
-do Y.”
+Autonomous means observe, reason, decide, act, and learnÃ¢â‚¬â€not merely Ã¢â‚¬Å“when X,
+do Y.Ã¢â‚¬Â
 
-### LDR-023 — AI Cost Optimizer
+### LDR-023 Ã¢â‚¬â€ AI Cost Optimizer
 
 **Status:** Future
-**Source:** 712–713
+**Source:** 712Ã¢â‚¬â€œ713
 
 The orchestration layer will eventually support cost-aware model routing,
 provider fallback, prompt/semantic caching, tenant token and spend tracking,
@@ -295,17 +295,17 @@ budgets and alerts, ROI reporting, and evidence-driven model selection.
 
 ## D. Campaign and calendar boundaries
 
-### LDR-024 — Campaign Planner boundary
+### LDR-024 Ã¢â‚¬â€ Campaign Planner boundary
 
 **Status:** Current / Implemented
-**Sources:** 1648–1649; ADR-0008; MLAI-025
+**Sources:** 1648Ã¢â‚¬â€œ1649; ADR-0008; MLAI-025
 
 Campaign Planner manages coordinated marketing work. It does not generate or
 publish content and does not replace Marketing Brief. A Campaign Asset is a
 deliverable, not a physical file. Campaign, asset, brief, generation, and
 publishing lifecycles remain separate.
 
-### LDR-025 — Marketing Brief relationship
+### LDR-025 Ã¢â‚¬â€ Marketing Brief relationship
 
 **Status:** Current / Implemented
 **Sources:** MLAI-024 and MLAI-025.4 history
@@ -314,7 +314,7 @@ A Campaign Plan may associate immutable, version-aware Marketing Brief
 references without embedding or controlling Marketing Brief lifecycle. Governed
 generation requires approved planning where a plan is supplied.
 
-### LDR-026 — Immutable versioned business records
+### LDR-026 Ã¢â‚¬â€ Immutable versioned business records
 
 **Status:** Current / Implemented
 **Sources:** Marketing Brief and Campaign Plan persistence epics
@@ -323,10 +323,10 @@ Approved planning and briefing records preserve immutable history through
 explicit successor versions, tenant-scoped retrieval, ownership enforcement,
 latest-version lookup, and history retrieval.
 
-### LDR-027 — International Marketing Calendar architecture
+### LDR-027 Ã¢â‚¬â€ International Marketing Calendar architecture
 
 **Status:** Current architecture / Future implementation
-**Sources:** 1522–1527; ADR-0007; MLAI-026
+**Sources:** 1522Ã¢â‚¬â€œ1527; ADR-0007; MLAI-026
 
 The Marketing Calendar is the strategic planning layer for annual, quarterly,
 monthly, campaign, review, business, seasonal, regional, and industry events.
@@ -342,30 +342,30 @@ The architecture is locked now; implementation remains deferred to MLAI-026.
 
 ## E. Security constitution
 
-### LDR-028 — Security by design
+### LDR-028 Ã¢â‚¬â€ Security by design
 
 **Status:** Current / Governance
-**Sources:** 859–862
+**Sources:** 859Ã¢â‚¬â€œ862
 
 Security is a first-class architectural requirement and part of every story,
 not a launch-time retrofit. Features must consider authentication,
 authorization, tenant isolation, least privilege, input validation, auditability,
 secret handling, rate/resource controls, dependencies, backups, and recovery.
 
-### LDR-029 — Tenant authorization
+### LDR-029 Ã¢â‚¬â€ Tenant authorization
 
 **Status:** Current / Partially implemented
-**Sources:** 859–862
+**Sources:** 859Ã¢â‚¬â€œ862
 
 Supplied tenant and object identifiers are filters, never proof of permission.
 Authenticated identity, tenant membership, role, ownership, and operation must
 be verified at every protected boundary. Sensitive areas require cross-tenant
 regression tests.
 
-### LDR-030 — Security baseline and gates
+### LDR-030 Ã¢â‚¬â€ Security baseline and gates
 
 **Status:** Future operational requirement
-**Sources:** 859–862
+**Sources:** 859Ã¢â‚¬â€œ862
 
 The intended web/API baseline is OWASP ASVS Level 2 plus relevant AI/LLM
 security verification. Security gates cover development foundation, closed beta,
@@ -378,10 +378,10 @@ preferred over custom authentication or plaintext application storage.
 
 ## F. Engineering constitution and delivery method
 
-### LDR-031 — Production-grade from the beginning
+### LDR-031 Ã¢â‚¬â€ Production-grade from the beginning
 
 **Status:** Current / Governance
-**Sources:** recovered engineering-principle discussion and 1015–1042
+**Sources:** recovered engineering-principle discussion and 1015Ã¢â‚¬â€œ1042
 
 Nexus products are built as commercial-grade systems designed to scale without
 a painful rewrite. This requires explicit boundaries, tests, versioned
@@ -389,10 +389,10 @@ contracts, secure defaults, observability plans, safe migrations, rollback
 paths, CI/CD discipline, and documentation. It does not justify premature
 complexity.
 
-### LDR-032 — Discover before designing
+### LDR-032 Ã¢â‚¬â€ Discover before designing
 
 **Status:** Current / Governance
-**Sources:** 1015–1020
+**Sources:** 1015Ã¢â‚¬â€œ1020
 
 Before major implementation, inventory the real subsystem, dependencies,
 maturity, extension points, duplication, risks, and existing tests. Prefer
@@ -402,49 +402,49 @@ justification.
 An ADR is required when a decision materially changes architecture; routine
 story implementation does not need a ceremonial ADR for every edit.
 
-### LDR-033 — Vertical slice before horizontal expansion
+### LDR-033 Ã¢â‚¬â€ Vertical slice before horizontal expansion
 
 **Status:** Current / Governance
-**Sources:** 972–975
+**Sources:** 972Ã¢â‚¬â€œ975
 
 After a foundation is production-capable, prove an end-to-end business workflow
 before building more engines. Expand the Company Brain and other domains when a
 real workflow requires new knowledge. Freeze stable components except for
 defects or limitations revealed by integration.
 
-### LDR-034 — Layered compliance
+### LDR-034 Ã¢â‚¬â€ Layered compliance
 
 **Status:** Current / Implemented foundation
-**Sources:** 972–975
+**Sources:** 972Ã¢â‚¬â€œ975
 
 Compliance evaluation proceeds through deterministic rules, AI-assisted review,
 and human approval. AI is not the final legal authority.
 
-### LDR-035 — Intelligence before interface
+### LDR-035 Ã¢â‚¬â€ Intelligence before interface
 
 **Status:** Current / Governance
-**Sources:** 557–560
+**Sources:** 557Ã¢â‚¬â€œ560
 
 Major capabilities exist as tested headless services before UI delivery. UI,
 CLI, API, schedules, and integrations call shared application/domain services
 instead of owning business logic.
 
-### LDR-036 — Buyer-ready by default
+### LDR-036 Ã¢â‚¬â€ Buyer-ready by default
 
 **Status:** Current / Governance
-**Sources:** 1041–1042
+**Sources:** 1041Ã¢â‚¬â€œ1042
 
 The system must remain understandable to an independent engineering team,
 auditor, investor, or buyer. Architecture, decision history, IP provenance,
 quality evidence, known risks, technical debt, roadmap, and continuation steps
 must remain current.
 
-### LDR-037 — Complete PowerShell delivery
+### LDR-037 Ã¢â‚¬â€ Complete PowerShell delivery
 
 **Status:** Current / Governance
-**Sources:** 167–170, 309–310, 1351–1352, 1455–1456
+**Sources:** 167Ã¢â‚¬â€œ170, 309Ã¢â‚¬â€œ310, 1351Ã¢â‚¬â€œ1352, 1455Ã¢â‚¬â€œ1456
 
-MarketingLabAI’s operating environment is Windows PowerShell 5.1. User-facing
+MarketingLabAIÃ¢â‚¬â„¢s operating environment is Windows PowerShell 5.1. User-facing
 engineering instructions must be complete, self-contained, copy/paste-ready,
 and include error handling, progress, verification, and a final summary. The
 user must not be asked to locate individual files and manually assemble edits.
@@ -452,10 +452,10 @@ user must not be asked to locate individual files and manually assemble edits.
 Repeated processes should become permanent tools. Scripts must use PowerShell
 5.1-compatible encoding APIs and avoid unsupported encoding names.
 
-### LDR-038 — Atomic story packages
+### LDR-038 Ã¢â‚¬â€ Atomic story packages
 
 **Status:** Current / Implemented through the MarketingLabAI story-package generator
-**Sources:** 1351–1456 and MarketingLabAI story-package generator commits 710868c, 1e192e2, ada7c01
+**Sources:** 1351Ã¢â‚¬â€œ1456 and MarketingLabAI story-package generator commits 710868c, 1e192e2, ada7c01
 
 Engineering increments are small, coherent packages with installer, validator,
 rollback capability, release/context information, and explicit payload. Avoid
@@ -463,20 +463,20 @@ giant embedded-code installers and per-installer repair patches. Systemic output
 or compatibility problems are fixed in the generator so all future packages
 inherit the improvement.
 
-### LDR-039 — Story definition of done
+### LDR-039 Ã¢â‚¬â€ Story definition of done
 
 **Status:** Current / Governance
-**Sources:** 1351–1456 and completed MLAI-025 workflow
+**Sources:** 1351Ã¢â‚¬â€œ1456 and completed MLAI-025 workflow
 
 Each story ends with installation, compilation, focused tests, affected
 regression tests, full-suite validation where appropriate, import validation,
 Git whitespace validation, architecture/product review, documentation updates,
 clean commit, push, and a clean synchronized repository.
 
-### LDR-040 — Vision check and Rabbit Rule
+### LDR-040 Ã¢â‚¬â€ Vision check and Rabbit Rule
 
 **Status:** Current / Governance
-**Sources:** 1571–1582
+**Sources:** 1571Ã¢â‚¬â€œ1582
 
 Every proposal is classified:
 
@@ -487,10 +487,10 @@ Every proposal is classified:
 Any recommendation that expands beyond the agreed core must carry an explicit
 vision warning.
 
-### LDR-041 — Sprint review rhythm
+### LDR-041 Ã¢â‚¬â€ Sprint review rhythm
 
 **Status:** Current / Governance
-**Sources:** 891–896, 1581–1582
+**Sources:** 891Ã¢â‚¬â€œ896, 1581Ã¢â‚¬â€œ1582
 
 Meaningful increments include engineering, architecture, security, product, and
 founder reviews. Reviews test customer value, North Star alignment, scope,
@@ -499,39 +499,39 @@ business assumptions are recorded rather than left in memory.
 
 ## G. Long-term roadmap commitments
 
-### LDR-042 — Core product pillars
+### LDR-042 Ã¢â‚¬â€ Core product pillars
 
 **Status:** Future direction with partial implementation
-**Sources:** 178–180
+**Sources:** 178Ã¢â‚¬â€œ180
 
 The enduring pillars are Company Brain, autonomous market research, decision
 intelligence, campaign execution, performance memory and learning, executive
 reporting, governance and human approval, and integrations. Executive reporting
 must remain downstream of a successful marketing core.
 
-### LDR-043 — Specialized marketing organization
+### LDR-043 Ã¢â‚¬â€ Specialized marketing organization
 
 **Status:** Future
-**Sources:** 1089–1092, 1232–1235, 1579–1580
+**Sources:** 1089Ã¢â‚¬â€œ1092, 1232Ã¢â‚¬â€œ1235, 1579Ã¢â‚¬â€œ1580
 
 Intelligence engines and agents should represent clear real-world marketing
 disciplines with owned knowledge, responsibilities, and collaboration contracts.
 A Marketing Director/Orchestrator coordinates specialists rather than becoming
 one giant all-purpose agent.
 
-### LDR-044 — Reusable workflow library
+### LDR-044 Ã¢â‚¬â€ Reusable workflow library
 
 **Status:** Future
-**Sources:** 633–636
+**Sources:** 633Ã¢â‚¬â€œ636
 
 Composable workflows may become installable industry playbooks. They must use
 the same intelligence, event, approval, learning, and connector architecture
 rather than embedding platform-specific shortcuts.
 
-### LDR-045 — Roadmap waves
+### LDR-045 Ã¢â‚¬â€ Roadmap waves
 
 **Status:** Current strategic sequencing
-**Sources:** 1128–1131, reconciled with current implementation
+**Sources:** 1128Ã¢â‚¬â€œ1131, reconciled with current implementation
 
 Wave 1 establishes Customer, Product, Positioning, Strategy, and governed
 campaign execution on top of completed Company/AI/governance foundations.
@@ -545,7 +545,7 @@ copied from obsolete chat sprint numbering.
 
 ## H. Marketing decision doctrine
 
-### LDR-046 — Evidence-to-learning marketing decision loop
+### LDR-046 Ã¢â‚¬â€ Evidence-to-learning marketing decision loop
 
 **Status:** Current / Governance; partially implemented
 **Source:** PDR-0003
@@ -579,7 +579,7 @@ actual result. AI may assist analysis but may not invent research, positioning,
 strategy, performance, or learning. Learning claims require real outcomes, and
 humans retain governed approval authority.
 
-### LDR-047 — Story repository integrity
+### LDR-047 Ã¢â‚¬â€ Story repository integrity
 
 **Status:** Current / Governance
 **Source:** MLAI-029.6 repository-integrity audit
@@ -591,7 +591,7 @@ synchronization. A warning or failure may not be dismissed without an explicit
 cause, impact, and treatment. The full controls are locked in
 `governance/repository-integrity-protocol.md`.
 
-### LDR-048 — Founder Design Partner boundary
+### LDR-048 Ã¢â‚¬â€ Founder Design Partner boundary
 
 **Status:** Current / Governance
 **Source:** ADR-0019
@@ -606,7 +606,7 @@ MLAI-030.1 requires each owner to sign up through trusted external
 authentication and a business-specific invitation. Accounts are not manually
 pre-created, and identity subjects may not be invented for convenience.
 
-### LDR-049 — Microsoft Entra External ID and free-first identity
+### LDR-049 Ã¢â‚¬â€ Microsoft Entra External ID and free-first identity
 
 **Status:** Superseded before deployment / Adapter retained
 **Source:** ADR-0021 and founder approval on 2026-08-06
@@ -620,7 +620,7 @@ used for new deployment. MarketingLabAI retains tenant authorization,
 entitlements, invitations and audit decisions behind a provider-neutral
 adapter. Real customer data remains founder-frozen.
 
-### LDR-050 — Google Cloud Identity Platform and free-first identity
+### LDR-050 Ã¢â‚¬â€ Google Cloud Identity Platform and free-first identity
 
 **Status:** Current / Implemented adapter foundation
 **Source:** ADR-0022 and founder approval on 2026-08-06
@@ -633,7 +633,7 @@ accounts and MarketingLabAI customer identities remain separate. MarketingLabAI
 retains tenant authorization, invitations, entitlements and audit decisions.
 Real customer data remains founder-frozen.
 
-### LDR-051 — Constitution-Preserving Quality Mandate
+### LDR-051 Ã¢â‚¬â€ Constitution-Preserving Quality Mandate
 
 **Status:** Current / Governance
 **Source:** ADR-0023 and founder approval on 2026-08-06
@@ -652,7 +652,7 @@ destructive migrations, privacy-boundary changes or changes to the Product
 Constitution and locked product direction. Those decisions remain reserved for
 explicit founder approval.
 
-### LDR-052 — Controlled Pilot Development Unfreeze
+### LDR-052 Ã¢â‚¬â€ Controlled Pilot Development Unfreeze
 
 **Status:** Current / Governance
 **Source:** ADR-0024 and founder approval on 2026-08-06
@@ -668,7 +668,7 @@ real-data learning, customer billing, unapproved paid services and destructive
 production changes require explicit founder approval. The canonical status is
 `real_data_activation_frozen`, not the former broad `founder_frozen` label.
 
-### LDR-053 — Durable Remediation Directive
+### LDR-053 Ã¢â‚¬â€ Durable Remediation Directive
 
 **Status:** Current / Binding governance
 **Source:** ADR-0033 and founder approval on 2026-08-08
@@ -685,7 +685,7 @@ controls, name an owner and durable follow-up, and remain separately authorized.
 A successful containment alone cannot close the related defect, story, risk,
 technical debt, or quality gate.
 
-### LDR-054 — Progressive Release Automation
+### LDR-054 Ã¢â‚¬â€ Progressive Release Automation
 
 **Status:** Current / Binding governance
 **Source:** ADR-0034 and founder approval on 2026-08-09
@@ -703,7 +703,7 @@ learning authority. Higher-risk controls are progressively implemented as hard
 gates before their corresponding boundaries open while local and controlled
 synthetic engineering continues.
 
-### LDR-055 — Zero-Trust Software-Supply-Chain Authority
+### LDR-055 Ã¢â‚¬â€ Zero-Trust Software-Supply-Chain Authority
 
 **Status:** Current / Binding governance; supersedes controller authority in LDR-054
 **Source:** ADR-0035 and founder approval on 2026-08-09
@@ -720,7 +720,7 @@ work into release authorization. Cloud Run Binary Authorization is the target
 enforcement control; the first enforced image must be rebuilt through the
 hardened provenance path.
 
-### LDR-056 — Simple Operator Experience and Measured Marketing Efficiency
+### LDR-056 Ã¢â‚¬â€ Simple Operator Experience and Measured Marketing Efficiency
 
 **Status:** Current / Binding product and evidence governance
 **Source:** ADR-0036 and founder approval on 2026-08-10
@@ -759,7 +759,7 @@ complete marketing department.
   incomplete and non-deployable; they are never repaired, migrated or backfilled.
 - A fresh commit-bound image and release run are required after this correction.
 
-### LDR-057 — Unified release control plane
+### LDR-057 Ã¢â‚¬â€ Unified release control plane
 
 **Status:** Current / Binding governance
 **Source:** ADR-0039 and founder approval on 2026-08-12
@@ -776,7 +776,7 @@ deployable or bypass signed attestations, final release signing and Binary
 Authorization. State paths are product-named and never coupled to MLAI story
 numbers.
 
-### LDR-058 — Read-only cloud preflight stays on the paved path
+### LDR-058 Ã¢â‚¬â€ Read-only cloud preflight stays on the paved path
 
 **Status:** Current / Binding governance
 **Source:** ADR-0040 and founder authorization to resume the release on 2026-08-12
@@ -791,7 +791,7 @@ The gate is observational. It never authorizes or performs revision creation,
 deployment, IAM modification, traffic routing, rebuilding or cryptographic
 admission. ADR-0035 remains authoritative before any cloud mutation.
 
-### LDR-059 — Executor provenance and Windows adapter are release inputs
+### LDR-059 Ã¢â‚¬â€ Executor provenance and Windows adapter are release inputs
 
 **Status:** Current / Binding governance
 **Source:** ADR-0041 and founder authorization for MLAI-031.10 on 2026-08-12
@@ -805,7 +805,7 @@ Interrupted incompatible work is preserved and formally superseded. It is never
 deleted, edited in place or retried under stale approval. Supersession changes no
 release gate, cloud resource, deployment state or admission authority.
 
-### LDR-060 — Revision creation requires prepared manifest evidence
+### LDR-060 Ã¢â‚¬â€ Revision creation requires prepared manifest evidence
 
 **Status:** Current / Binding governance
 **Source:** ADR-0042 and founder authorization for MLAI-031.11 on 2026-08-13
@@ -821,7 +821,7 @@ revision creation remains a separate plan-bound mutation approval and cannot
 grant public access, traffic routing beyond the approved bootstrap mode,
 deployment admission authority, rebuild authority or real-customer-data access.
 
-### LDR-061 — Durable marketing workflow spine is core architecture
+### LDR-061 Ã¢â‚¬â€ Durable marketing workflow spine is core architecture
 
 **Status:** Current / Binding product architecture
 **Source:** Founder instruction to lock MLAI-033 on 2026-08-13
@@ -836,7 +836,7 @@ Tasks, social platforms, email, Shopify and analytics integrations are adapters
 or later capabilities. They must not become competing owners of campaign state,
 approval authority, spend rules or learning evidence.
 
-### LDR-062 — First-service origin bootstrap is temporary and reconciled
+### LDR-062 Ã¢â‚¬â€ First-service origin bootstrap is temporary and reconciled
 
 **Status:** Current / Binding release governance
 **Source:** MLAI-031.12 founder authorization on 2026-08-13
@@ -853,3 +853,5 @@ reconciled. Existing-service revision preparation must use the actual Cloud Run
 URL and must reject the bootstrap placeholder.
 
 - ADR-0045 locks durable first-service origin reconciliation. Future pilots must use the paved REVISION_CREATED -> ORIGIN_RECONCILED -> STARTUP_VERIFIED path instead of ad hoc origin patches.
+
+- ADR-0046 locks release tooling hardening: PowerShell is a thin launcher, Python owns transition logic, and CI rejects embedded Python release wrappers.

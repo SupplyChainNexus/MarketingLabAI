@@ -126,3 +126,11 @@ are satisfied:
 - A fresh commit-bound image and release run are required after this correction.
 
 - First-service origin reconciliation is complete only when the observed Cloud Run service URL replaces the bootstrap placeholder and evidence is recorded before startup verification.
+
+- Release tooling hardening is done only when transition requirements and planning are exposed through tested Python CLI commands.
+
+- Release tooling hardening is done only when transition requirements and planning are exposed through tested Python CLI commands.
+
+- Release tooling hardening is done only when transition requirements and planning are exposed through tested Python CLI commands.
+
+- Release tooling hardening is done only when transition requirements and planning are exposed through tested Python CLI commands.

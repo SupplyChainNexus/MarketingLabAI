@@ -190,3 +190,9 @@ Binary Authorization enforcement, or deployment permission.
 ## ORIGIN_RECONCILED
 
 ORIGIN_RECONCILED is required after first private revision creation when the bootstrap origin is still configured. It may authorize exactly one Cloud Run service replacement after plan-bound approval and must not grant public IAM, read secret values, rebuild images, or claim admission authority.
+
+## Release tooling hardening
+
+Release tooling passes only when public CLI transition commands are tested, JSON
+configuration files are UTF-8 without BOM, and release PowerShell scripts do not
+embed Python.

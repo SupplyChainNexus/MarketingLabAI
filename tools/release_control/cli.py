@@ -9,6 +9,10 @@ from typing import Sequence
 
 from tools.release_control.config import load_config, validate_repository
 from tools.release_control.control_plane import ReleaseControlPlane
+from tools.release_control.origin_reconciliation_cli import (
+    prepare_origin_reconciliation_from_cli,
+)
+from tools.release_control.transition_requirements import requirements_for_gate
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -50,6 +54,13 @@ def _parser() -> argparse.ArgumentParser:
     prepare_revision.add_argument("--browser-api-key", required=True)
     prepare_revision.add_argument("--oauth-client-id", required=True)
     commands.add_parser("resume")
+    requirements = commands.add_parser("requirements")
+    requirements.add_argument("--gate", required=True)
+
+    prepare_origin = commands.add_parser("prepare-origin-reconciliation")
+    prepare_origin.add_argument("--startup-origin-inspection", type=Path, required=True)
+    prepare_origin.add_argument("--revision-created-evidence", type=Path, required=True)
+    prepare_origin.add_argument("--output-root", type=Path, required=True)
     commands.add_parser("verify")
     return parser
 
@@ -111,6 +122,18 @@ def main(arguments: Sequence[str] | None = None) -> int:
         )
     elif selected.command == "resume":
         _print(control.resume())
+    elif selected.command == "requirements":
+        _print(requirements_for_gate(selected.gate))
+    elif selected.command == "prepare-origin-reconciliation":
+        _print(
+            prepare_origin_reconciliation_from_cli(
+                config=config,
+                state_root=state_root,
+                startup_origin_inspection=selected.startup_origin_inspection,
+                revision_created_evidence=selected.revision_created_evidence,
+                output_root=selected.output_root,
+            )
+        )
     elif selected.command == "verify":
         _print(control.verify())
     else:

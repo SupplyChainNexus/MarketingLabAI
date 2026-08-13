@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "story_id": "MLAI-031.14",
+  "title": "Release tooling hardening and script elimination",
+  "status": "ready_for_installation",
+  "problem": "ORIGIN_RECONCILED planning was blocked by fragile PowerShell/Python orchestration rather than cloud infrastructure.",
+  "scope": [
+    "Add requirements inspection for release gates.",
+    "Move ORIGIN_RECONCILED planning into the Python release-control CLI.",
+    "Replace the origin reconciliation PowerShell script with a thin launcher.",
+    "Add CI tests that prevent embedded Python in release PowerShell scripts.",
+    "Add CI tests that exercise the public CLI path."
+  ],
+  "non_goals": [
+    "No cloud operation.",
+    "No release-state modification.",
+    "No deployment.",
+    "No rebuild.",
+    "No IAM change.",
+    "No secret-value access."
+  ],
+  "north_star_alignment": "Infrastructure repairs must streamline the paved path for every future pilot instead of creating temporary scripts for one release.",
+  "installation_boundary": {
+    "repository_validation": true,
+    "cloud_cli_execution": false,
+    "release_state_modification": false,
+    "cloud_operation": false,
+    "deployment": false,
+    "rebuild": false
+  }
+}
+
