@@ -7,6 +7,10 @@ import json
 from pathlib import Path
 from typing import Sequence
 
+from tools.release_control.auth_execution import (
+    CloudAuthExecutionBoundary,
+    CloudAuthExecutionConfig,
+)
 from tools.release_control.config import load_config, validate_repository
 from tools.release_control.control_plane import ReleaseControlPlane
 from tools.release_control.origin_reconciliation_cli import (
@@ -24,6 +28,7 @@ def _parser() -> argparse.ArgumentParser:
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser("doctor")
     commands.add_parser("doctor-cloud")
+    commands.add_parser("doctor-auth")
     commands.add_parser("validate-repository")
 
     adopt = commands.add_parser("adopt")
@@ -74,6 +79,13 @@ def main(arguments: Sequence[str] | None = None) -> int:
     config = load_config(selected.config) if selected.config else load_config()
     if selected.command in {"doctor", "validate-repository"}:
         _print(validate_repository(config))
+        return 0
+    if selected.command == "doctor-auth":
+        _print(
+            CloudAuthExecutionBoundary(
+                CloudAuthExecutionConfig.from_payload(config.payload)
+            ).doctor()
+        )
         return 0
     if selected.command == "requirements":
         _print(requirements_for_gate(selected.gate))

@@ -273,7 +273,7 @@ diagnostics, binds plans to executor provenance and requires formal
 supersession of the old operation before a fresh plan and approval. Installation
 must not alter the external release state. After commit and CI, run
 `doctor-cloud`, formally supersede plan `178f09fa673e1edefeb7034245879e1275fbb517b685a22a244a4f29d1983db6`,
-then use `resume` to createÃ¢â‚¬â€but not approveÃ¢â‚¬â€the replacement plan.
+then use `resume` to createÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Âbut not approveÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Âthe replacement plan.
 
 ## MLAI-031.11: Deterministic private revision preparation
 
@@ -320,3 +320,9 @@ REVISION_CREATED is passed, but startup cannot pass while the first bootstrap or
 The release path is intentionally paused before ORIGIN_RECONCILED execution.
 Install MLAI-031.14, wait for CI, then use the Python release-control CLI for
 requirements and planning.
+
+## MLAI-031.15 handover note
+
+Do not retry ORIGIN_RECONCILED until MLAI-031.15 is installed, committed,
+CI-verified, and `doctor-auth` passes. The failed direct browser-user gcloud path
+is superseded by service-account impersonation.

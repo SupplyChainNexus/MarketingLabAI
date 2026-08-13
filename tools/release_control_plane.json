@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "control_plane_version": "1.6",
+  "control_plane_version": "1.7",
   "environment": "cloud-synthetic",
   "artifact_repository": "africa-south1-docker.pkg.dev/marketinglabai-identity-dev/mlai-synthetic/marketinglabai-pilot",
   "state_root_environment_variable": "MLAI_RELEASE_STATE_ROOT",
@@ -34,7 +34,13 @@
     "configuration": "default",
     "project": "marketinglabai-identity-dev",
     "executable_environment_variable": "MLAI_GCLOUD_EXECUTABLE",
-    "platform_adapter": "windows-gcloud-cmd-v2"
+    "platform_adapter": "windows-gcloud-cmd-v2",
+    "auth_execution": {
+      "phase": "local-operator-auth-service-account-impersonation",
+      "release_executor_service_account": "mlai-synthetic-release-executor@marketinglabai-identity-dev.iam.gserviceaccount.com",
+      "service_account_key_files_allowed": false,
+      "phase_2": "ci-cd-workload-identity"
+    }
   },
   "cloud_preflight": {
     "project": "marketinglabai-identity-dev",
@@ -92,6 +98,8 @@
     "embedded_python_in_powershell": false,
     "transition_requirements_cli": true,
     "origin_reconciliation_cli": true,
-    "artifact_root": "C:\\Ai Projects\\ToolkitTemp"
+    "artifact_root": "C:\\Ai Projects\\ToolkitTemp",
+    "non_interactive_auth_doctor": true,
+    "service_account_key_files_allowed": false
   }
 }

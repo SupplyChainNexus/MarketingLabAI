@@ -196,3 +196,9 @@ ORIGIN_RECONCILED is required after first private revision creation when the boo
 Release tooling passes only when public CLI transition commands are tested, JSON
 configuration files are UTF-8 without BOM, and release PowerShell scripts do not
 embed Python.
+
+## Non-interactive cloud auth
+
+Release tooling passes only when the repository validates the pinned release
+executor identity, forbids service-account key files, and exposes a tested
+auth doctor before mutation.

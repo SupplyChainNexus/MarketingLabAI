@@ -855,3 +855,5 @@ URL and must reject the bootstrap placeholder.
 - ADR-0045 locks durable first-service origin reconciliation. Future pilots must use the paved REVISION_CREATED -> ORIGIN_RECONCILED -> STARTUP_VERIFIED path instead of ad hoc origin patches.
 
 - ADR-0046 locks release tooling hardening: PowerShell is a thin launcher, Python owns transition logic, and CI rejects embedded Python release wrappers.
+
+- ADR-0047 locks non-interactive cloud auth: local operator approval is separate from impersonated release execution, service-account key files are forbidden, and CI/CD Workload Identity is the Phase 2 release path.

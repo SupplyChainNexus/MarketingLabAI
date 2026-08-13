@@ -14,6 +14,7 @@ from typing import Mapping
 from deployment.private_synthetic_manifest import validate_template
 from deployment.release_controller import load_catalog
 from deployment.zero_trust_supply_chain import load_policy
+from tools.release_control.auth_execution import validate_auth_execution_payload
 
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_CONFIG = ROOT / "tools" / "release_control_plane.json"
@@ -95,9 +96,18 @@ def load_config(path: Path = DEFAULT_CONFIG) -> ControlConfig:
         "project": "marketinglabai-identity-dev",
         "executable_environment_variable": "MLAI_GCLOUD_EXECUTABLE",
         "platform_adapter": "windows-gcloud-cmd-v2",
+        "auth_execution": {
+            "phase": "local-operator-auth-service-account-impersonation",
+            "release_executor_service_account": (
+                "mlai-synthetic-release-executor@marketinglabai-identity-dev.iam.gserviceaccount.com"
+            ),
+            "service_account_key_files_allowed": False,
+            "phase_2": "ci-cd-workload-identity",
+        },
     }
     if cloud_cli != expected_cloud_cli:
         raise ValueError("Pinned Cloud CLI execution context has drifted.")
+    validate_auth_execution_payload(payload)
     revision_creation = payload.get("revision_creation")
     expected_revision_creation = {
         "project": "marketinglabai-identity-dev",
@@ -192,6 +202,7 @@ def validate_repository(config: ControlConfig) -> dict[str, object]:
         / "cloud-run.private-synthetic.yaml.template"
     )
     template_report = validate_template(template_path.read_text(encoding="utf-8-sig"))
+    auth_execution = validate_auth_execution_payload(config.payload)
     return {
         "schema_version": 1,
         "repository_valid": True,
@@ -203,6 +214,7 @@ def validate_repository(config: ControlConfig) -> dict[str, object]:
         "template": template_report,
         "authority_separation": dict(config.payload["authorities"]),
         "cloud_cli": dict(config.payload["cloud_cli"]),
+        "auth_execution": auth_execution,
         "revision_creation": dict(config.payload["revision_creation"]),
         "cloud_mutation_performed": False,
         "deployment_authorized": False,

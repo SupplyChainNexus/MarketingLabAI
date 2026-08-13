@@ -241,3 +241,11 @@ Status: ready for CI after installation.
 Scope: stop release execution, remove embedded Python from PowerShell release
 wrappers, add transition requirements inspection, and move `ORIGIN_RECONCILED`
 planning into the Python release-control CLI.
+
+## MLAI-031.15 - Non-interactive Cloud Auth Execution Boundary
+
+Status: ready for CI after installation.
+
+Scope: introduce local operator auth plus service-account impersonation as the
+Phase 1 release execution boundary, forbid service-account key files, and prepare
+the same executor identity for Phase 2 CI/CD Workload Identity.

@@ -134,3 +134,13 @@ are satisfied:
 - Release tooling hardening is done only when transition requirements and planning are exposed through tested Python CLI commands.
 
 - Release tooling hardening is done only when transition requirements and planning are exposed through tested Python CLI commands.
+
+- Non-interactive cloud auth is done only when release mutations require a pinned impersonated executor and reject service-account key files.
+
+- Non-interactive cloud auth is done only when release mutations require a pinned impersonated executor and reject service-account key files.
+
+- Non-interactive cloud auth is done only when release mutations require a pinned impersonated executor and reject service-account key files.
+
+- Non-interactive cloud auth is done only when release mutations require a pinned impersonated executor and reject service-account key files.
+
+- Non-interactive cloud auth is done only when release mutations require a pinned impersonated executor and reject service-account key files.

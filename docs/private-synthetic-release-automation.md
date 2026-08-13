@@ -150,3 +150,11 @@ Release transitions must be executed through the Python release-control CLI.
 PowerShell scripts are thin launchers only and may not embed Python source.
 `ORIGIN_RECONCILED` planning must use `python -m tools.release_control
 prepare-origin-reconciliation`.
+
+## MLAI-031.15: Non-interactive cloud auth execution boundary
+
+Release cloud execution must use the pinned release executor service account
+through service-account impersonation. Browser-user credentials may establish
+the local operator session, but may not be direct release mutation authority.
+Service-account key files are forbidden. `python -m tools.release_control
+doctor-auth` must pass before any cloud mutation retry.

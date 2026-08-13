@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "story": "MLAI-031.15",
+  "title": "Non-interactive Cloud Auth Execution Boundary",
+  "status": "ready-for-ci-after-installation",
+  "north_star_alignment": [
+    "one paved release path",
+    "clear separation between orchestration and execution authority",
+    "no secret-bearing key files",
+    "non-interactive retry and resume readiness"
+  ],
+  "scope": [
+    "add pinned release executor service account contract",
+    "add service-account impersonation command builder",
+    "add stateless auth requirements inspection",
+    "add non-interactive auth doctor entry point",
+    "add regression tests for key-file prohibition and impersonation"
+  ],
+  "out_of_scope": [
+    "cloud IAM grant creation",
+    "cloud resource inspection",
+    "cloud mutation",
+    "release-state gate append",
+    "deployment",
+    "traffic routing"
+  ],
+  "phase_1": "local operator auth plus service-account impersonation",
+  "phase_2": "CI/CD Workload Identity for production-grade releases"
+}

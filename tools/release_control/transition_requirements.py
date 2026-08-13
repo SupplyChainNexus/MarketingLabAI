@@ -30,8 +30,32 @@ ORIGIN_RECONCILED_REQUIREMENTS: dict[str, object] = {
 }
 
 
+NON_INTERACTIVE_CLOUD_AUTH_REQUIREMENTS: dict[str, object] = {
+    "schema_version": 1,
+    "gate": "NON_INTERACTIVE_CLOUD_AUTH",
+    "purpose": "Prove the pinned release executor service account can be impersonated before any release mutation.",
+    "requires": [
+        "local operator authenticated as info@supplychainnexus.co.za",
+        "release executor service account pinned in tools/release_control_plane.json",
+        "Service Account Token Creator grant for the local operator or CI principal",
+        "no service-account key-file environment variables",
+        "doctor-auth passes before mutation planning or application",
+    ],
+    "forbids": [
+        "service-account key files",
+        "browser-user credentials as direct mutation authority",
+        "cloud mutation during doctor",
+        "release-state modification during doctor",
+        "deployment during doctor",
+    ],
+    "doctor_command": "python -m tools.release_control doctor-auth",
+}
+
+
 def requirements_for_gate(gate: str) -> Mapping[str, object]:
     selected = gate.strip().upper()
     if selected == "ORIGIN_RECONCILED":
         return dict(ORIGIN_RECONCILED_REQUIREMENTS)
+    if selected == "NON_INTERACTIVE_CLOUD_AUTH":
+        return dict(NON_INTERACTIVE_CLOUD_AUTH_REQUIREMENTS)
     raise ValueError(f"No release-control requirements are registered for {gate}.")
