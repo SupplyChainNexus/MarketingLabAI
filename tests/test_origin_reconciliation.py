@@ -12,7 +12,9 @@ from tools.release_control.origin_reconciliation import (
 def _copy_template(repository: Path) -> None:
     template = repository / "deployment" / "cloud-run.private-synthetic.yaml.template"
     template.parent.mkdir(parents=True)
-    shutil.copyfile(Path("deployment/cloud-run.private-synthetic.yaml.template"), template)
+    shutil.copyfile(
+        Path("deployment/cloud-run.private-synthetic.yaml.template"), template
+    )
 
 
 def _release(image_suffix: str = "a") -> dict[str, str]:
@@ -47,7 +49,9 @@ def _revision_evidence() -> dict[str, object]:
     }
 
 
-def _startup_inspection(release: dict[str, str], *, startup_can_pass_now: bool = False) -> dict[str, object]:
+def _startup_inspection(
+    release: dict[str, str], *, startup_can_pass_now: bool = False
+) -> dict[str, object]:
     return {
         "result": "STARTUP_ORIGIN_INSPECTION_COMPLETED",
         "latest_ready_revision": "marketinglabai-velani-pilot-00001-t5h",
@@ -70,7 +74,10 @@ def _startup_inspection(release: dict[str, str], *, startup_can_pass_now: bool =
 
 class OriginReconciliationTests(unittest.TestCase):
     def test_first_service_bootstrap_requires_real_origin_reconciliation(self):
-        with tempfile.TemporaryDirectory() as repo, tempfile.TemporaryDirectory() as out:
+        with (
+            tempfile.TemporaryDirectory() as repo,
+            tempfile.TemporaryDirectory() as out,
+        ):
             repository = Path(repo)
             _copy_template(repository)
             release = _release()
@@ -100,7 +107,10 @@ class OriginReconciliationTests(unittest.TestCase):
             self.assertTrue(Path(plan["manifest_path"]).is_file())
 
     def test_startup_must_not_pass_before_reconciliation(self):
-        with tempfile.TemporaryDirectory() as repo, tempfile.TemporaryDirectory() as out:
+        with (
+            tempfile.TemporaryDirectory() as repo,
+            tempfile.TemporaryDirectory() as out,
+        ):
             repository = Path(repo)
             _copy_template(repository)
             release = _release("b")
@@ -116,7 +126,10 @@ class OriginReconciliationTests(unittest.TestCase):
                     ),
                     repository_root=repository,
                     output_root=Path(out),
-                    inputs=OriginReconciliationInputs("AIzaSySyntheticTestKey000000000000000000", "123456789012-syntheticclientid.apps.googleusercontent.com"),
+                    inputs=OriginReconciliationInputs(
+                        "AIzaSySyntheticTestKey000000000000000000",
+                        "123456789012-syntheticclientid.apps.googleusercontent.com",
+                    ),
                 )
 
 

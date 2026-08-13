@@ -24,7 +24,6 @@ class OriginReconciliationInputs:
     google_oauth_client_id: str
 
 
-
 def _is_approved_cloud_run_origin(origin: str) -> bool:
     if SERVICE_ORIGIN_PATTERN.fullmatch(origin):
         return True
@@ -84,9 +83,12 @@ def _validate_startup_origin_inspection(
         raise ValueError("Origin reconciliation is not required.")
     if inspection.get("startup_can_pass_now") is not False:
         raise ValueError("Startup must not pass before origin reconciliation.")
-    if _required_string(
-        inspection.get("latest_ready_revision"), "Latest ready revision"
-    ) != expected_revision:
+    if (
+        _required_string(
+            inspection.get("latest_ready_revision"), "Latest ready revision"
+        )
+        != expected_revision
+    ):
         raise ValueError("Latest ready revision does not match expected revision.")
     if _required_string(inspection.get("image"), "Observed image") != expected_image:
         raise ValueError("Observed image does not match expected digest.")
@@ -198,4 +200,3 @@ def prepare_origin_reconciliation(
 
 def write_origin_reconciliation_plan(path: Path, plan: Mapping[str, object]) -> str:
     return write_json_atomic(path, dict(plan))
-

@@ -70,7 +70,10 @@ class ReleaseControllerTests(unittest.TestCase):
             self.assertTrue(set(gate.depends_on).issubset(known), gate.id)
             known.add(gate.id)
         mutation_gates = {gate.id for gate in gates if gate.may_mutate_cloud}
-        self.assertEqual({"REVISION_CREATED", "PRIVATE_TRAFFIC_ROUTED"}, mutation_gates)
+        self.assertEqual(
+            {"REVISION_CREATED", "ORIGIN_RECONCILED", "PRIVATE_TRAFFIC_ROUTED"},
+            mutation_gates,
+        )
 
     def test_start_creates_unique_external_runs_with_frozen_boundaries(self):
         with tempfile.TemporaryDirectory() as directory:
