@@ -851,3 +851,5 @@ The bootstrap origin is not a production or smoke-test URL. Startup and smoke
 gates must not pass until the real Cloud Run `status.url` is observed and
 reconciled. Existing-service revision preparation must use the actual Cloud Run
 URL and must reject the bootstrap placeholder.
+
+- ADR-0045 locks durable first-service origin reconciliation. Future pilots must use the paved REVISION_CREATED -> ORIGIN_RECONCILED -> STARTUP_VERIFIED path instead of ad hoc origin patches.

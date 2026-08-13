@@ -227,3 +227,9 @@ exists, so first-service preparation must not require a guessed origin.
   and reconciled.
 - The correction performs no Cloud CLI execution, cloud mutation, release-state
   modification, deployment or rebuild.
+
+## MLAI-031.13 - Durable first-service origin reconciliation
+
+Status: ready for CI after installation.
+
+Scope: add ORIGIN_RECONCILED between REVISION_CREATED and STARTUP_VERIFIED; render a real-origin manifest from read-only inspection evidence; require one plan, one approval and one controlled mutation before startup verification.

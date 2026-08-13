@@ -1,72 +1,90 @@
 {
-  "schema_version": 1,
-  "control_plane_version": "1.4",
-  "environment": "cloud-synthetic",
-  "artifact_repository": "africa-south1-docker.pkg.dev/marketinglabai-identity-dev/mlai-synthetic/marketinglabai-pilot",
-  "state_root_environment_variable": "MLAI_RELEASE_STATE_ROOT",
-  "default_windows_state_root": "C:\\Ai Projects\\ToolkitTemp\\MarketingLabAI\\release-control",
-  "python": {
-    "minimum": [3, 11],
-    "maximum_exclusive": [3, 15]
-  },
-  "dependency_lock_hash_mode": "utf8-sig-lf-v1",
-  "dependency_locks": {
-    "requirements.txt": "2486c20f92127d00a860650c9ecfa28f73b92b323385e3db56b2e00fee72a31a",
-    "requirements-dev.txt": "cb659888e4e132174dfc1c7a2d3eb06fa21e8b9ba33940eec81f104d62239114"
-  },
-  "authorities": {
-    "orchestration": "tools.release_control",
-    "observational_history": "deployment.release_controller",
-    "admission": "external-zero-trust-binary-authorization"
-  },
-  "supported_apply_gates": [
-    "CONFIGURATION_VALIDATED",
-    "CLOUD_PREFLIGHT_PASSED"
-  ],
-  "cloud_cli": {
-    "account": "info@supplychainnexus.co.za",
-    "configuration": "default",
-    "project": "marketinglabai-identity-dev",
-    "executable_environment_variable": "MLAI_GCLOUD_EXECUTABLE",
-    "platform_adapter": "windows-gcloud-cmd-v2"
-  },
-  "cloud_preflight": {
-    "project": "marketinglabai-identity-dev",
-    "region": "africa-south1",
-    "service": "marketinglabai-velani-pilot",
-    "repository": "mlai-synthetic",
-    "runtime_service_account": "mlai-synthetic-runtime@marketinglabai-identity-dev.iam.gserviceaccount.com",
-    "builder_service_account": "mlai-synthetic-builder@marketinglabai-identity-dev.iam.gserviceaccount.com",
-    "cloud_sql_instance": "mlai-synthetic-pg18-jhb",
-    "cloud_sql_version": "POSTGRES_18",
-    "required_apis": [
-      "artifactregistry.googleapis.com",
-      "cloudbuild.googleapis.com",
-      "run.googleapis.com",
-      "secretmanager.googleapis.com",
-      "sqladmin.googleapis.com"
-    ],
-    "secrets": [
-      "mlai-database-url",
-      "mlai-founder-invitation-hashes",
-      "mlai-gemini-api-key",
-      "mlai-session-secret"
-    ]
-  },
-  "revision_creation": {
-    "project": "marketinglabai-identity-dev",
-    "region": "africa-south1",
-    "service": "marketinglabai-velani-pilot",
-    "runtime_service_account": "mlai-synthetic-runtime@marketinglabai-identity-dev.iam.gserviceaccount.com",
-    "manifest_template": "deployment/cloud-run.private-synthetic.yaml.template",
-    "command": "gcloud run services replace",
-    "traffic_routing_authorized": false,
-    "public_access_authorized": false,
-    "secret_value_access_authorized": false
-  },
-  "forbidden_authority_claims": {
-    "controller_authoritative": false,
-    "legacy_backfill_deployable": false,
-    "local_approval_is_admission_authority": false
-  }
+    "schema_version":  1,
+    "control_plane_version":  "1.5",
+    "environment":  "cloud-synthetic",
+    "artifact_repository":  "africa-south1-docker.pkg.dev/marketinglabai-identity-dev/mlai-synthetic/marketinglabai-pilot",
+    "state_root_environment_variable":  "MLAI_RELEASE_STATE_ROOT",
+    "default_windows_state_root":  "C:\\Ai Projects\\ToolkitTemp\\MarketingLabAI\\release-control",
+    "python":  {
+                   "minimum":  [
+                                   3,
+                                   11
+                               ],
+                   "maximum_exclusive":  [
+                                             3,
+                                             15
+                                         ]
+               },
+    "dependency_lock_hash_mode":  "utf8-sig-lf-v1",
+    "dependency_locks":  {
+                             "requirements.txt":  "2486c20f92127d00a860650c9ecfa28f73b92b323385e3db56b2e00fee72a31a",
+                             "requirements-dev.txt":  "cb659888e4e132174dfc1c7a2d3eb06fa21e8b9ba33940eec81f104d62239114"
+                         },
+    "authorities":  {
+                        "orchestration":  "tools.release_control",
+                        "observational_history":  "deployment.release_controller",
+                        "admission":  "external-zero-trust-binary-authorization"
+                    },
+    "supported_apply_gates":  [
+                                  "CONFIGURATION_VALIDATED",
+                                  "CLOUD_PREFLIGHT_PASSED"
+                              ],
+    "cloud_cli":  {
+                      "account":  "info@supplychainnexus.co.za",
+                      "configuration":  "default",
+                      "project":  "marketinglabai-identity-dev",
+                      "executable_environment_variable":  "MLAI_GCLOUD_EXECUTABLE",
+                      "platform_adapter":  "windows-gcloud-cmd-v2"
+                  },
+    "cloud_preflight":  {
+                            "project":  "marketinglabai-identity-dev",
+                            "region":  "africa-south1",
+                            "service":  "marketinglabai-velani-pilot",
+                            "repository":  "mlai-synthetic",
+                            "runtime_service_account":  "mlai-synthetic-runtime@marketinglabai-identity-dev.iam.gserviceaccount.com",
+                            "builder_service_account":  "mlai-synthetic-builder@marketinglabai-identity-dev.iam.gserviceaccount.com",
+                            "cloud_sql_instance":  "mlai-synthetic-pg18-jhb",
+                            "cloud_sql_version":  "POSTGRES_18",
+                            "required_apis":  [
+                                                  "artifactregistry.googleapis.com",
+                                                  "cloudbuild.googleapis.com",
+                                                  "run.googleapis.com",
+                                                  "secretmanager.googleapis.com",
+                                                  "sqladmin.googleapis.com"
+                                              ],
+                            "secrets":  [
+                                            "mlai-database-url",
+                                            "mlai-founder-invitation-hashes",
+                                            "mlai-gemini-api-key",
+                                            "mlai-session-secret"
+                                        ]
+                        },
+    "revision_creation":  {
+                              "project":  "marketinglabai-identity-dev",
+                              "region":  "africa-south1",
+                              "service":  "marketinglabai-velani-pilot",
+                              "runtime_service_account":  "mlai-synthetic-runtime@marketinglabai-identity-dev.iam.gserviceaccount.com",
+                              "manifest_template":  "deployment/cloud-run.private-synthetic.yaml.template",
+                              "command":  "gcloud run services replace",
+                              "traffic_routing_authorized":  false,
+                              "public_access_authorized":  false,
+                              "secret_value_access_authorized":  false
+                          },
+    "forbidden_authority_claims":  {
+                                       "controller_authoritative":  false,
+                                       "legacy_backfill_deployable":  false,
+                                       "local_approval_is_admission_authority":  false
+                                   },
+    "origin_reconciliation":  {
+                                  "project":  "marketinglabai-identity-dev",
+                                  "region":  "africa-south1",
+                                  "service":  "marketinglabai-velani-pilot",
+                                  "manifest_template":  "deployment/cloud-run.private-synthetic.yaml.template",
+                                  "command":  "gcloud run services replace",
+                                  "maximum_mutation_count":  1,
+                                  "public_access_authorized":  false,
+                                  "secret_value_access_authorized":  false,
+                                  "rebuild_authorized":  false,
+                                  "admission_authority":  false
+                              }
 }

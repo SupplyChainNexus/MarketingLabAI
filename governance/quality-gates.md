@@ -186,3 +186,7 @@ Binary Authorization enforcement, or deployment permission.
   admission-authority claims are prohibited during preparation.
 - The command intent is evidence; it is not executed until a separate mutation
   approval exists.
+
+## ORIGIN_RECONCILED
+
+ORIGIN_RECONCILED is required after first private revision creation when the bootstrap origin is still configured. It may authorize exactly one Cloud Run service replacement after plan-bound approval and must not grant public IAM, read secret values, rebuild images, or claim admission authority.

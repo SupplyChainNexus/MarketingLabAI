@@ -310,3 +310,7 @@ Agents remain downstream capabilities. Intent routing is next-core after the
 spine; visual formatting, opportunity boosting and attribution remain future
 work until the spine, tenant boundaries, approvals, budget controls and audit
 evidence are proven.
+
+## MLAI-031.13 handover note
+
+REVISION_CREATED is passed, but startup cannot pass while the first bootstrap origin remains configured. Install and validate MLAI-031.13, then plan ORIGIN_RECONCILED using the startup-origin inspection evidence and revision-created evidence.

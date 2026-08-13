@@ -16,7 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_TEMPLATE = ROOT / "deployment" / "cloud-run.private-synthetic.yaml.template"
 FIRST_BOOTSTRAP_ORIGIN = "https://marketinglabai-velani-pilot-first-bootstrap.invalid"
 SERVICE_ORIGIN_PATTERN = re.compile(
-    r"https://[a-z0-9-]+-[0-9]+\.africa-south1\.run\.app"
+    r"https://[a-z0-9-]+-[a-z0-9-]+(?:-[a-z0-9-]+)?\.(?:africa-south1\.run|a\.run)\.app"
 )
 
 EXPECTED_PLACEHOLDERS = frozenset(

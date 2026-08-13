@@ -44,3 +44,5 @@
 
 - The manifest/bootstrap ingress mismatch is retired only after this correction is
   committed and CI passes. The old run and image remain non-deployable evidence.
+
+- MLAI-031.13 resolves the temporary first-service origin bootstrap gap by adding an explicit reconciliation transition before startup verification.

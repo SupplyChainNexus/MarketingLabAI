@@ -41,3 +41,5 @@
 - Risk: public canonical ingress could bypass the intended load-balancer boundary.
 - Control: exact-value validation, bootstrap cross-contract tests and CI enforcement.
 - Status: corrected pending commit and fresh provenance chain.
+
+- MLAI-031.13: Risk of future pilots inheriting bootstrap placeholder origins is controlled by the durable ORIGIN_RECONCILED transition and startup precondition.

@@ -124,3 +124,5 @@ are satisfied:
 - [ ] Every executable plan is commit- and executor-bound.
 - [ ] Interrupted incompatible operations are formally superseded and preserved.
 - A fresh commit-bound image and release run are required after this correction.
+
+- First-service origin reconciliation is complete only when the observed Cloud Run service URL replaces the bootstrap placeholder and evidence is recorded before startup verification.

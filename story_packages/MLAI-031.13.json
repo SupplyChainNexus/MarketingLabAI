@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "story_id": "MLAI-031.13",
+  "title": "Durable first-service origin reconciliation",
+  "status": "ready_for_installation",
+  "north_star": "First-service bootstrap must be absorbed by the release architecture instead of becoming repeated human troubleshooting.",
+  "scope": [
+    "Add ORIGIN_RECONCILED as the durable transition between REVISION_CREATED and STARTUP_VERIFIED.",
+    "Prepare real-origin revision manifests without cloud mutation.",
+    "Require exact plan-bound approval before any Cloud Run replacement.",
+    "Keep evidence indexed and machine-verifiable."
+  ],
+  "non_goals": [
+    "No public IAM.",
+    "No real-customer data.",
+    "No secret-value access.",
+    "No rebuild.",
+    "No startup or smoke gate recording during installation.",
+    "No admission authority."
+  ],
+  "authorized_installation_boundary": {
+    "repository_validation": true,
+    "cloud_cli_execution": false,
+    "release_state_modification": false,
+    "cloud_operation": false,
+    "deployment": false,
+    "rebuild": false
+  },
+  "required_post_install_order": [
+    "Commit and push MLAI-031.13.",
+    "Wait for CI success.",
+    "Create an ORIGIN_RECONCILED plan from the startup-origin inspection evidence.",
+    "Approve exactly that plan.",
+    "Perform the one approved Cloud Run service replacement.",
+    "Inspect and record ORIGIN_RECONCILED.",
+    "Only then plan STARTUP_VERIFIED."
+  ]
+}
+

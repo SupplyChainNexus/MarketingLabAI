@@ -1,87 +1,118 @@
 {
-  "schema_version": 2,
-  "release": "private-synthetic",
-  "gates": [
-    {
-      "id": "SOURCE_VERIFIED",
-      "kind": "automated_check",
-      "depends_on": [],
-      "may_mutate_cloud": false,
-      "purpose": "Bind the run to a clean, synchronized Git commit."
-    },
-    {
-      "id": "CI_PASSED",
-      "kind": "automated_check",
-      "depends_on": ["SOURCE_VERIFIED"],
-      "may_mutate_cloud": false,
-      "purpose": "Require the protected repository quality workflow to pass."
-    },
-    {
-      "id": "ARTIFACT_VERIFIED",
-      "kind": "automated_check",
-      "depends_on": ["CI_PASSED"],
-      "may_mutate_cloud": false,
-      "purpose": "Bind the run to one immutable digest-pinned container image."
-    },
-    {
-      "id": "CONFIGURATION_VALIDATED",
-      "kind": "automated_check",
-      "depends_on": ["ARTIFACT_VERIFIED"],
-      "may_mutate_cloud": false,
-      "purpose": "Validate the complete canonical application and manifest contract locally."
-    },
-    {
-      "id": "CLOUD_PREFLIGHT_PASSED",
-      "kind": "read_only_cloud_check",
-      "depends_on": ["CONFIGURATION_VALIDATED"],
-      "may_mutate_cloud": false,
-      "purpose": "Verify identities, APIs, secrets, IAM, database and target state read-only."
-    },
-    {
-      "id": "REVISION_CREATED",
-      "kind": "authorized_cloud_mutation",
-      "depends_on": ["CLOUD_PREFLIGHT_PASSED"],
-      "may_mutate_cloud": true,
-      "purpose": "Create exactly one digest-pinned private revision: bootstrap an absent service without public or pilot invocation authority, or create an existing-service revision with zero platform traffic.",
-      "revision_creation_modes": [
-        "FIRST_PRIVATE_REVISION",
-        "ZERO_TRAFFIC_REVISION"
-      ]
-    },
-    {
-      "id": "STARTUP_VERIFIED",
-      "kind": "automated_check",
-      "depends_on": ["REVISION_CREATED"],
-      "may_mutate_cloud": false,
-      "purpose": "Verify container readiness, configuration and PostgreSQL connectivity."
-    },
-    {
-      "id": "SMOKE_TESTS_PASSED",
-      "kind": "automated_check",
-      "depends_on": ["STARTUP_VERIFIED"],
-      "may_mutate_cloud": false,
-      "purpose": "Verify private health, identity, tenant isolation and synthetic journey checks."
-    },
-    {
-      "id": "PRIVATE_TRAFFIC_AUTHORIZED",
-      "kind": "founder_decision",
-      "depends_on": ["SMOKE_TESTS_PASSED"],
-      "may_mutate_cloud": false,
-      "purpose": "Record a separate founder decision for controlled private synthetic traffic."
-    },
-    {
-      "id": "PRIVATE_TRAFFIC_ROUTED",
-      "kind": "authorized_cloud_mutation",
-      "depends_on": ["PRIVATE_TRAFFIC_AUTHORIZED"],
-      "may_mutate_cloud": true,
-      "purpose": "Route only controlled private traffic while unauthenticated access remains denied."
-    },
-    {
-      "id": "RELEASE_CLOSED",
-      "kind": "evidence_closure",
-      "depends_on": ["PRIVATE_TRAFFIC_ROUTED"],
-      "may_mutate_cloud": false,
-      "purpose": "Verify final boundaries and close the immutable release evidence package."
-    }
-  ]
+    "schema_version":  2,
+    "release":  "private-synthetic",
+    "gates":  [
+                  {
+                      "id":  "SOURCE_VERIFIED",
+                      "kind":  "automated_check",
+                      "depends_on":  [
+
+                                     ],
+                      "may_mutate_cloud":  false,
+                      "purpose":  "Bind the run to a clean, synchronized Git commit."
+                  },
+                  {
+                      "id":  "CI_PASSED",
+                      "kind":  "automated_check",
+                      "depends_on":  [
+                                         "SOURCE_VERIFIED"
+                                     ],
+                      "may_mutate_cloud":  false,
+                      "purpose":  "Require the protected repository quality workflow to pass."
+                  },
+                  {
+                      "id":  "ARTIFACT_VERIFIED",
+                      "kind":  "automated_check",
+                      "depends_on":  [
+                                         "CI_PASSED"
+                                     ],
+                      "may_mutate_cloud":  false,
+                      "purpose":  "Bind the run to one immutable digest-pinned container image."
+                  },
+                  {
+                      "id":  "CONFIGURATION_VALIDATED",
+                      "kind":  "automated_check",
+                      "depends_on":  [
+                                         "ARTIFACT_VERIFIED"
+                                     ],
+                      "may_mutate_cloud":  false,
+                      "purpose":  "Validate the complete canonical application and manifest contract locally."
+                  },
+                  {
+                      "id":  "CLOUD_PREFLIGHT_PASSED",
+                      "kind":  "read_only_cloud_check",
+                      "depends_on":  [
+                                         "CONFIGURATION_VALIDATED"
+                                     ],
+                      "may_mutate_cloud":  false,
+                      "purpose":  "Verify identities, APIs, secrets, IAM, database and target state read-only."
+                  },
+                  {
+                      "id":  "REVISION_CREATED",
+                      "kind":  "authorized_cloud_mutation",
+                      "depends_on":  [
+                                         "CLOUD_PREFLIGHT_PASSED"
+                                     ],
+                      "may_mutate_cloud":  true,
+                      "purpose":  "Create exactly one digest-pinned private revision: bootstrap an absent service without public or pilot invocation authority, or create an existing-service revision with zero platform traffic.",
+                      "revision_creation_modes":  [
+                                                      "FIRST_PRIVATE_REVISION",
+                                                      "ZERO_TRAFFIC_REVISION"
+                                                  ]
+                  },
+                  {
+                      "id":  "ORIGIN_RECONCILED",
+                      "kind":  "authorized_cloud_mutation",
+                      "depends_on":  [
+                                         "REVISION_CREATED"
+                                     ],
+                      "may_mutate_cloud":  true,
+                      "purpose":  "Replace the first-service bootstrap origin with the observed private Cloud Run service URL before startup verification."
+                  },
+                  {
+                      "id":  "STARTUP_VERIFIED",
+                      "kind":  "automated_check",
+                      "depends_on":  [
+                                         "ORIGIN_RECONCILED"
+                                     ],
+                      "may_mutate_cloud":  false,
+                      "purpose":  "Verify container readiness, configuration and PostgreSQL connectivity."
+                  },
+                  {
+                      "id":  "SMOKE_TESTS_PASSED",
+                      "kind":  "automated_check",
+                      "depends_on":  [
+                                         "STARTUP_VERIFIED"
+                                     ],
+                      "may_mutate_cloud":  false,
+                      "purpose":  "Verify private health, identity, tenant isolation and synthetic journey checks."
+                  },
+                  {
+                      "id":  "PRIVATE_TRAFFIC_AUTHORIZED",
+                      "kind":  "founder_decision",
+                      "depends_on":  [
+                                         "SMOKE_TESTS_PASSED"
+                                     ],
+                      "may_mutate_cloud":  false,
+                      "purpose":  "Record a separate founder decision for controlled private synthetic traffic."
+                  },
+                  {
+                      "id":  "PRIVATE_TRAFFIC_ROUTED",
+                      "kind":  "authorized_cloud_mutation",
+                      "depends_on":  [
+                                         "PRIVATE_TRAFFIC_AUTHORIZED"
+                                     ],
+                      "may_mutate_cloud":  true,
+                      "purpose":  "Route only controlled private traffic while unauthenticated access remains denied."
+                  },
+                  {
+                      "id":  "RELEASE_CLOSED",
+                      "kind":  "evidence_closure",
+                      "depends_on":  [
+                                         "PRIVATE_TRAFFIC_ROUTED"
+                                     ],
+                      "may_mutate_cloud":  false,
+                      "purpose":  "Verify final boundaries and close the immutable release evidence package."
+                  }
+              ]
 }

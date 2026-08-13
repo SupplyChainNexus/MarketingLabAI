@@ -137,3 +137,9 @@ After explicit authorization, close it without changing release or cloud state:
 
 Then `resume` creates the new provenance-bound plan and stops for its new exact
 approval. Supersession is never an admission decision and never executes cloud.
+
+## MLAI-031.13: Durable first-service origin reconciliation
+
+First-service bootstrap may use the approved placeholder origin only until the generated Cloud Run service URL is known. ORIGIN_RECONCILED must replace that placeholder with the observed real URL before STARTUP_VERIFIED.
+
+No startup or smoke gate may pass while MLAI_PUBLIC_ORIGIN is https://marketinglabai-velani-pilot-first-bootstrap.invalid.
