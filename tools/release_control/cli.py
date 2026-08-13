@@ -75,6 +75,9 @@ def main(arguments: Sequence[str] | None = None) -> int:
     if selected.command in {"doctor", "validate-repository"}:
         _print(validate_repository(config))
         return 0
+    if selected.command == "requirements":
+        _print(requirements_for_gate(selected.gate))
+        return 0
     state_root = config.state_root(selected.state_root)
     control = ReleaseControlPlane(config, state_root)
     if selected.command == "doctor-cloud":
@@ -122,8 +125,6 @@ def main(arguments: Sequence[str] | None = None) -> int:
         )
     elif selected.command == "resume":
         _print(control.resume())
-    elif selected.command == "requirements":
-        _print(requirements_for_gate(selected.gate))
     elif selected.command == "prepare-origin-reconciliation":
         _print(
             prepare_origin_reconciliation_from_cli(
