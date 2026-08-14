@@ -202,3 +202,9 @@ embed Python.
 Release tooling passes only when the repository validates the pinned release
 executor identity, forbids service-account key files, and exposes a tested
 auth doctor before mutation.
+
+## Release executor identity bootstrap
+
+The bootstrap tooling passes only when missing identity is handled as evidence,
+user-managed keys block planning, the plan digest is deterministic, the mutation
+count is bounded, and installation executes no Cloud CLI command.

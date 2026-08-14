@@ -52,10 +52,39 @@ NON_INTERACTIVE_CLOUD_AUTH_REQUIREMENTS: dict[str, object] = {
 }
 
 
+RELEASE_EXECUTOR_IDENTITY_BOOTSTRAP_REQUIREMENTS: dict[str, object] = {
+    "schema_version": 1,
+    "gate": "RELEASE_EXECUTOR_IDENTITY_BOOTSTRAP",
+    "purpose": "Inspect and plan the pinned release executor identity bootstrap without automatic IAM mutation.",
+    "requires": [
+        "MLAI-031.15 and ADR-0047 installed",
+        "MLAI-031.17 and ADR-0048 preserved",
+        "pinned local operator account",
+        "read-only executor identity inspection evidence",
+        "output root outside the repository and under ToolkitTemp",
+        "separate exact plan-bound approval before IAM mutation",
+    ],
+    "forbids": [
+        "cloud CLI execution during installation or planning",
+        "automatic credential retry",
+        "automatic IAM mutation",
+        "service-account key creation",
+        "project-level permission grants in the identity bootstrap plan",
+        "Cloud Run mutation",
+        "deployment",
+        "release-state modification",
+    ],
+    "inspect_command": "python -m tools.release_control inspect-executor-identity --output-root <path>",
+    "plan_command": "python -m tools.release_control prepare-executor-identity-bootstrap --inspection <path> --output-root <path>",
+}
+
+
 def requirements_for_gate(gate: str) -> Mapping[str, object]:
     selected = gate.strip().upper()
     if selected == "ORIGIN_RECONCILED":
         return dict(ORIGIN_RECONCILED_REQUIREMENTS)
     if selected == "NON_INTERACTIVE_CLOUD_AUTH":
         return dict(NON_INTERACTIVE_CLOUD_AUTH_REQUIREMENTS)
+    if selected == "RELEASE_EXECUTOR_IDENTITY_BOOTSTRAP":
+        return dict(RELEASE_EXECUTOR_IDENTITY_BOOTSTRAP_REQUIREMENTS)
     raise ValueError(f"No release-control requirements are registered for {gate}.")

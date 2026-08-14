@@ -39,6 +39,7 @@
 | TD-035 | Release execution depended on mixed Python/PowerShell orchestration, stale story-numbered paths and temporary scripts. | Critical | Replaced by ADR-0039's one Python control plane and thin pinned launcher; validate the full Windows operator journey before closure. | In validation |
 | TD-036 | Read-only cloud preflight was not implemented in the paved control plane and would require temporary operator scripts. | Critical | Resolved in repository by ADR-0040's exact command allowlist, pinned observations and idempotent plan/apply/resume integration; Windows execution remains to be validated. | In validation |
 | TD-037 | The live Windows `gcloud.cmd` adapter and executor-approval provenance were absent from the test contract. | Critical | ADR-0041 adds the real Windows batch adapter, same-adapter doctor, provenance-bound plans and formal supersession. | In remediation |
+| TD-039 | Release executor authorization | Identity bootstrap does not yet define the executor's project-level least-privilege permissions or Phase 2 CI/CD Workload Identity binding. | High | Define and authorize the permission profile separately; prohibit service-account key files and do not infer permissions from a successful token probe. |
 
 ## MLAI-031.7 retired ingress mismatch
 
@@ -52,3 +53,4 @@
 - MLAI-031.15 removes direct browser-user credentials from the release mutation authority model and prepares CI/CD Workload Identity.
 
 | TD-038 | PostgreSQL adapter heritage | Hosted runtime is PostgreSQL, but the current adapter still preserves bounded SQLite-shaped repository SQL through translation for placeholders, timestamps, conflict handling and schema derivation. | Medium | Keep the database-factory and `psycopg` boundary for now; evaluate native PostgreSQL schema/migration modernization only through a separate architecture review and story. | Open |
+

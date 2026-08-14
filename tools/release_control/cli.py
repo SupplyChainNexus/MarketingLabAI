@@ -13,6 +13,10 @@ from tools.release_control.auth_execution import (
 )
 from tools.release_control.config import load_config, validate_repository
 from tools.release_control.control_plane import ReleaseControlPlane
+from tools.release_control.executor_identity_cli import (
+    inspect_executor_identity_from_cli,
+    prepare_executor_identity_bootstrap_from_cli,
+)
 from tools.release_control.origin_reconciliation_cli import (
     prepare_origin_reconciliation_from_cli,
 )
@@ -58,6 +62,12 @@ def _parser() -> argparse.ArgumentParser:
     prepare_revision.add_argument("--origin", required=True)
     prepare_revision.add_argument("--browser-api-key", required=True)
     prepare_revision.add_argument("--oauth-client-id", required=True)
+    inspect_executor = commands.add_parser("inspect-executor-identity")
+    inspect_executor.add_argument("--output-root", type=Path, required=True)
+
+    prepare_executor = commands.add_parser("prepare-executor-identity-bootstrap")
+    prepare_executor.add_argument("--inspection", type=Path, required=True)
+    prepare_executor.add_argument("--output-root", type=Path, required=True)
     commands.add_parser("resume")
     requirements = commands.add_parser("requirements")
     requirements.add_argument("--gate", required=True)
@@ -89,6 +99,22 @@ def main(arguments: Sequence[str] | None = None) -> int:
         return 0
     if selected.command == "requirements":
         _print(requirements_for_gate(selected.gate))
+        return 0
+    if selected.command == "inspect-executor-identity":
+        _print(
+            inspect_executor_identity_from_cli(
+                config=config, output_root=selected.output_root
+            )
+        )
+        return 0
+    if selected.command == "prepare-executor-identity-bootstrap":
+        _print(
+            prepare_executor_identity_bootstrap_from_cli(
+                config=config,
+                inspection_path=selected.inspection,
+                output_root=selected.output_root,
+            )
+        )
         return 0
     state_root = config.state_root(selected.state_root)
     control = ReleaseControlPlane(config, state_root)

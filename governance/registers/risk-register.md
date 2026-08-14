@@ -35,6 +35,7 @@
 | RISK-031 | Fragmented release scripts, shell-specific behaviour and manual evidence transfer can cause duplicate or incorrect operator actions. | Critical | ADR-0039 provides one pinned Python control plane, deterministic plan-bound approval, atomic indexed evidence, process locking and idempotent resume. | Reduced ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â repository validation pending |
 | RISK-032 | Cloud preflight assembled from ad hoc shell commands could leak secret values, accept drifted infrastructure or accidentally mutate cloud state. | Critical | ADR-0040 pins resources, allowlists exact read-only verbs, owns JSON capture, forbids secret payload access and tests rejection before subprocess execution. | Reduced ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â implementation validation pending |
 | RISK-033 | Windows batch semantics or changed executor code could fail outside test coverage or reuse an approval issued for different code. | Critical | ADR-0041 tests the `.cmd` boundary, pins Cloud CLI context, runs a same-adapter doctor before journaling and binds every plan to executor provenance. | Reduced ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â external Windows validation pending |
+| RISK-036 | Release executor authorization gap | Successful impersonation could be mistaken for sufficient release permissions. | Release operations could fail or broad project roles could be granted unnecessarily. | MLAI-031.16 separates identity bootstrap from evidence-bound least-privilege permission authorization and forbids service-account keys. | Open - permission profile pending |
 
 ## MLAI-031.7 private-ingress contract split
 

@@ -158,3 +158,10 @@ through service-account impersonation. Browser-user credentials may establish
 the local operator session, but may not be direct release mutation authority.
 Service-account key files are forbidden. `python -m tools.release_control
 doctor-auth` must pass before any cloud mutation retry.
+
+## MLAI-031.16: Release executor identity bootstrap
+
+The executor identity pinned by ADR-0047 must be inspected through the canonical
+read-only command before bootstrap planning. Missing identity is valid evidence,
+not an automatic creation trigger. Planning is deterministic, evidence-bound and
+limited to the missing service account and operator Token Creator binding.

@@ -259,3 +259,12 @@ Google Cloud SQL for PostgreSQL remains the initial managed production
 implementation. AlloyDB for PostgreSQL is reserved as an evidence-triggered
 future scale path. The existing database-factory and `psycopg` adapter remain
 approved. SQLAlchemy and Alembic are not approved in this story.
+
+## MLAI-031.16 - Release Executor Identity Bootstrap
+
+Status: ready for CI after installation.
+
+Scope: add canonical read-only discovery and deterministic planning for the
+pinned release executor identity. The bootstrap plan may propose only service
+account creation and the operator Token Creator binding. It cannot apply IAM,
+grant project permissions, create keys, mutate Cloud Run or modify release state.

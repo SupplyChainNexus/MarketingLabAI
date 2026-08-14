@@ -144,3 +144,7 @@ are satisfied:
 - Non-interactive cloud auth is done only when release mutations require a pinned impersonated executor and reject service-account key files.
 
 - Non-interactive cloud auth is done only when release mutations require a pinned impersonated executor and reject service-account key files.
+
+- Release executor identity bootstrap is done only when discovery and planning are separate, evidence-bound, keyless, tested and separately authorized before IAM mutation.
+
+- Release executor identity bootstrap is done only when discovery and planning are separate, evidence-bound, keyless, tested and separately authorized before IAM mutation.

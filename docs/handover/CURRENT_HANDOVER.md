@@ -334,3 +334,9 @@ datastore for hosted Earthonox runtime. ADR-0048 locks Google Cloud SQL for
 PostgreSQL as the initial managed production implementation and reserves AlloyDB
 for PostgreSQL as an evidence-triggered future scale option. SQLAlchemy and
 Alembic are not approved in this increment.
+
+## MLAI-031.16 handover note
+
+MLAI-031.16 uses ADR-0049 because ADR-0048 is occupied by the PostgreSQL managed
+provider decision. Commit and obtain CI before running the read-only identity
+inspector. Do not re-use the failed ad hoc V1/V2 inspection commands.

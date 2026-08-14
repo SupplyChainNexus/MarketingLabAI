@@ -869,3 +869,5 @@ implementation. AlloyDB for PostgreSQL is reserved for a future
 evidence-triggered scale path. SQLAlchemy, Alembic, provider switching,
 database provisioning, production migrations and production-data operations
 require a separate architecture review and explicit authorization.
+
+- ADR-0049 locks release executor identity bootstrap to evidence-separated read-only discovery and deterministic planning; service-account keys, automatic retry and unplanned project permissions remain forbidden.

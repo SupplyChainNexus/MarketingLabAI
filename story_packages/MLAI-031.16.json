@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "story": "MLAI-031.16",
+  "title": "Release Executor Identity Bootstrap",
+  "status": "ready-for-ci-after-installation",
+  "adr": "governance/adrs/ADR-0049-release-executor-identity-bootstrap.md",
+  "prerequisites": [
+    "MLAI-031.15",
+    "ADR-0047",
+    "MLAI-031.17",
+    "ADR-0048"
+  ],
+  "scope": [
+    "add canonical read-only executor identity discovery",
+    "classify missing executor identity as valid inspection evidence",
+    "classify operator reauthentication without automatic retry",
+    "record executor IAM policy, user-managed key count and project roles without secret values",
+    "prepare a deterministic evidence-bound identity bootstrap plan",
+    "limit the plan to service-account creation and operator Token Creator binding",
+    "add thin PowerShell launchers and regression tests"
+  ],
+  "out_of_scope": [
+    "Cloud CLI execution during installation",
+    "credential refresh during installation",
+    "IAM mutation",
+    "service-account creation",
+    "service-account key creation",
+    "project-level executor permission grants",
+    "Workload Identity configuration",
+    "Cloud Run mutation",
+    "deployment",
+    "release-state modification"
+  ],
+  "maximum_planned_iam_mutations": 2,
+  "service_account_key_files_allowed": false,
+  "automatic_retry_allowed": false
+}

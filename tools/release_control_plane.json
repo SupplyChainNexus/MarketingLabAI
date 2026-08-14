@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "control_plane_version": "1.7",
+  "control_plane_version": "1.8",
   "environment": "cloud-synthetic",
   "artifact_repository": "africa-south1-docker.pkg.dev/marketinglabai-identity-dev/mlai-synthetic/marketinglabai-pilot",
   "state_root_environment_variable": "MLAI_RELEASE_STATE_ROOT",
@@ -100,6 +100,11 @@
     "origin_reconciliation_cli": true,
     "artifact_root": "C:\\Ai Projects\\ToolkitTemp",
     "non_interactive_auth_doctor": true,
-    "service_account_key_files_allowed": false
+    "service_account_key_files_allowed": false,
+    "release_executor_identity_inspector": true,
+    "release_executor_identity_planner": true,
+    "identity_bootstrap_maximum_iam_mutations": 2,
+    "identity_bootstrap_automatic_retry": false,
+    "identity_bootstrap_project_permission_grants": false
   }
 }
