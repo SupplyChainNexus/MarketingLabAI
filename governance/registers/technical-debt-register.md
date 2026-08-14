@@ -53,4 +53,3 @@
 - MLAI-031.15 removes direct browser-user credentials from the release mutation authority model and prepares CI/CD Workload Identity.
 
 | TD-038 | PostgreSQL adapter heritage | Hosted runtime is PostgreSQL, but the current adapter still preserves bounded SQLite-shaped repository SQL through translation for placeholders, timestamps, conflict handling and schema derivation. | Medium | Keep the database-factory and `psycopg` boundary for now; evaluate native PostgreSQL schema/migration modernization only through a separate architecture review and story. | Open |
-
