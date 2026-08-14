@@ -326,3 +326,11 @@ requirements and planning.
 Do not retry ORIGIN_RECONCILED until MLAI-031.15 is installed, committed,
 CI-verified, and `doctor-auth` passes. The failed direct browser-user gcloud path
 is superseded by service-account impersonation.
+
+## MLAI-031.17: PostgreSQL managed-provider strategy
+
+The 2026-08-14 architecture review confirmed PostgreSQL as the canonical durable
+datastore for hosted Earthonox runtime. ADR-0048 locks Google Cloud SQL for
+PostgreSQL as the initial managed production implementation and reserves AlloyDB
+for PostgreSQL as an evidence-triggered future scale option. SQLAlchemy and
+Alembic are not approved in this increment.

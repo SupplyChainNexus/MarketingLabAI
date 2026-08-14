@@ -47,3 +47,6 @@
 - MLAI-031.14 controls release execution risk caused by fragile PowerShell/Python quoting and untested operator wrappers.
 
 - MLAI-031.15 controls release failure risk caused by expiring browser-user Cloud SDK tokens during non-interactive execution.
+
+| RISK-034 | Database provider drift | Treating Cloud SQL, AlloyDB or an alternative PostgreSQL provider as an interchangeable toggle could bypass Cloud Run connectivity, Secret Manager, backup/restore, cost, tenant-isolation and release-control evidence. | A provider change could silently invalidate the controlled hosted persistence boundary. | ADR-0048 locks Cloud SQL for PostgreSQL as the initial managed provider and requires separate evidence for AlloyDB or any alternative provider. | Controlled - governance locked |
+| RISK-035 | Tenant isolation during provider migration | A future managed-provider migration could preserve schema shape but lose tenant isolation, membership, audit or activation semantics. | Cross-tenant data exposure or governance-state corruption could occur during scale migration. | Rerun tenant-isolation, migration parity, backup/restore and release-control evidence before any provider switch or real-data cutover. | Open - future migration gate |

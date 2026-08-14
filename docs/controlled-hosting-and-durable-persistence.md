@@ -59,3 +59,8 @@ references are unresolved.
 External invitations, real business data, public signup, customer billing,
 direct publishing, real-data learning and Strand Auto Parts activation remain
 frozen. Engineering readiness never self-authorizes cloud mutation.
+
+ADR-0048 clarifies that the selected managed starting point is Google Cloud SQL
+for PostgreSQL. AlloyDB for PostgreSQL is a future option only after documented
+scale, latency, availability, analytical, vector or economic evidence justifies
+the additional operational and cost surface.

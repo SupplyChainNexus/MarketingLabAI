@@ -249,3 +249,13 @@ Status: ready for CI after installation.
 Scope: introduce local operator auth plus service-account impersonation as the
 Phase 1 release execution boundary, forbid service-account key files, and prepare
 the same executor identity for Phase 2 CI/CD Workload Identity.
+
+## MLAI-031.17 — PostgreSQL Managed Provider Strategy Lock
+
+Status: governance-only architecture lock
+
+PostgreSQL remains the canonical durable datastore for hosted Earthonox runtime.
+Google Cloud SQL for PostgreSQL remains the initial managed production
+implementation. AlloyDB for PostgreSQL is reserved as an evidence-triggered
+future scale path. The existing database-factory and `psycopg` adapter remain
+approved. SQLAlchemy and Alembic are not approved in this story.

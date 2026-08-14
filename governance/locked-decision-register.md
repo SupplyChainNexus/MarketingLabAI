@@ -857,3 +857,15 @@ URL and must reject the bootstrap placeholder.
 - ADR-0046 locks release tooling hardening: PowerShell is a thin launcher, Python owns transition logic, and CI rejects embedded Python release wrappers.
 
 - ADR-0047 locks non-interactive cloud auth: local operator approval is separate from impersonated release execution, service-account key files are forbidden, and CI/CD Workload Identity is the Phase 2 release path.
+
+### LDR-063 — PostgreSQL managed-provider strategy is locked
+
+**Status:** Current / Binding persistence architecture
+**Source:** ADR-0048 and founder authorization for MLAI-031.17 on 2026-08-14
+
+PostgreSQL is the canonical durable datastore for hosted Earthonox runtime.
+Google Cloud SQL for PostgreSQL is the initial managed production
+implementation. AlloyDB for PostgreSQL is reserved for a future
+evidence-triggered scale path. SQLAlchemy, Alembic, provider switching,
+database provisioning, production migrations and production-data operations
+require a separate architecture review and explicit authorization.

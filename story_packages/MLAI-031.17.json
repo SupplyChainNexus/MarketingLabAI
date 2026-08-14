@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "story": "MLAI-031.17",
+  "title": "PostgreSQL Managed Provider Strategy Lock",
+  "status": "governance-only-ready-for-review",
+  "scope": [
+    "confirm PostgreSQL as canonical durable hosted datastore",
+    "confirm Cloud SQL for PostgreSQL as the initial managed implementation",
+    "reserve AlloyDB for evidence-triggered future scale evaluation",
+    "preserve the existing database-factory and psycopg implementation",
+    "record SQLite-to-PostgreSQL translation heritage as technical debt",
+    "record provider migration and tenant-isolation risks"
+  ],
+  "out_of_scope": [
+    "Cloud SQL provisioning or mutation",
+    "AlloyDB provisioning",
+    "database provider switching",
+    "SQLAlchemy introduction",
+    "Alembic introduction",
+    "cloud or production database migration execution",
+    "production-data operation",
+    "Secret Manager mutation",
+    "IAM mutation",
+    "Cloud Run mutation",
+    "deployment",
+    "release-state modification"
+  ],
+  "adr": "governance/adrs/ADR-0048-postgresql-managed-provider-strategy.md"
+}

@@ -56,3 +56,12 @@ Raw transcripts, dumps and credentials remain outside Git.
 The durable-adapter external-evidence gate is passed. Cloud application build and
 deployment, Velani invitation, public signup, billing, publishing, real-customer
 data, production activation and real-data learning remain frozen.
+
+## Managed-provider strategy
+
+ADR-0048 locks PostgreSQL as the canonical durable datastore for hosted
+Earthonox runtime. Google Cloud SQL for PostgreSQL remains the initial managed
+production implementation. AlloyDB for PostgreSQL is reserved as a future
+evidence-triggered scale option. The current implementation remains the
+repository database factory and `psycopg` PostgreSQL adapter. SQLAlchemy and
+Alembic are not approved at this stage.
