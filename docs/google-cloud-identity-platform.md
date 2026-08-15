@@ -87,3 +87,13 @@ administrative configuration response also exposed the unused SCRYPT signer
 configuration during setup. No password users exist and password sign-in is
 disabled; it must not be enabled without security review and fresh credential
 treatment.
+
+## High-assurance direction
+
+ADR-0051 preserves Identity Platform as customer authentication authority and
+Earthonox as tenant-authorization and server-session authority. The next
+identity increments must add risk-based MFA and step-up, governed recovery,
+provider-supported token revocation and evidence-backed session renewal without
+persisting provider refresh credentials in Earthonox. Exact factors, durations
+and provider settings require separately authorized implementation and
+controlled rehearsal; this architecture lock does not enable them.

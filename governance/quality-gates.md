@@ -208,3 +208,21 @@ auth doctor before mutation.
 The bootstrap tooling passes only when missing identity is handled as evidence,
 user-managed keys block planning, the plan digest is deterministic, the mutation
 count is bounded, and installation executes no Cloud CLI command.
+
+## High-assurance security architecture gate
+
+- Report every applicable ADR-0051 layer as documented, implemented, externally
+  configured, rehearsed and operationally evidenced; do not infer one state from
+  another.
+- Required CI checks may not disappear silently. Each reports passed, failed,
+  reasoned not-applicable or not-implemented.
+- Token, session, tenant and authorization changes require expiry, rotation,
+  revocation, replay, privilege-change and cross-tenant adversarial tests.
+- Secret scanning, SAST, dependency and license policy, SBOM and artifact
+  scanning, infrastructure-policy tests and provenance checks become mandatory
+  before the boundary they protect opens.
+- Edge, identity, audit, detection, backup, incident and recovery controls need
+  expiring environment- and commit-bound evidence; repository tests alone do
+  not satisfy them.
+- Real-customer activation remains a separate decision after applicable hard
+  gates and residual-risk review pass.

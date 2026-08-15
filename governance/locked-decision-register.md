@@ -884,3 +884,27 @@ Inherited defects are acknowledged only by exact path, finding code and content 
 Evidence packages must be exported from raw committed Git blobs through an explicit reviewed path manifest. Working-tree bytes and `git archive` materialization are not evidence authorities. A completed ZIP must be reopened and verified for exact path set and per-file SHA-256 before success is reported. PowerShell is canonical LF content; only `.bat` and `.cmd` remain CRLF.
 
 Git configuration checks are diagnostic and read-only. Neither an installer nor the coherence tooling may change system, global or repository-local Git configuration. Non-baseline corrections require a separate exact-commit, exact-current-hash and exact-replacement-hash plan.
+
+### LDR-065 — High-assurance SaaS security architecture
+
+**Status:** Current / Binding security architecture direction
+**Source:** ADR-0051 and founder authorization for MLAI-031.18B on 2026-08-16
+
+Earthonox preserves Google Cloud Identity Platform authentication,
+application-owned tenant authorization, opaque server-side sessions,
+PostgreSQL, private Cloud Run ingress and zero-trust release controls while
+evolving them through the fourteen defense-in-depth layers in ADR-0051.
+
+Security assurance separates documented, implemented, externally configured,
+rehearsed and operationally evidenced states. Green CI or an unsupported
+boolean cannot promote an external control. Session renewal must rotate
+identifiers and CSRF material, obey idle and absolute expiry and respond to
+identity, privilege and security events. Provider tokens remain short-lived;
+refresh credentials stay outside Earthonox persistence; MFA and step-up protect
+risk-defined actions. Edge protection, security CI, centralized detection,
+incident response and recovery evidence become hard gates before their risk
+boundaries open.
+
+This lock authorizes no authentication implementation, cloud or IAM change,
+Identity Platform or Secret Manager mutation, database operation, deployment,
+customer activation or release-state modification.

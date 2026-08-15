@@ -41,3 +41,11 @@ No live provider, credential transport, API, browser session, UI, secret
 management, or real customer data is introduced here. MLAI-027.4 will select an
 API contract over this boundary; operational secret and privacy gates remain in
 MLAI-027.6.
+
+## High-assurance continuity
+
+ADR-0051 does not move tenant authority into Identity Platform. Authentication,
+MFA and step-up establish identity confidence; Earthonox still checks current
+membership, role, tenant ownership and operation with default deny. Session
+renewal and token revocation must preserve this separation and cross-tenant
+regression coverage.

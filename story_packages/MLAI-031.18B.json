@@ -1,0 +1,23 @@
+{
+  "adr": "governance/adrs/ADR-0051-defense-in-depth-customer-identity-session-and-platform-security.md",
+  "out_of_scope": [
+    "authentication, token, session, MFA or step-up implementation",
+    "cloud, IAM, Identity Platform, Secret Manager or database mutation",
+    "edge, WAF, monitoring or incident-response service configuration",
+    "deployment, customer activation or release-state modification",
+    "commit or push"
+  ],
+  "schema_version": 2,
+  "scope": [
+    "preserve Identity Platform, tenant authorization and server-session boundaries",
+    "lock the fourteen-layer defense-in-depth target",
+    "define session renewal, rotation, revocation and token lifecycle requirements",
+    "define MFA, account recovery and step-up requirements",
+    "define edge, security CI, centralized detection, incident response and recovery requirements",
+    "record LDR-065, RISK-038 and TD-041",
+    "update backlog, architecture documentation and current handover"
+  ],
+  "status": "governance lock installed; implementation separately gated",
+  "story_id": "MLAI-031.18B",
+  "title": "High-Assurance SaaS Security Architecture Lock"
+}

@@ -352,3 +352,25 @@ The five inherited governance files corrected by the closure plan are limited to
 Evidence intake must use raw committed Git blobs, an explicit versioned path manifest, and completed-ZIP path/hash verification. `git archive` and working-tree bytes are forbidden as evidence authorities. PowerShell is LF; only `.bat` and `.cmd` use CRLF. Git configuration diagnosis is read-only and must never silently mutate system, global or repository-local settings.
 
 `docs/handover/CURRENT_HANDOVER.md` remains the committed, reviewable checkpoint for architecture, authority and safe-resume state. It is not a per-command log. A future separately governed continuity capability should maintain a redacted atomic `CURRENT_SESSION.json` and append-only hash-chained event journal under `C:\Ai Projects\ToolkitTemp\MarketingLabAI\continuity`; it must exclude secrets and may not grant execution authority. Until that capability is authorized, update this handover at reviewed story checkpoints and preserve exact ToolkitTemp evidence paths and hashes in the handover entry.
+
+## MLAI-031.18B security architecture lock
+
+ADR-0051 and LDR-065 preserve the current Google Cloud Identity Platform,
+tenant authorization, server-session, PostgreSQL, private Cloud Run and
+zero-trust release boundaries and place them inside a fourteen-layer
+defense-in-depth target. The lock distinguishes documented, implemented,
+externally configured, rehearsed and operationally evidenced states so green CI
+cannot be mistaken for deployed security.
+
+Current foundations include strict Google token checks, bounded hashed sessions,
+CSRF, secure cookies, tenant-membership revalidation, session revocation and
+readiness evidence. TD-041 records that renewable and rotating sessions,
+idle-plus-absolute expiry, provider revocation orchestration, MFA and step-up,
+edge enforcement, centralized detection delivery and complete security-CI and
+incident-recovery rehearsal remain unimplemented. RISK-038 keeps activation
+closed until applicable controls have current environment-bound evidence.
+
+The next security implementation must be separately authorized and should begin
+with a repository-confirmed threat model and the session/token lifecycle. This
+governance lock performs no authentication, cloud, IAM, Identity Platform,
+Secret Manager, database, deployment or release-state mutation.

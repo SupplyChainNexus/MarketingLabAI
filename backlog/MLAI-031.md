@@ -278,3 +278,30 @@ Scope closed: ADR-0050 establishes the canonical infrastructure contract, UTF-8 
 Inherited baseline findings remain explicit debt and may be retired only through separately reviewed, exact-file and exact-hash repair plans. This closure grants no cloud, database, IAM, deployment, traffic, admission, release-state or release-ledger authority.
 
 Corrective amendment: canonical evidence export reads exact committed blobs through explicit path manifests and verifies the completed ZIP. PowerShell uses LF in Git and editor policy; `.bat` and `.cmd` retain CRLF. Git configuration diagnosis is read-only, and non-baseline corrective plans bind the commit, live target hashes and replacement hashes. The two observed mixed PowerShell files are eligible only for the installer's exact-live-hash-to-exact-blob treatment.
+
+## MLAI-031.18B — High-Assurance SaaS Security Architecture Lock
+
+Status: governance lock installed; implementation separately gated
+
+### Purpose
+
+Preserve the existing Identity Platform, tenant authorization, server-session,
+PostgreSQL, Cloud Run and release-control design while locking one fourteen-layer
+defense-in-depth target for customer security.
+
+### Acceptance
+
+- ADR-0051 defines all fourteen layers and separate assurance maturity states.
+- Session renewal, identifier and CSRF rotation, idle and absolute expiry,
+  provider/server revocation and replay controls are explicit future requirements.
+- MFA, recovery and risk-based step-up protect sensitive operations.
+- Edge, security CI, centralized detection, incident response and recovery have
+  evidence-backed activation gates.
+- LDR-065, RISK-038 and TD-041 preserve the decision, residual risk and current gaps.
+- The story performs no authentication implementation or external mutation.
+
+### Follow-on
+
+Begin with a separately authorized threat model and session/token lifecycle
+implementation story. Do not bundle edge services, identity configuration,
+monitoring delivery or customer activation into that first increment.
