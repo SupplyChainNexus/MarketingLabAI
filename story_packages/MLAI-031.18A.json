@@ -17,7 +17,7 @@
     "provide exact-hash plan-bound repair preparation and application",
     "make infrastructure-coherence validation mandatory in CI"
   ],
-  "status": "installed-awaiting-review",
+  "status": "complete",
   "story_id": "MLAI-031.18A",
   "title": "Repository Integrity Foundation"
 }

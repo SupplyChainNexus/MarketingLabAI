@@ -273,7 +273,7 @@ diagnostics, binds plans to executor provenance and requires formal
 supersession of the old operation before a fresh plan and approval. Installation
 must not alter the external release state. After commit and CI, run
 `doctor-cloud`, formally supersede plan `178f09fa673e1edefeb7034245879e1275fbb517b685a22a244a4f29d1983db6`,
-then use `resume` to createÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Âbut not approveÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Âthe replacement plan.
+then use `resume` to create—but not approve—the replacement plan.
 
 ## MLAI-031.11: Deterministic private revision preparation
 
@@ -340,3 +340,9 @@ Alembic are not approved in this increment.
 MLAI-031.16 uses ADR-0049 because ADR-0048 is occupied by the PostgreSQL managed
 provider decision. Commit and obtain CI before running the read-only identity
 inspector. Do not re-use the failed ad hoc V1/V2 inspection commands.
+
+## MLAI-031.18A closure
+
+MLAI-031.18A is complete at commit `940c07226b406393b71973192fafe58cd4e65978`; GitHub Actions quality run 49 passed. ADR-0050 and LDR-064 make the repository integrity contract binding: CI must run the canonical read-only coherence checker, mojibake and governance identifier drift fail closed unless acknowledged by exact baseline hash, and any repair must be separately planned and hash-bound.
+
+The five inherited governance files corrected by the closure plan are limited to `backlog/MLAI-031.md`, this handover, the locked-decision register, the risk register and the technical-debt register. RISK-037 and TD-040 preserve the remaining repository-integrity risk and debt. No cloud operation, infrastructure mutation, release-state change or release-ledger mutation is authorized by this closure.

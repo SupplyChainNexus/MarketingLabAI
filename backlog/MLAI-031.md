@@ -1,6 +1,6 @@
-# MLAI-031 Ã¢â‚¬â€ Controlled Pilot Hosting
+# MLAI-031 — Controlled Pilot Hosting
 
-## MLAI-031.1 Ã¢â‚¬â€ Controlled Hosting and Durable Pilot Persistence
+## MLAI-031.1 — Controlled Hosting and Durable Pilot Persistence
 
 Status: complete
 
@@ -23,7 +23,7 @@ and durable PostgreSQL boundary for the Velani pre-activation environment.
 Complete repository-wide PostgreSQL compatibility, synthetic migration,
 backup/restore and cost evidence before enabling APIs or building an image.
 
-## MLAI-031.2 Ã¢â‚¬â€ Repository-Wide PostgreSQL Compatibility and Migration
+## MLAI-031.2 — Repository-Wide PostgreSQL Compatibility and Migration
 
 Status: complete; live local and controlled Cloud PostgreSQL evidence passed
 
@@ -52,7 +52,7 @@ authorize application deployment, invitations, public signup, billing, publishin
 real-customer data, production activation or real-data learning. Those boundaries
 remain frozen and require separate founder decisions.
 
-## MLAI-031.3 Ã¢â‚¬â€ Controlled Private Synthetic Application Deployment
+## MLAI-031.3 — Controlled Private Synthetic Application Deployment
 
 Status: engineering package ready; external deployment evidence pending
 
@@ -80,7 +80,7 @@ the canonical runtime without public access or real-customer data.
 - Failed manual revisions are retained as evidence and do not authorize another
   one-off patch; ADR-0033 Durable Remediation governs recurrence prevention.
 
-## MLAI-031.4 Ã¢â‚¬â€ Progressive Release Automation
+## MLAI-031.4 — Progressive Release Automation
 
 Status: engineering implementation complete; external execution not authorized
 
@@ -91,7 +91,7 @@ Status: engineering implementation complete; external execution not authorized
   unauthorized mutation claims.
 - Execute the same no-mutation validation in CI.
 
-## MLAI-031.5 Ã¢â‚¬â€ Zero-Trust Software-Supply-Chain Foundation
+## MLAI-031.5 — Zero-Trust Software-Supply-Chain Foundation
 
 Status: founder-authorized repository foundation; cloud enforcement pending
 
@@ -112,7 +112,7 @@ Status: founder-authorized repository foundation; cloud enforcement pending
 - Preserve the 9630fad run and image as incomplete, non-deployable history.
 - After commit and CI, create a fresh image and observational release run.
 
-## MLAI-031.8 Ã¢â‚¬â€ Unified Release Control Plane
+## MLAI-031.8 — Unified Release Control Plane
 
 Status: implemented, committed, CI verified and adopted
 
@@ -135,7 +135,7 @@ zero-trust admission authority.
   deployment authority.
 - Cloud mutation and Binary Authorization enforcement remain separately gated.
 
-## MLAI-031.9 Ã¢â‚¬â€ Permanent Read-Only Cloud Preflight
+## MLAI-031.9 — Permanent Read-Only Cloud Preflight
 
 Status: implementation in validation
 
@@ -158,7 +158,7 @@ temporary scripts or granting deployment authority.
 - Revision creation, deployment, IAM mutation, traffic and admission authority
   remain unsupported and separately gated.
 
-## MLAI-031.10 Ã¢â‚¬â€ Provenance-Bound Windows Cloud CLI Recovery
+## MLAI-031.10 — Provenance-Bound Windows Cloud CLI Recovery
 
 Status: founder-authorized durable repair
 
@@ -180,7 +180,7 @@ for the interrupted cloud-preflight operation.
 - Resume returns one safe next action and never silently reuses stale approval.
 - Installation and validation perform no cloud operation or release-state change.
 
-## MLAI-031.11 Ã¢â‚¬â€ Deterministic Private Revision Preparation
+## MLAI-031.11 — Deterministic Private Revision Preparation
 
 Status: founder-authorized durable preparation
 
@@ -207,7 +207,7 @@ approved.
 - Installation, validation and CI perform no Cloud CLI execution, cloud
   mutation, deployment, traffic routing, rebuild or admission-authority action.
 
-## MLAI-031.12 Ã¢â‚¬â€ First-Service Origin Bootstrap Correction
+## MLAI-031.12 — First-Service Origin Bootstrap Correction
 
 Status: founder-authorized durable repair
 
@@ -268,3 +268,11 @@ Scope: add canonical read-only discovery and deterministic planning for the
 pinned release executor identity. The bootstrap plan may propose only service
 account creation and the operator Token Creator binding. It cannot apply IAM,
 grant project permissions, create keys, mutate Cloud Run or modify release state.
+
+## MLAI-031.18A — Repository Integrity Foundation
+
+Status: complete at commit `940c07226b406393b71973192fafe58cd4e65978`; CI quality run 49 passed.
+
+Scope closed: ADR-0050 establishes the canonical infrastructure contract, UTF-8 and line-ending policy, read-only coherence validation, exact-hash legacy-debt acknowledgement, plan-bound repair support, governance identifier validation, story-manifest schema foundation, focused regression tests and mandatory CI enforcement. The former hygiene script is now a read-only launcher and may not rewrite repository content implicitly.
+
+Inherited baseline findings remain explicit debt and may be retired only through separately reviewed, exact-file and exact-hash repair plans. This closure grants no cloud, database, IAM, deployment, traffic, admission, release-state or release-ledger authority.
