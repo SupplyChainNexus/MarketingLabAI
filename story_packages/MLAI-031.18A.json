@@ -1,0 +1,23 @@
+{
+  "adr": "governance/adrs/ADR-0050-canonical-infrastructure-contract-and-coherence-enforcement.md",
+  "out_of_scope": [
+    "automatic repair of inherited corruption",
+    "Cloud CLI or credential execution",
+    "cloud, database, IAM, release-state or release-ledger mutation",
+    "deployment, traffic change or automatic push",
+    "release-gate completeness enforcement beyond repository integrity"
+  ],
+  "schema_version": 2,
+  "scope": [
+    "replace the byte-corrupting hygiene script with a thin canonical integrity launcher",
+    "define encoding and line-ending policy",
+    "detect mojibake and repository-governance identifier drift",
+    "introduce the story-manifest schema-v2 foundation",
+    "acknowledge inherited defects only by exact file hash",
+    "provide exact-hash plan-bound repair preparation and application",
+    "make infrastructure-coherence validation mandatory in CI"
+  ],
+  "status": "installed-awaiting-review",
+  "story_id": "MLAI-031.18A",
+  "title": "Repository Integrity Foundation"
+}

@@ -1,0 +1,28 @@
+{
+  "canonical_encoding": "utf-8-without-bom",
+  "canonical_line_endings": {
+    "default": "lf",
+    "windows_command_files": "crlf"
+  },
+  "legacy_baseline": "governance/infrastructure-coherence-baseline.json",
+  "mojibake_policy": "block-new-or-changed; acknowledge-existing-by-exact-sha256",
+  "repair_authority": "exact-plan-and-byte-hash-bound",
+  "required_repository_paths": [
+    ".editorconfig",
+    ".gitattributes",
+    ".github/workflows/quality.yml",
+    "governance/adrs/ADR-0050-canonical-infrastructure-contract-and-coherence-enforcement.md",
+    "governance/infrastructure-coherence-baseline.json",
+    "governance/schemas/story-package.schema.json",
+    "scripts/repair_local_hygiene.ps1",
+    "story_packages/MLAI-031.18A.json",
+    "tests/test_infrastructure_coherence.py",
+    "tools/infrastructure_coherence/__init__.py",
+    "tools/infrastructure_coherence/__main__.py",
+    "tools/infrastructure_coherence/cli.py",
+    "tools/infrastructure_coherence/core.py",
+    "tools/infrastructure_coherence_policy.json"
+  ],
+  "schema_version": 1,
+  "story_manifest_schema": "governance/schemas/story-package.schema.json"
+}

@@ -1,69 +1,53 @@
 param(
-    [switch]$FullTests
+    [ValidateSet("check", "plan-repair", "apply-repair")]
+    [string]$Command = "check",
+    [string]$PythonPath = "",
+    [string]$ReplacementRoot = "",
+    [string]$OutputRoot = "",
+    [string]$Plan = ""
 )
 
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 
-$RepoRoot = "C:\Ai Projects\MarketingLabAI"
+$RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
+if (-not $PythonPath) {
+    $VenvPython = Join-Path $RepoRoot ".venv\Scripts\python.exe"
+    if (Test-Path -LiteralPath $VenvPython -PathType Leaf) {
+        $PythonPath = $VenvPython
+    }
+    else {
+        $PythonPath = (Get-Command "python.exe" -ErrorAction Stop).Source
+    }
+}
+
+Write-Host "=== CANONICAL REPOSITORY INTEGRITY BOUNDARY ==="
+Write-Host "Command: $Command"
+Write-Host "Repository byte rewriting by this launcher: false"
+Write-Host "Cloud CLI execution: false"
+Write-Host "Release-state modification: false"
+
+$Arguments = @("-m", "tools.infrastructure_coherence", "--root", $RepoRoot, $Command)
+if ($Command -eq "plan-repair") {
+    if (-not $ReplacementRoot -or -not $OutputRoot) {
+        throw "plan-repair requires -ReplacementRoot and -OutputRoot."
+    }
+    $Arguments += @("--replacement-root", $ReplacementRoot, "--output-root", $OutputRoot)
+}
+elseif ($Command -eq "apply-repair") {
+    if (-not $Plan) { throw "apply-repair requires -Plan." }
+    $Arguments += @("--plan", $Plan)
+}
+
 Push-Location $RepoRoot
-
 try {
-    Write-Host "=== LOCAL HYGIENE REPAIR ==="
-    Write-Host "Repository modification: formatting/encoding only"
-    Write-Host "Cloud operation: false"
-    Write-Host "Release-state modification: false"
-
-    $Utf8NoBom = New-Object System.Text.UTF8Encoding($false)
-
-    $TextFiles = @(
-        ".github\workflows\quality.yml",
-        "backlog\MLAI-031.md",
-        "deployment\private_synthetic_release_gates.json",
-        "docs\handover\CURRENT_HANDOVER.md",
-        "docs\private-synthetic-release-automation.md",
-        "governance\definition-of-done.md",
-        "governance\locked-decision-register.md",
-        "governance\quality-gates.md",
-        "governance\registers\risk-register.md",
-        "governance\registers\technical-debt-register.md",
-        "scripts\plan_origin_reconciliation.ps1",
-        "tools\release_control_plane.json"
-    )
-
-    foreach ($Relative in $TextFiles) {
-        if (Test-Path -LiteralPath $Relative -PathType Leaf) {
-            $Text = Get-Content -LiteralPath $Relative -Raw
-            $Text = $Text.TrimEnd() + "`n"
-            [System.IO.File]::WriteAllText((Resolve-Path $Relative).Path, $Text, $Utf8NoBom)
-        }
-    }
-
-    & ".\.venv\Scripts\python.exe" -m ruff check . --fix
-    if ($LASTEXITCODE -ne 0) { throw "Ruff auto-fix failed." }
-
-    & ".\.venv\Scripts\python.exe" -m black .
-    if ($LASTEXITCODE -ne 0) { throw "Black format failed." }
-
-    git diff --check
-    if ($LASTEXITCODE -ne 0) { throw "Git whitespace check failed." }
-
-    if (-not $env:GEMINI_API_KEY) {
-        $env:GEMINI_API_KEY = "synthetic-test-key"
-    }
-
-    if ($FullTests.IsPresent) {
-        & ".\.venv\Scripts\python.exe" -m unittest discover -s tests
-        if ($LASTEXITCODE -ne 0) { throw "Complete Python regression failed." }
-    }
-
-    & ".\.venv\Scripts\python.exe" -m tools.release_control validate-repository
-    if ($LASTEXITCODE -ne 0) { throw "Release repository validation failed." }
-
-    Write-Host "LOCAL_HYGIENE_REPAIR_PASSED"
-    Write-Host "Cloud operation performed: false"
-    Write-Host "Release state modified: false"
+    & $PythonPath @Arguments
+    if ($LASTEXITCODE -ne 0) { throw "Repository integrity command failed." }
 }
 finally {
     Pop-Location
 }
+
+Write-Host "REPOSITORY_INTEGRITY_COMMAND_COMPLETED"
+Write-Host "Cloud operation performed: false"
+Write-Host "Release state modified: false"

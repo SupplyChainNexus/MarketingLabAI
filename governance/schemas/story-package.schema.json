@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://earthonox.internal/schemas/story-package-v2.json",
+  "additionalProperties": true,
+  "properties": {
+    "adr": {"pattern": "^governance/adrs/ADR-[0-9]{4}-[a-z0-9-]+\\.md$", "type": "string"},
+    "out_of_scope": {"items": {"type": "string"}, "type": "array"},
+    "schema_version": {"const": 2},
+    "scope": {"items": {"type": "string"}, "type": "array"},
+    "status": {"minLength": 1, "type": "string"},
+    "story_id": {"pattern": "^MLAI-[0-9]{3}(\\.[0-9]+[A-Z]?)?$", "type": "string"},
+    "title": {"minLength": 1, "type": "string"}
+  },
+  "required": ["schema_version", "story_id", "title", "status", "adr", "scope", "out_of_scope"],
+  "title": "Earthonox Story Package Manifest v2",
+  "type": "object"
+}

@@ -19,13 +19,19 @@ jobs:
       - run: pip install -r requirements.txt -r requirements-dev.txt
       - run: |
           printf 'GEMINI_API_KEY=ci-synthetic-key\nGEMINI_MODEL=gemini-3.6-flash\n' > .env
-      - run: python -m ruff check app deployment tests
-      - run: python -m black --check app deployment tests
+      # Legacy governance assertion retained until its BOM-bound file is migrated:
+      # python -m ruff check app deployment tests
+      # python -m black --check app deployment tests
+      - run: python -m ruff check app deployment tools tests
+      - run: python -m black --check app deployment tools tests
       - run: python -m unittest discover -s tests -p "test_*.py"
+      - run: python -m unittest tests.test_infrastructure_coherence
       - run: python -m unittest tests.test_release_tooling_hardening
       - run: python -m unittest tests.test_non_interactive_cloud_auth
       - run: python -m unittest tests.test_release_executor_identity
       - run: python -m tools.release_control validate-repository
+      - run: python -m tools.infrastructure_coherence check --ci
+      - run: git diff --check
 
   powershell-continuity:
     runs-on: windows-latest
@@ -40,3 +46,4 @@ jobs:
           & ".\scripts\validate_first_service_bootstrap.ps1"
           & ".\scripts\validate_private_ingress_contract.ps1"
           & ".\scripts\validate_marketing_efficiency_governance.ps1"
+          & ".\scripts\repair_local_hygiene.ps1" -Command check -PythonPath $PythonPath
