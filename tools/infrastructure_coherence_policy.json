@@ -2,8 +2,12 @@
   "canonical_encoding": "utf-8-without-bom",
   "canonical_line_endings": {
     "default": "lf",
-    "windows_command_files": "crlf"
+    "powershell": "lf",
+    "windows_batch_command_files": "crlf"
   },
+  "corrective_repair_authority": "exact-commit-path-manifest-current-hash-and-replacement-hash-bound",
+  "evidence_export_authority": "raw-git-objects-only-with-completed-zip-verification",
+  "git_configuration_doctor": "read-only-observation-no-configuration-mutation",
   "legacy_baseline": "governance/infrastructure-coherence-baseline.json",
   "mojibake_policy": "block-new-or-changed; acknowledge-existing-by-exact-sha256",
   "repair_authority": "exact-plan-and-byte-hash-bound",
@@ -13,6 +17,7 @@
     ".github/workflows/quality.yml",
     "governance/adrs/ADR-0050-canonical-infrastructure-contract-and-coherence-enforcement.md",
     "governance/infrastructure-coherence-baseline.json",
+    "governance/manifests/MLAI-031.18B-security-governance-intake.paths.json",
     "governance/schemas/story-package.schema.json",
     "scripts/repair_local_hygiene.ps1",
     "story_packages/MLAI-031.18A.json",
@@ -21,6 +26,7 @@
     "tools/infrastructure_coherence/__main__.py",
     "tools/infrastructure_coherence/cli.py",
     "tools/infrastructure_coherence/core.py",
+    "tools/infrastructure_coherence/git_objects.py",
     "tools/infrastructure_coherence_policy.json"
   ],
   "schema_version": 1,

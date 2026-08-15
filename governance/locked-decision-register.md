@@ -880,3 +880,7 @@ require a separate architecture review and explicit authorization.
 Repository integrity is a release prerequisite, not a formatting convenience. UTF-8, line endings, governance identifiers, story-package structure and declared infrastructure paths are enforced by one canonical, read-only coherence checker in local validation and CI. Checkout presentation differences may not be confused with committed-content corruption.
 
 Inherited defects are acknowledged only by exact path, finding code and content hash. They may be retired only through a separately reviewed repair plan bound to the repository commit, current baseline, exact target hashes and exact canonical replacement hashes. Repair planning grants no authority to apply changes, mutate cloud infrastructure, modify release state, commit or push.
+
+Evidence packages must be exported from raw committed Git blobs through an explicit reviewed path manifest. Working-tree bytes and `git archive` materialization are not evidence authorities. A completed ZIP must be reopened and verified for exact path set and per-file SHA-256 before success is reported. PowerShell is canonical LF content; only `.bat` and `.cmd` remain CRLF.
+
+Git configuration checks are diagnostic and read-only. Neither an installer nor the coherence tooling may change system, global or repository-local Git configuration. Non-baseline corrections require a separate exact-commit, exact-current-hash and exact-replacement-hash plan.

@@ -18,12 +18,10 @@ must not allow new corruption to enter unnoticed.
 
 The repository has one canonical, machine-enforced infrastructure contract:
 
-1. Text is UTF-8 without BOM. Git stores canonical normalized text and
-   `.gitattributes` materializes platform-appropriate checkout endings; LF is
-   the default and Windows command files use CRLF. `.editorconfig` expresses
-   the matching editor rule. Checkout line endings, including mixed
-   materialization in a clean Windows checkout, are presentation and are not
-   treated as repository corruption.
+1. Text is UTF-8 without BOM. Git stores canonical normalized text. LF is the
+   default and is required for PowerShell; only Windows batch command files
+   (`.bat` and `.cmd`) use CRLF. `.gitattributes` and `.editorconfig` express
+   the same rule. Checkout presentation cannot become evidence authority.
 2. `python -m tools.infrastructure_coherence check` is the authoritative,
    read-only repository integrity check. The PowerShell hygiene script is only a
    thin launcher and never reads, rewrites or formats repository content.
@@ -46,6 +44,19 @@ The repository has one canonical, machine-enforced infrastructure contract:
 9. Installer validation writes Python bytecode outside the repository. Failed
    installation rolls back files and removes directories created by that
    installation so Git cleanliness and import-state cleanliness agree.
+10. Evidence exports read every selected file from its committed Git blob with
+    `git cat-file`, never from the working tree and never through `git archive`.
+    Every intake uses an explicit versioned path manifest. The completed ZIP is
+    reopened and its exact path set and each archived SHA-256 are verified
+    before it can be reported as complete.
+11. Corrective work outside the inherited baseline uses a separate plan bound
+    to repository commit, explicit path manifest, exact current existence and
+    SHA-256, and exact replacement SHA-256. Planning and application remain
+    distinct authorization boundaries.
+12. Git configuration diagnosis is read-only. It reports origin, scope and
+    effective text settings but never changes system, global or local config.
+    Configuration compatibility is an operator warning; committed attributes,
+    raw Git objects and completed-artifact verification are authoritative.
 
 ## Consequences
 
@@ -59,3 +70,14 @@ The repository has one canonical, machine-enforced infrastructure contract:
 - Later coherence stories can extend the same contract to generator retirement,
   release-gate completeness, unified cloud execution and tenant-neutral release
   topology without creating parallel validators.
+
+## Corrective amendment: canonical Git object export and LF PowerShell
+
+The 2026-08-15 evidence-intake diagnostic proved that `git archive` may apply
+export-time attributes and change newline bytes even when the index and working
+tree are clean. The export was recoverable because all transformations were
+newline-only and the affected ToolkitTemp files were restored from exact blobs,
+but an evidence pipeline must not need post-hoc restoration. This amendment
+makes raw Git-object export and completed-ZIP verification mandatory and aligns
+PowerShell with LF across Git and editor policy. It does not authorize Git
+configuration changes or any cloud, release, deployment or security mutation.

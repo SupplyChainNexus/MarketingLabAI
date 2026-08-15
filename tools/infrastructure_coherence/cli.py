@@ -12,6 +12,12 @@ from tools.infrastructure_coherence.core import (
     check_repository,
     create_repair_plan,
 )
+from tools.infrastructure_coherence.git_objects import (
+    apply_corrective_plan,
+    create_corrective_plan,
+    export_commit_intake,
+    inspect_git_configuration,
+)
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -28,6 +34,21 @@ def _parser() -> argparse.ArgumentParser:
 
     apply = commands.add_parser("apply-repair")
     apply.add_argument("--plan", type=Path, required=True)
+
+    export = commands.add_parser("export-intake")
+    export.add_argument("--commit", required=True)
+    export.add_argument("--path-manifest", type=Path, required=True)
+    export.add_argument("--output-root", type=Path, required=True)
+
+    commands.add_parser("doctor-git-config")
+
+    corrective = commands.add_parser("plan-corrective")
+    corrective.add_argument("--replacement-root", type=Path, required=True)
+    corrective.add_argument("--path-manifest", type=Path, required=True)
+    corrective.add_argument("--output-root", type=Path, required=True)
+
+    apply_corrective = commands.add_parser("apply-corrective")
+    apply_corrective.add_argument("--plan", type=Path, required=True)
     return parser
 
 
@@ -46,6 +67,25 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
         print(json.dumps(report, indent=2, sort_keys=True))
         return 0
-    report = apply_repair_plan(root, selected.plan.resolve())
+    if selected.command == "apply-repair":
+        report = apply_repair_plan(root, selected.plan.resolve())
+    elif selected.command == "export-intake":
+        report = export_commit_intake(
+            root,
+            commit=selected.commit,
+            path_manifest=selected.path_manifest.resolve(),
+            output_root=selected.output_root.resolve(),
+        )
+    elif selected.command == "doctor-git-config":
+        report = inspect_git_configuration(root)
+    elif selected.command == "plan-corrective":
+        report = create_corrective_plan(
+            root,
+            replacement_root=selected.replacement_root.resolve(),
+            path_manifest=selected.path_manifest.resolve(),
+            output_root=selected.output_root.resolve(),
+        )
+    else:
+        report = apply_corrective_plan(root, selected.plan.resolve())
     print(json.dumps(report, indent=2, sort_keys=True))
     return 0

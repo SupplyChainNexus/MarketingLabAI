@@ -2,6 +2,7 @@ import json
 import subprocess
 import tempfile
 import unittest
+import zipfile
 from pathlib import Path
 
 from tools.infrastructure_coherence.core import (
@@ -10,6 +11,12 @@ from tools.infrastructure_coherence.core import (
     check_repository,
     create_repair_plan,
     scan_repository,
+)
+from tools.infrastructure_coherence.git_objects import (
+    apply_corrective_plan,
+    create_corrective_plan,
+    export_commit_intake,
+    inspect_git_configuration,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -23,6 +30,31 @@ def _track(root: Path, *relative_paths: str) -> None:
         check=True,
         capture_output=True,
     )
+
+
+def _commit(root: Path, *relative_paths: str) -> str:
+    _track(root, *relative_paths)
+    subprocess.run(
+        [
+            "git",
+            "-c",
+            "user.name=Infrastructure Tests",
+            "-c",
+            "user.email=infrastructure-tests@example.invalid",
+            "commit",
+            "-qm",
+            "fixture",
+        ],
+        cwd=root,
+        check=True,
+    )
+    return subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=root,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
 
 
 class InfrastructureCoherenceTests(unittest.TestCase):
@@ -160,6 +192,112 @@ class InfrastructureCoherenceTests(unittest.TestCase):
             "black .",
         ):
             self.assertNotIn(forbidden, text)
+
+    def test_raw_git_object_export_ignores_worktree_eol_materialization(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary)
+            root = base / "repo"
+            root.mkdir()
+            (root / ".gitattributes").write_bytes(b"*.ps1 text eol=crlf\n")
+            script = root / "sample.ps1"
+            script.write_bytes(b"Write-Host 'canonical'\n")
+            manifest = root / "paths.json"
+            manifest.write_text(
+                json.dumps({"schema_version": 1, "paths": ["sample.ps1"]}) + "\n",
+                encoding="utf-8",
+            )
+            commit = _commit(root, ".gitattributes", "sample.ps1", "paths.json")
+            script.write_bytes(b"Write-Host 'materialized'\r\n")
+            report = export_commit_intake(
+                root,
+                commit=commit,
+                path_manifest=manifest,
+                output_root=base / "intake",
+            )
+            self.assertFalse(report["working_tree_bytes_used"])
+            self.assertEqual(
+                b"Write-Host 'canonical'\n",
+                (base / "intake/source/sample.ps1").read_bytes(),
+            )
+            with zipfile.ZipFile(report["intake_zip"]) as archive:
+                self.assertEqual(
+                    b"Write-Host 'canonical'\n", archive.read("source/sample.ps1")
+                )
+
+    def test_export_requires_exact_unique_tracked_paths(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary)
+            root = base / "repo"
+            root.mkdir()
+            (root / "tracked.md").write_bytes(b"tracked\n")
+            commit = _commit(root, "tracked.md")
+            manifest = base / "paths.json"
+            manifest.write_text(
+                json.dumps(
+                    {"schema_version": 1, "paths": ["tracked.md", "tracked.md"]}
+                ),
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(ValueError, "duplicate"):
+                export_commit_intake(
+                    root,
+                    commit=commit,
+                    path_manifest=manifest,
+                    output_root=base / "intake",
+                )
+
+    def test_git_configuration_doctor_is_read_only(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+            subprocess.run(
+                ["git", "config", "--local", "core.autocrlf", "true"],
+                cwd=root,
+                check=True,
+            )
+            config = root / ".git/config"
+            before = config.read_bytes()
+            report = inspect_git_configuration(root)
+            self.assertFalse(report["git_configuration_compatible"])
+            self.assertEqual(before, config.read_bytes())
+            self.assertFalse(report["configuration_modified"])
+
+    def test_non_baseline_corrective_plan_is_hash_bound(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary)
+            root = base / "repo"
+            replacement_root = base / "replacements"
+            root.mkdir()
+            replacement_root.mkdir()
+            (root / "target.md").write_bytes(b"before\n")
+            commit = _commit(root, "target.md")
+            self.assertTrue(commit)
+            (replacement_root / "target.md").write_bytes(b"after\n")
+            manifest = base / "paths.json"
+            manifest.write_text(
+                json.dumps({"schema_version": 1, "paths": ["target.md"]}) + "\n",
+                encoding="utf-8",
+            )
+            prepared = create_corrective_plan(
+                root,
+                replacement_root=replacement_root,
+                path_manifest=manifest,
+                output_root=base / "plans",
+            )
+            (root / "target.md").write_bytes(b"changed-after-planning\n")
+            with self.assertRaisesRegex(ValueError, "Target bytes changed"):
+                apply_corrective_plan(root, Path(prepared["plan_path"]))
+
+    def test_canonical_security_intake_manifest_is_explicit(self) -> None:
+        value = json.loads(
+            (
+                ROOT
+                / "governance/manifests/MLAI-031.18B-security-governance-intake.paths.json"
+            ).read_text(encoding="utf-8")
+        )
+        self.assertEqual(1, value["schema_version"])
+        self.assertEqual(180, len(value["paths"]))
+        self.assertEqual(len(value["paths"]), len(set(value["paths"])))
 
 
 if __name__ == "__main__":

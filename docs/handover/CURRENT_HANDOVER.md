@@ -346,3 +346,9 @@ inspector. Do not re-use the failed ad hoc V1/V2 inspection commands.
 MLAI-031.18A is complete at commit `940c07226b406393b71973192fafe58cd4e65978`; GitHub Actions quality run 49 passed. ADR-0050 and LDR-064 make the repository integrity contract binding: CI must run the canonical read-only coherence checker, mojibake and governance identifier drift fail closed unless acknowledged by exact baseline hash, and any repair must be separately planned and hash-bound.
 
 The five inherited governance files corrected by the closure plan are limited to `backlog/MLAI-031.md`, this handover, the locked-decision register, the risk register and the technical-debt register. RISK-037 and TD-040 preserve the remaining repository-integrity risk and debt. No cloud operation, infrastructure mutation, release-state change or release-ledger mutation is authorized by this closure.
+
+### Canonical export corrective amendment
+
+Evidence intake must use raw committed Git blobs, an explicit versioned path manifest, and completed-ZIP path/hash verification. `git archive` and working-tree bytes are forbidden as evidence authorities. PowerShell is LF; only `.bat` and `.cmd` use CRLF. Git configuration diagnosis is read-only and must never silently mutate system, global or repository-local settings.
+
+`docs/handover/CURRENT_HANDOVER.md` remains the committed, reviewable checkpoint for architecture, authority and safe-resume state. It is not a per-command log. A future separately governed continuity capability should maintain a redacted atomic `CURRENT_SESSION.json` and append-only hash-chained event journal under `C:\Ai Projects\ToolkitTemp\MarketingLabAI\continuity`; it must exclude secrets and may not grant execution authority. Until that capability is authorized, update this handover at reviewed story checkpoints and preserve exact ToolkitTemp evidence paths and hashes in the handover entry.

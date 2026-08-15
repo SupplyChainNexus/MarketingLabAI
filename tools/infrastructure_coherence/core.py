@@ -301,6 +301,7 @@ def _scan_contract(root: Path) -> list[dict[str, str]]:
         text = workflow.read_text(encoding="utf-8-sig")
         required = (
             "python -m tools.infrastructure_coherence check --ci",
+            "python -m unittest tests.test_infrastructure_coherence",
             "python -m ruff check app deployment tools tests",
             "python -m black --check app deployment tools tests",
             "git diff --check",
@@ -336,7 +337,7 @@ def _scan_contract(root: Path) -> list[dict[str, str]]:
         text = attributes.read_text(encoding="utf-8-sig")
         required = (
             "* text=auto eol=lf",
-            "*.ps1 text eol=crlf",
+            "*.ps1 text eol=lf",
             "*.bat text eol=crlf",
             "*.cmd text eol=crlf",
         )
@@ -357,7 +358,8 @@ def _scan_contract(root: Path) -> list[dict[str, str]]:
         required = (
             "charset = utf-8",
             "end_of_line = lf",
-            "[*.{bat,cmd,ps1}]",
+            "[*.ps1]",
+            "[*.{bat,cmd}]",
             "end_of_line = crlf",
         )
         if not all(item in text for item in required):

@@ -15,7 +15,12 @@
     "introduce the story-manifest schema-v2 foundation",
     "acknowledge inherited defects only by exact file hash",
     "provide exact-hash plan-bound repair preparation and application",
-    "make infrastructure-coherence validation mandatory in CI"
+    "make infrastructure-coherence validation mandatory in CI",
+    "require canonical LF PowerShell bytes across Git and editor policy",
+    "export evidence only from raw Git objects through explicit path manifests",
+    "verify completed ZIP path sets and per-file hashes",
+    "provide exact-hash non-baseline corrective planning and read-only Git configuration diagnosis",
+    "run adversarial coherence regressions on Windows and Linux"
   ],
   "status": "complete",
   "story_id": "MLAI-031.18A",
