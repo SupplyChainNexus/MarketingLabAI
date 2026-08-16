@@ -57,6 +57,11 @@ The repository has one canonical, machine-enforced infrastructure contract:
     effective text settings but never changes system, global or local config.
     Configuration compatibility is an operator warning; committed attributes,
     raw Git objects and completed-artifact verification are authoritative.
+13. An intake ZIP is a sibling of its output directory and is derived by
+    appending `.zip` to the complete directory name. Export refuses existing
+    directory or ZIP destinations, ambiguous ZIP-named roots and any source /
+    output overlap before creating files. ZIP creation is exclusive, so an
+    unrelated artifact can never be truncated by suffix replacement or retry.
 
 ## Consequences
 
@@ -81,3 +86,11 @@ but an evidence pipeline must not need post-hoc restoration. This amendment
 makes raw Git-object export and completed-ZIP verification mandatory and aligns
 PowerShell with LF across Git and editor policy. It does not authorize Git
 configuration changes or any cloud, release, deployment or security mutation.
+
+The 2026-08-16 MLAI-031.18C intake exposed a separate path-derivation defect:
+`Path.with_suffix(".zip")` treated the story identifier in a dotted output-root
+name as a suffix and reduced the destination to `MLAI-031.zip`. Recovery proved
+the selected blobs were correct, but containment cannot close an overwrite
+hazard. Canonical export now appends `.zip`, preflights both destinations and
+their relationship to the repository, refuses ambiguity and uses exclusive ZIP
+creation with adversarial collision tests.

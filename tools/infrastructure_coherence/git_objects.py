@@ -40,6 +40,41 @@ def _assert_external(root: Path, candidate: Path, label: str) -> None:
     raise ValueError(f"{label} must be outside the repository.")
 
 
+def _contains(parent: Path, candidate: Path) -> bool:
+    try:
+        candidate.resolve().relative_to(parent.resolve())
+    except ValueError:
+        return False
+    return True
+
+
+def _export_destinations(root: Path, output_root: Path) -> tuple[Path, Path]:
+    """Return disjoint, unoccupied export destinations without rewriting suffixes."""
+    root = root.resolve()
+    output_root = output_root.resolve()
+    name = output_root.name
+    if (
+        not name
+        or name in {".", ".."}
+        or name.rstrip(" .") != name
+        or name.lower().endswith(".zip")
+    ):
+        raise ValueError("Output root name is ambiguous for ZIP derivation.")
+
+    zip_path = Path(f"{output_root}.zip")
+    for destination, label in (
+        (output_root, "Output root"),
+        (zip_path, "ZIP destination"),
+    ):
+        if _contains(root, destination) or _contains(destination, root):
+            raise ValueError(f"{label} overlaps the repository source.")
+    if output_root.exists():
+        raise ValueError("Output root already exists.")
+    if zip_path.exists():
+        raise ValueError("ZIP destination already exists.")
+    return output_root, zip_path
+
+
 def _git(
     root: Path,
     arguments: list[str],
@@ -134,10 +169,7 @@ def export_commit_intake(
     """Export explicit paths from raw Git blobs and verify the completed ZIP."""
     root = root.resolve()
     path_manifest = path_manifest.resolve()
-    output_root = output_root.resolve()
-    _assert_external(root, output_root, "Output root")
-    if output_root.exists():
-        raise ValueError("Output root already exists.")
+    output_root, zip_path = _export_destinations(root, output_root)
     commit_type = str(_git(root, ["cat-file", "-t", commit]).stdout).strip()
     if commit_type != "commit":
         raise ValueError("Export source must be a Git commit.")
@@ -184,23 +216,33 @@ def export_commit_intake(
         json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
     manifest_sha256 = _sha256_file(manifest_path)
-    zip_path = output_root.with_suffix(".zip")
-    with zipfile.ZipFile(zip_path, "w", compression=zipfile.ZIP_DEFLATED) as archive:
-        archive.write(manifest_path, "intake-manifest.json")
-        for record in records:
-            archive.write(source_root / record["path"], f"source/{record['path']}")
+    zip_created = False
+    try:
+        with zipfile.ZipFile(
+            zip_path, "x", compression=zipfile.ZIP_DEFLATED
+        ) as archive:
+            zip_created = True
+            archive.write(manifest_path, "intake-manifest.json")
+            for record in records:
+                archive.write(source_root / record["path"], f"source/{record['path']}")
 
-    expected_names = {"intake-manifest.json"} | {
-        f"source/{record['path']}" for record in records
-    }
-    with zipfile.ZipFile(zip_path) as archive:
-        names = set(archive.namelist())
-        if names != expected_names:
-            raise ValueError("Completed ZIP path set differs from the manifest.")
-        for record in records:
-            archived = archive.read(f"source/{record['path']}")
-            if _sha256_bytes(archived) != record["sha256"]:
-                raise ValueError(f"Completed ZIP verification failed: {record['path']}")
+        expected_names = {"intake-manifest.json"} | {
+            f"source/{record['path']}" for record in records
+        }
+        with zipfile.ZipFile(zip_path) as archive:
+            names = set(archive.namelist())
+            if names != expected_names:
+                raise ValueError("Completed ZIP path set differs from the manifest.")
+            for record in records:
+                archived = archive.read(f"source/{record['path']}")
+                if _sha256_bytes(archived) != record["sha256"]:
+                    raise ValueError(
+                        f"Completed ZIP verification failed: {record['path']}"
+                    )
+    except Exception:
+        if zip_created and zip_path.exists():
+            zip_path.unlink()
+        raise
 
     return {
         "cloud_cli_executed": False,

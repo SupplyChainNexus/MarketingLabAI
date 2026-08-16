@@ -883,6 +883,11 @@ Inherited defects are acknowledged only by exact path, finding code and content 
 
 Evidence packages must be exported from raw committed Git blobs through an explicit reviewed path manifest. Working-tree bytes and `git archive` materialization are not evidence authorities. A completed ZIP must be reopened and verified for exact path set and per-file SHA-256 before success is reported. PowerShell is canonical LF content; only `.bat` and `.cmd` remain CRLF.
 
+ZIP paths append `.zip` to the entire output-directory name; they never replace
+a dotted story or timestamp suffix. Export fails before writing when either
+destination exists, a destination is ambiguous, or source and output overlap,
+and ZIP creation is exclusive so retries cannot overwrite prior evidence.
+
 Git configuration checks are diagnostic and read-only. Neither an installer nor the coherence tooling may change system, global or repository-local Git configuration. Non-baseline corrections require a separate exact-commit, exact-current-hash and exact-replacement-hash plan.
 
 ### LDR-065 — High-assurance SaaS security architecture

@@ -279,6 +279,12 @@ Inherited baseline findings remain explicit debt and may be retired only through
 
 Corrective amendment: canonical evidence export reads exact committed blobs through explicit path manifests and verifies the completed ZIP. PowerShell uses LF in Git and editor policy; `.bat` and `.cmd` retain CRLF. Git configuration diagnosis is read-only, and non-baseline corrective plans bind the commit, live target hashes and replacement hashes. The two observed mixed PowerShell files are eligible only for the installer's exact-live-hash-to-exact-blob treatment.
 
+Collision corrective amendment: preserve every dotted story/timestamp component
+by appending `.zip` to the complete output-root name. Refuse existing outputs,
+ambiguous ZIP-named roots and source/output overlap before writing; create ZIPs
+exclusively and cover collision, non-overwrite and overlap behavior with
+adversarial regression tests.
+
 ## MLAI-031.18B — High-Assurance SaaS Security Architecture Lock
 
 Status: governance lock installed; implementation separately gated

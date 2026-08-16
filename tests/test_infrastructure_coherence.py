@@ -212,17 +212,92 @@ class InfrastructureCoherenceTests(unittest.TestCase):
                 root,
                 commit=commit,
                 path_manifest=manifest,
-                output_root=base / "intake",
+                output_root=base / "MLAI-031.18C-intake",
             )
             self.assertFalse(report["working_tree_bytes_used"])
             self.assertEqual(
+                str(base / "MLAI-031.18C-intake.zip"), report["intake_zip"]
+            )
+            self.assertFalse((base / "MLAI-031.zip").exists())
+            self.assertEqual(
                 b"Write-Host 'canonical'\n",
-                (base / "intake/source/sample.ps1").read_bytes(),
+                (base / "MLAI-031.18C-intake/source/sample.ps1").read_bytes(),
             )
             with zipfile.ZipFile(report["intake_zip"]) as archive:
                 self.assertEqual(
                     b"Write-Host 'canonical'\n", archive.read("source/sample.ps1")
                 )
+
+    def test_export_refuses_existing_zip_without_changing_it(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary)
+            root = base / "repo"
+            root.mkdir()
+            (root / "tracked.md").write_bytes(b"tracked\n")
+            commit = _commit(root, "tracked.md")
+            manifest = base / "paths.json"
+            manifest.write_text(
+                json.dumps({"schema_version": 1, "paths": ["tracked.md"]}),
+                encoding="utf-8",
+            )
+            output_root = base / "MLAI-031.18C-intake"
+            zip_path = base / "MLAI-031.18C-intake.zip"
+            zip_path.write_bytes(b"preserve-existing-artifact")
+
+            with self.assertRaisesRegex(ValueError, "ZIP destination already exists"):
+                export_commit_intake(
+                    root,
+                    commit=commit,
+                    path_manifest=manifest,
+                    output_root=output_root,
+                )
+
+            self.assertEqual(b"preserve-existing-artifact", zip_path.read_bytes())
+            self.assertFalse(output_root.exists())
+
+    def test_export_rejects_ambiguous_zip_named_output_root(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary)
+            root = base / "repo"
+            root.mkdir()
+            (root / "tracked.md").write_bytes(b"tracked\n")
+            commit = _commit(root, "tracked.md")
+            manifest = base / "paths.json"
+            manifest.write_text(
+                json.dumps({"schema_version": 1, "paths": ["tracked.md"]}),
+                encoding="utf-8",
+            )
+
+            with self.assertRaisesRegex(ValueError, "ambiguous"):
+                export_commit_intake(
+                    root,
+                    commit=commit,
+                    path_manifest=manifest,
+                    output_root=base / "already-a-zip.zip",
+                )
+
+    def test_export_rejects_source_output_overlap_in_both_directions(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary)
+            root = base / "repo"
+            root.mkdir()
+            (root / "tracked.md").write_bytes(b"tracked\n")
+            commit = _commit(root, "tracked.md")
+            manifest = base / "paths.json"
+            manifest.write_text(
+                json.dumps({"schema_version": 1, "paths": ["tracked.md"]}),
+                encoding="utf-8",
+            )
+
+            for output_root in (root / "evidence", base):
+                with self.subTest(output_root=output_root):
+                    with self.assertRaisesRegex(ValueError, "overlaps"):
+                        export_commit_intake(
+                            root,
+                            commit=commit,
+                            path_manifest=manifest,
+                            output_root=output_root,
+                        )
 
     def test_export_requires_exact_unique_tracked_paths(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

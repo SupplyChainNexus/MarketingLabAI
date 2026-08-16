@@ -351,6 +351,13 @@ The five inherited governance files corrected by the closure plan are limited to
 
 Evidence intake must use raw committed Git blobs, an explicit versioned path manifest, and completed-ZIP path/hash verification. `git archive` and working-tree bytes are forbidden as evidence authorities. PowerShell is LF; only `.bat` and `.cmd` use CRLF. Git configuration diagnosis is read-only and must never silently mutate system, global or repository-local settings.
 
+The MLAI-031.18C intake exposed that suffix replacement could collapse a dotted
+output-root name to `MLAI-031.zip`. The durable 18A correction appends `.zip` to
+the complete name, refuses existing or ambiguous destinations and source/output
+overlap before writing, and creates the ZIP exclusively. An intake workaround
+or successful blob verification does not close this defect without the tracked
+correction and adversarial tests.
+
 `docs/handover/CURRENT_HANDOVER.md` remains the committed, reviewable checkpoint for architecture, authority and safe-resume state. It is not a per-command log. A future separately governed continuity capability should maintain a redacted atomic `CURRENT_SESSION.json` and append-only hash-chained event journal under `C:\Ai Projects\ToolkitTemp\MarketingLabAI\continuity`; it must exclude secrets and may not grant execution authority. Until that capability is authorized, update this handover at reviewed story checkpoints and preserve exact ToolkitTemp evidence paths and hashes in the handover entry.
 
 ## MLAI-031.18B security architecture lock
