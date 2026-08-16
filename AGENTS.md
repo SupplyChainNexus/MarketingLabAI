@@ -68,6 +68,35 @@ handover maintenance. The title grants responsibility, not unilateral authority.
 - Never change a locked product decision silently. Use the change-control
   process in `governance/decision-change-control.md`.
 
+## Execution authority boundaries
+
+Repository instructions define engineering responsibilities but do not grant
+standing authority for irreversible or externally mutating actions.
+
+Unless the current task contains explicit authorization, an engineer or AI
+coding agent must stop before:
+
+- creating a Git commit;
+- pushing, merging, rebasing, force-pushing, tagging, or changing remote state;
+- creating or modifying cloud infrastructure or hosted configuration;
+- deploying or promoting an application or release;
+- reading, retrieving, rotating, exposing, or modifying production secrets;
+- executing migrations or mutations against production or real customer data;
+- modifying IAM, access control, DNS, billing, or external service state;
+- deleting persistent data, artifacts, infrastructure, or release evidence.
+
+Local repository inspection, scoped implementation, focused tests, full
+regression tests, static analysis, and review of local diffs are permitted
+within the explicitly authorized story scope.
+
+When authorization is ambiguous, stop and request clarification. Never infer
+authorization from a previous story, earlier session, completion requirement,
+or the existence of credentials.
+
+A requirement that completed work eventually be committed, pushed, deployed,
+or released describes the required end state; it does not itself grant an AI
+agent authority to perform those actions.
+
 ## Delivery requirements
 
 Work is complete only when focused and full regression gates pass, relevant
