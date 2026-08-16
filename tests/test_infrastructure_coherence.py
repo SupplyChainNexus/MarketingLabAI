@@ -215,9 +215,10 @@ class InfrastructureCoherenceTests(unittest.TestCase):
                 output_root=base / "MLAI-031.18C-intake",
             )
             self.assertFalse(report["working_tree_bytes_used"])
-            self.assertEqual(
-                str(base / "MLAI-031.18C-intake.zip"), report["intake_zip"]
-            )
+            expected_zip = base / "MLAI-031.18C-intake.zip"
+            reported_zip = Path(report["intake_zip"])
+            self.assertEqual("MLAI-031.18C-intake.zip", reported_zip.name)
+            self.assertTrue(reported_zip.samefile(expected_zip))
             self.assertFalse((base / "MLAI-031.zip").exists())
             self.assertEqual(
                 b"Write-Host 'canonical'\n",
