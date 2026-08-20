@@ -311,3 +311,31 @@ defense-in-depth target for customer security.
 Begin with a separately authorized threat model and session/token lifecycle
 implementation story. Do not bundle edge services, identity configuration,
 monitoring delivery or customer activation into that first increment.
+
+## MLAI-031.18C — Threat Model and Server-Session Lifecycle Foundation
+
+Status: implemented; focused tests written but execution unauthorized
+
+### Purpose
+
+Threat-model and implement the bounded private-pilot server-session lifecycle
+without a parallel store, provider refresh-token persistence or schema change.
+
+### Acceptance
+
+- Existing `pilot_sessions.created_at` anchors the original 60-minute absolute
+  lifetime and `expires_at` carries a renewable 15-minute idle deadline.
+- CSRF-protected `PUT /v1/pilot/session` atomically revokes one predecessor and
+  inserts a successor with fresh opaque identifier and CSRF material.
+- Competing renewals allow at most one success; revoked, expired and predecessor
+  sessions never regain authority.
+- Current membership is revalidated on every use. Supported membership role or
+  active-state changes invalidate matching sessions transactionally.
+- Client tenant identifiers remain routing/context, never authorization proof.
+- Audit evidence excludes session identifiers, token hashes, CSRF material,
+  provider credentials and refresh credentials.
+- Sanitized lifecycle audit insertion shares the session transaction, so audit
+  failure leaves no created session or rolls renewal back to its predecessor.
+- Provider-global, cross-tenant, MFA, recovery and security-engine invalidation
+  remain explicit deferred gaps.
+- Focused tests are written but are not run under this story authority.

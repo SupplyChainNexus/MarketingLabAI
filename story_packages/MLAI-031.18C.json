@@ -1,0 +1,25 @@
+{
+  "adr": "governance/adrs/ADR-0051-defense-in-depth-customer-identity-session-and-platform-security.md",
+  "out_of_scope": [
+    "schema migration or parallel session persistence",
+    "provider refresh-token persistence or provider revocation orchestration",
+    "MFA, step-up, provider recovery or security-engine integration",
+    "cross-tenant or global identity invalidation",
+    "cloud, IAM, Identity Platform, Secret Manager or external database mutation",
+    "deployment, release-state modification, customer activation, commit or push"
+  ],
+  "schema_version": 2,
+  "scope": [
+    "repository-confirmed identity, tenant and session threat model",
+    "15-minute idle and original-creation-anchored 60-minute absolute expiry",
+    "atomic opaque identifier and CSRF rotation in pilot_sessions",
+    "deterministic competing-renewal rejection and permanent predecessor invalidation",
+    "per-use membership revalidation and supported membership-change invalidation",
+    "privacy-safe lifecycle audit evidence",
+    "focused tests written but not executed",
+    "backlog, decision, risk, debt and handover reconciliation"
+  ],
+  "status": "implemented; tests written but execution unauthorized",
+  "story_id": "MLAI-031.18C",
+  "title": "Threat Model and Server-Session Lifecycle Foundation"
+}

@@ -63,6 +63,8 @@ class OperationalPilotApplication:
                 return self._create_session(environ, start_response)
             if path == "/v1/pilot/session" and method == "GET":
                 return self._session_status(environ, start_response)
+            if path == "/v1/pilot/session" and method == "PUT":
+                return self._renew_session(environ, start_response)
             if path == "/v1/pilot/session" and method == "DELETE":
                 return self._delete_session(environ, start_response)
             if (
@@ -165,6 +167,27 @@ class OperationalPilotApplication:
             start_response, 200, {"authenticated": True, "csrf_valid": valid}
         )
 
+    def _renew_session(self, environ, start_response):
+        token = self._cookie(environ)
+        tenant_id = str(environ.get("HTTP_X_TENANT_ID", "")).strip()
+        csrf = str(environ.get("HTTP_X_CSRF_TOKEN", ""))
+        session = self.sessions.renew(token, csrf, tenant_id)
+        body = {
+            "tenant_id": tenant_id,
+            "csrf_token": session.csrf_token,
+            "expires_at": session.expires_at,
+        }
+        return self._json(
+            start_response,
+            200,
+            body,
+            [
+                ("Set-Cookie", self._session_cookie(session.token)),
+                ("Set-Cookie", self._csrf_cookie(session.csrf_token)),
+                ("Cache-Control", "no-store"),
+            ],
+        )
+
     def _delete_session(self, environ, start_response):
         token = self._cookie(environ)
         tenant_id = str(environ.get("HTTP_X_TENANT_ID", "")).strip()
@@ -203,6 +226,14 @@ class OperationalPilotApplication:
         if morsel is None:
             raise PermissionError
         return morsel.value
+
+    def _session_cookie(self, token: str) -> str:
+        secure = "; Secure" if self.configuration.secure_cookies else ""
+        return f"mlai_session={token}; Path=/; HttpOnly{secure}; SameSite=Strict"
+
+    def _csrf_cookie(self, token: str) -> str:
+        secure = "; Secure" if self.configuration.secure_cookies else ""
+        return f"mlai_csrf={token}; Path=/{secure}; SameSite=Strict"
 
     @staticmethod
     def _client_key(environ) -> str:

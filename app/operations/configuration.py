@@ -24,7 +24,8 @@ class PilotConfiguration:
     backup_directory: Path
     public_origin: str
     trust_proxy_tls: bool
-    session_ttl_seconds: int
+    session_idle_ttl_seconds: int
+    session_absolute_ttl_seconds: int
     rate_limit_requests: int
     rate_limit_window_seconds: int
     identity_provider: str
@@ -79,12 +80,14 @@ class PilotConfiguration:
             raise ValueError(
                 "MLAI_SESSION_SECRET must contain at least 32 secret characters."
             )
-        ttl = int(str(env.get("MLAI_SESSION_TTL_SECONDS", "3600")))
+        absolute_ttl = int(str(env.get("MLAI_SESSION_TTL_SECONDS", "3600")))
         requests = int(str(env.get("MLAI_RATE_LIMIT_REQUESTS", "60")))
         window = int(str(env.get("MLAI_RATE_LIMIT_WINDOW_SECONDS", "60")))
         max_request_bytes = int(str(env.get("MLAI_MAX_REQUEST_BYTES", "1048576")))
-        if ttl < 300 or ttl > 43200:
-            raise ValueError("MLAI_SESSION_TTL_SECONDS must be between 300 and 43200.")
+        if absolute_ttl != 3600:
+            raise ValueError(
+                "MLAI_SESSION_TTL_SECONDS must be 3600 for the private pilot."
+            )
         if requests < 1 or window < 1:
             raise ValueError("Rate-limit values must be positive.")
         if not 1024 <= max_request_bytes <= 10485760:
@@ -220,7 +223,8 @@ class PilotConfiguration:
             backup_directory=Path(required("MLAI_BACKUP_DIRECTORY")),
             public_origin=origin,
             trust_proxy_tls=trust_proxy_tls,
-            session_ttl_seconds=ttl,
+            session_idle_ttl_seconds=900,
+            session_absolute_ttl_seconds=absolute_ttl,
             rate_limit_requests=requests,
             rate_limit_window_seconds=window,
             identity_provider=identity_provider,
@@ -249,7 +253,9 @@ class PilotConfiguration:
             "environment": self.environment,
             "public_origin": self.public_origin,
             "identity_provider": self.identity_provider,
-            "session_ttl_seconds": self.session_ttl_seconds,
+            "session_ttl_seconds": self.session_absolute_ttl_seconds,
+            "session_idle_ttl_seconds": self.session_idle_ttl_seconds,
+            "session_absolute_ttl_seconds": self.session_absolute_ttl_seconds,
             "rate_limit_requests": self.rate_limit_requests,
             "rate_limit_window_seconds": self.rate_limit_window_seconds,
             "max_request_bytes": self.max_request_bytes,
@@ -280,6 +286,12 @@ class PilotConfiguration:
         """Require Secure cookies except for the exact synthetic loopback origin."""
 
         return not self.public_origin.startswith("http://127.0.0.1")
+
+    @property
+    def session_ttl_seconds(self) -> int:
+        """Retain the legacy summary name for the absolute session limit."""
+
+        return self.session_absolute_ttl_seconds
 
     def public_identity_configuration(self) -> dict[str, str]:
         """Return only browser-safe Google Identity Platform identifiers."""

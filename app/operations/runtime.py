@@ -44,7 +44,8 @@ def create_application() -> OperationalPilotApplication:
         canonical,
         upstream,
         config.session_secret,
-        ttl_seconds=config.session_ttl_seconds,
+        idle_ttl_seconds=config.session_idle_ttl_seconds,
+        absolute_ttl_seconds=config.session_absolute_ttl_seconds,
     )
     service = PilotApiService(
         canonical,

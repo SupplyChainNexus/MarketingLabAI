@@ -16,7 +16,9 @@ from app.database.postgresql import (
     compile_postgresql_sql,
 )
 from app.database.postgresql_migration import SQLiteToPostgreSQLMigrator
+from app.identity.repository import MEMBERSHIP_SESSION_INVALIDATION_SQL
 from app.operations.configuration import PilotConfiguration
+from app.operations.sessions import SESSION_RENEW_CAS_SQL
 
 
 class PostgreSQLCompatibilityTests(unittest.TestCase):
@@ -39,6 +41,18 @@ class PostgreSQLCompatibilityTests(unittest.TestCase):
         self.assertNotIn("strftime", compiled)
         self.assertIn("ON CONFLICT DO NOTHING;", compiled)
         self.assertEqual(compiled.count("%s"), 2)
+
+    def test_session_lifecycle_sql_compiles_for_postgresql(self):
+        renewal = compile_postgresql_sql(SESSION_RENEW_CAS_SQL)
+        invalidation = compile_postgresql_sql(MEMBERSHIP_SESSION_INVALIDATION_SQL)
+
+        self.assertEqual(renewal.count("%s"), 6)
+        self.assertIn("revoked_at IS NULL", renewal)
+        self.assertIn("expires_at > %s", renewal)
+        self.assertIn("created_at > %s", renewal)
+        self.assertEqual(invalidation.count("%s"), 3)
+        self.assertNotIn("strftime", invalidation)
+        self.assertIn("clock_timestamp()", invalidation)
 
     def test_hybrid_rows_support_sqlite_key_and_index_access(self):
         row = HybridRow(("tenant_id", "status"), ("velani", "active"))

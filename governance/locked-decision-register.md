@@ -913,3 +913,23 @@ boundaries open.
 This lock authorizes no authentication implementation, cloud or IAM change,
 Identity Platform or Secret Manager mutation, database operation, deployment,
 customer activation or release-state modification.
+
+### LDR-066 — Private-pilot server-session lifecycle
+
+**Status:** Current / Binding security implementation boundary
+**Source:** ADR-0051 and founder authorization for MLAI-031.18C on 2026-08-21
+
+Private-pilot server sessions use the existing PostgreSQL-compatible
+`pilot_sessions` persistence. The original `created_at` anchors a non-extendable
+60-minute absolute lifetime, while `expires_at` is a 15-minute idle deadline.
+CSRF-protected renewal atomically revokes one predecessor and rotates both the
+opaque identifier and CSRF material. Revoked, expired and predecessor sessions
+never regain authority.
+
+Tenant identifiers supplied by clients remain routing/context only. Current
+membership is revalidated on use, and supported membership role or active-state
+changes invalidate matching identity-and-tenant sessions. Audit evidence
+contains no session identifiers, token hashes, CSRF material or provider and
+refresh credentials. Lifecycle audit and session mutation commit or roll back
+together. Provider-global, cross-tenant, MFA, recovery and security-engine
+invalidation remain deferred and require separate authority.

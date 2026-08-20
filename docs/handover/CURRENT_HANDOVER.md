@@ -3,12 +3,12 @@
 ## Checkpoint
 
 - Branch: `feature/tenant-architecture`
-- Installation baseline: `0be1255`
-- Remote state: synchronized and clean before MLAI-031.3
+- Installation baseline: `5d79691e95d757ff4383a6f24ecb595eacd64e7e`
+- Starting state: clean at the MLAI-031.18C implementation baseline
 - Last completed epic: MLAI-029 Marketing Strategy Intelligence
 - Active epic: MLAI-031 Controlled Pilot Hosting
-- Last completed story: MLAI-031.2 Repository-Wide PostgreSQL Compatibility and Migration
-- Active story: MLAI-031.10 Provenance-Bound Windows Cloud CLI Recovery
+- Last completed story: MLAI-031.18B High-Assurance SaaS Security Architecture Lock
+- Active story: MLAI-031.18C Threat Model and Server-Session Lifecycle Foundation
 
 ## Product direction
 
@@ -371,13 +371,39 @@ cannot be mistaken for deployed security.
 
 Current foundations include strict Google token checks, bounded hashed sessions,
 CSRF, secure cookies, tenant-membership revalidation, session revocation and
-readiness evidence. TD-041 records that renewable and rotating sessions,
-idle-plus-absolute expiry, provider revocation orchestration, MFA and step-up,
-edge enforcement, centralized detection delivery and complete security-CI and
-incident-recovery rehearsal remain unimplemented. RISK-038 keeps activation
-closed until applicable controls have current environment-bound evidence.
+readiness evidence. MLAI-031.18C adds rotating renewal and fixed idle-plus-
+absolute expiry. TD-041 retains provider revocation orchestration, MFA and
+step-up, edge enforcement, centralized detection delivery and complete
+security-CI and incident-recovery rehearsal as unimplemented. RISK-038 keeps
+activation closed until applicable controls have current environment-bound
+evidence.
 
 The next security implementation must be separately authorized and should begin
 with a repository-confirmed threat model and the session/token lifecycle. This
 governance lock performs no authentication, cloud, IAM, Identity Platform,
 Secret Manager, database, deployment or release-state mutation.
+
+## MLAI-031.18C session lifecycle foundation
+
+MLAI-031.18C extends the existing PostgreSQL-compatible `pilot_sessions` store
+without a migration. `created_at` is the original trusted 60-minute absolute
+anchor, `expires_at` is the 15-minute idle deadline, and `revoked_at` makes
+rotation predecessors and revoked sessions permanently non-authoritative.
+CSRF-protected `PUT /v1/pilot/session` rotates both opaque session and CSRF
+material through a conditional transaction, with at most one competing renewal
+winner.
+
+Sanitized creation and renewal audit evidence is inserted inside the same
+session transaction. Audit failure rolls back creation completely or rolls
+renewal back to the still-active predecessor; no replacement cookie or CSRF
+material is disclosed.
+
+Every use retains current membership revalidation and default-deny tenant
+authorization. The membership repository invalidates matching active sessions
+when an existing membership role or active state changes. Provider-global,
+cross-tenant, MFA, recovery, refresh-token and security-engine invalidation are
+not implemented and remain deferred under RISK-039 and TD-042.
+
+Focused lifecycle and governance tests were written but not run because TEST is
+outside the MLAI-031.18C authority. No cloud, external database, identity,
+secret, deployment, release-state or release operation occurred.

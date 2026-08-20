@@ -100,9 +100,14 @@ class ProductionSecurityEvaluator:
                 "Google auth_time maximum age is bounded to one hour",
             ),
             SecurityCheck(
-                "bounded_session",
-                300 <= self.config.session_ttl_seconds <= 3600,
-                "server session TTL is bounded to one hour",
+                "bounded_session_idle_expiry",
+                self.config.session_idle_ttl_seconds == 900,
+                "server session idle expiry is exactly 15 minutes",
+            ),
+            SecurityCheck(
+                "bounded_session_absolute_expiry",
+                self.config.session_absolute_ttl_seconds == 3600,
+                "server session absolute expiry is exactly 60 minutes",
             ),
             SecurityCheck(
                 "bounded_requests",

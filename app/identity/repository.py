@@ -3,9 +3,17 @@
 from __future__ import annotations
 
 import json
+from uuid import uuid4
 
 from app.database.connection import SQLiteDatabase
 from app.identity.models import AuthorizationAuditEvent, TenantMembership
+
+MEMBERSHIP_SESSION_INVALIDATION_SQL = """
+    UPDATE pilot_sessions SET revoked_at =
+        strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+    WHERE provider = ? AND subject_id = ? AND tenant_id = ?
+      AND revoked_at IS NULL
+"""
 
 
 class IdentityRepository:
@@ -24,6 +32,17 @@ class IdentityRepository:
         if tenant is None:
             raise ValueError("Membership tenant must exist and be active.")
         with self.database.transaction() as connection:
+            previous = connection.execute(
+                """
+                SELECT role, active FROM tenant_memberships
+                WHERE provider = ? AND subject_id = ? AND tenant_id = ?
+                """,
+                (
+                    membership.provider,
+                    membership.subject_id,
+                    membership.tenant_id,
+                ),
+            ).fetchone()
             connection.execute(
                 """
                 INSERT INTO tenant_memberships
@@ -43,6 +62,44 @@ class IdentityRepository:
                     int(membership.active),
                 ),
             )
+            changed = previous is not None and (
+                str(previous["role"]) != membership.role.value
+                or bool(previous["active"]) != membership.active
+            )
+            if changed:
+                invalidated = connection.execute(
+                    MEMBERSHIP_SESSION_INVALIDATION_SQL,
+                    (
+                        membership.provider,
+                        membership.subject_id,
+                        membership.tenant_id,
+                    ),
+                )
+                connection.execute(
+                    """
+                    INSERT INTO authorization_audit_events
+                        (event_id, tenant_id, subject_id, provider, action,
+                         resource_type, resource_id, outcome, occurred_at,
+                         metadata_json)
+                    VALUES (?, ?, ?, ?, 'membership_session_invalidate',
+                            'pilot_session', ?, 'allowed',
+                            strftime('%Y-%m-%dT%H:%M:%fZ', 'now'), ?)
+                    """,
+                    (
+                        str(uuid4()),
+                        membership.tenant_id,
+                        membership.subject_id,
+                        membership.provider,
+                        membership.tenant_id,
+                        json.dumps(
+                            {
+                                "affected_sessions": int(invalidated.rowcount),
+                                "reason": "membership_role_or_active_change",
+                            },
+                            sort_keys=True,
+                        ),
+                    ),
+                )
 
     def get_membership(
         self, *, provider: str, subject_id: str, tenant_id: str
@@ -66,30 +123,39 @@ class IdentityRepository:
             active=bool(row["active"]),
         )
 
-    def save_audit_event(self, event: AuthorizationAuditEvent) -> None:
+    def save_audit_event(
+        self, event: AuthorizationAuditEvent, *, connection=None
+    ) -> None:
         if not isinstance(event, AuthorizationAuditEvent):
             raise TypeError("event must be an AuthorizationAuditEvent.")
-        with self.database.transaction() as connection:
-            connection.execute(
-                """
-                INSERT INTO authorization_audit_events
-                    (event_id, tenant_id, subject_id, provider, action,
-                     resource_type, resource_id, outcome, occurred_at, metadata_json)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """,
-                (
-                    event.event_id,
-                    event.tenant_id,
-                    event.subject_id,
-                    event.provider,
-                    event.action,
-                    event.resource_type,
-                    event.resource_id,
-                    event.outcome,
-                    event.occurred_at,
-                    json.dumps(event.metadata, ensure_ascii=False, sort_keys=True),
-                ),
-            )
+        if connection is not None:
+            self._insert_audit_event(connection, event)
+            return
+        with self.database.transaction() as selected_connection:
+            self._insert_audit_event(selected_connection, event)
+
+    @staticmethod
+    def _insert_audit_event(connection, event: AuthorizationAuditEvent) -> None:
+        connection.execute(
+            """
+            INSERT INTO authorization_audit_events
+                (event_id, tenant_id, subject_id, provider, action,
+                 resource_type, resource_id, outcome, occurred_at, metadata_json)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                event.event_id,
+                event.tenant_id,
+                event.subject_id,
+                event.provider,
+                event.action,
+                event.resource_type,
+                event.resource_id,
+                event.outcome,
+                event.occurred_at,
+                json.dumps(event.metadata, ensure_ascii=False, sort_keys=True),
+            ),
+        )
 
     def list_audit_events(self, *, tenant_id: str) -> list[AuthorizationAuditEvent]:
         with self.database.connection() as connection:
