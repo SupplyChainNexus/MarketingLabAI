@@ -836,7 +836,7 @@ Tasks, social platforms, email, Shopify and analytics integrations are adapters
 or later capabilities. They must not become competing owners of campaign state,
 approval authority, spend rules or learning evidence.
 
-#### MLAI-033.1 proposed story-definition boundary
+#### MLAI-033.1 story-definition and owner-decision boundary
 
 MLAI-033.1 defines, but does not implement or validate, the first workflow-spine
 increment. A future provider-neutral durable aggregate must use a canonical
@@ -847,15 +847,30 @@ bound approvals, append-only privacy-safe hash-linked evidence, governed retry
 and attempt accounting, failure classification, operator status and canonical
 SQLite/PostgreSQL-compatible transactions.
 
+Founder approval on 2026-08-21 locks one workflow per executable governed
+marketing-work instance; independent Campaign Plan and workflow lifecycles with
+immutable version references and no workflow mutation of Campaign Plan state;
+immutable workflow-version-and-action-bound approvals with separation of duties
+for high-impact actions; no automatic retries before separate approval of
+ceilings and timing; tenant-, brand-, workflow-, command-kind- and
+caller-key-scoped command idempotency with canonical request hashing; versioned,
+canonical, privacy-safe, append-only, hash-linked and sequence-ordered evidence
+committed atomically with authority-changing state; terminal cancellation and
+supersession that preserve evidence and invalidate pending approvals; fail-closed
+execution without canonical artifact persistence; and safe business-first
+operator status with authorized progressive technical disclosure.
+
 Hard limits, adaptive limits, entitlements and provider budgets remain
 provider-neutral policy inputs. This definition selects no adaptive algorithm,
 rate-limiting architecture, pricing, commercial tier, quota value or
-provider-specific mechanism. Aggregate granularity, lifecycle mapping,
-approval roles and expiry, retry values, idempotency retention, evidence
-canonicalization and retention, cancellation semantics, budget settlement and
-commercial values remain blocked for later owner approval. This clarification
-creates no implementation, test, commit, push, cloud, deployment, activation or
-release authority and changes no founder-reserved decision.
+provider-specific mechanism. Approval roles, expiry, withdrawal mechanics and
+exception scope beyond the locked high-impact separation rule; retryable-failure
+mapping, ceilings, timing and manual-retry authority; idempotency retention;
+evidence encoding details, privacy classification, retention and archival;
+cancellation effects beyond pending-approval invalidation and evidence
+preservation; budget settlement; and commercial values remain blocked or
+deferred for later authority. This clarification creates no implementation,
+test, commit, push, cloud, deployment, activation or release authority.
 
 ### LDR-062 — First-service origin bootstrap is temporary and reconciled
 

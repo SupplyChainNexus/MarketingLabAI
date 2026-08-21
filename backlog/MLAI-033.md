@@ -120,18 +120,34 @@ Marketing Calendar, generation, compliance, publishing and learning.
 - MLAI-033.1 selects no adaptive-rate algorithm, distributed counter, pricing,
   commercial tier, quota value or provider-specific budget mechanism.
 
-### Blocked decisions requiring later owner approval
+### Founder-approved owner decisions
 
-- Workflow aggregate granularity: campaign execution, asset execution or a
-  more general marketing-work instance.
-- Exact mapping between Campaign Plan `approved`, `active` and `completed` and
-  workflow `approved`, `running` and `completed` without duplicate authority.
-- Approval roles, separation of duties, expiry, withdrawal and exception scope.
+- One workflow per executable governed marketing-work instance.
+- Independent Campaign Plan and workflow lifecycles; the workflow stores exact
+  immutable Campaign Plan version references and never mutates Campaign Plan
+  state.
+- Immutable workflow-version-and-action-bound approvals, with separation of
+  duties for high-impact actions.
+- No automatic retries until retry ceilings and timing are separately approved.
+- Command idempotency scoped to tenant, brand, workflow, command kind and
+  caller-supplied key, using canonical request hashing.
+- Versioned, canonical, privacy-safe, append-only, hash-linked and
+  sequence-ordered evidence committed atomically with authority-changing state.
+- Terminal cancellation and supersession that preserve evidence and invalidate
+  pending approvals.
+- Fail-closed execution when canonical artifact persistence is unavailable.
+- Safe business-first operator status, with technical detail progressively
+  disclosed only when authorized.
+
+### Decisions still blocked or deferred
+
+- Approval roles, expiry, withdrawal mechanics and exception scope beyond the
+  approved high-impact separation-of-duties rule.
 - Retryable failure mapping, attempt ceilings, timing and manual-retry authority.
-- Command-idempotency scope and retention for cost-bearing work.
-- Evidence canonicalization, privacy classification, retention and archival.
-- Cancellation and supersession effects on attempts, approvals, reservations
-  and evidence.
+- Command-idempotency retention.
+- Evidence encoding details, privacy classification, retention and archival.
+- Cancellation and supersession effects on attempts and reservations beyond
+  pending-approval invalidation and evidence preservation.
 - Currency, precision, reservation, settlement, release, refund and provider
   reconciliation semantics.
 - Commercial tier, entitlement, fair-use, quota and override values, which

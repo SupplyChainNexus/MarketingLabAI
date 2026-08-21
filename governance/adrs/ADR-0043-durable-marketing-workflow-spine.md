@@ -52,6 +52,32 @@ through the workflow spine.
 - `conflict_detected`
 - `needs_human_decision`
 
+## MLAI-033.1 Founder-Approved Foundation Decisions
+
+The founder approved the following implementation boundaries on 2026-08-21:
+
+1. One workflow per executable governed marketing-work instance.
+2. Campaign Plan and workflow retain independent lifecycles; workflow stores
+   immutable references to specific Campaign Plan versions and never mutates
+   Campaign Plan state.
+3. Approvals are immutable and bound to workflow version and action. Separation
+   of duties applies to high-impact actions.
+4. No automatic retries until retry ceilings and timing are separately approved.
+5. Workflow command idempotency is scoped to tenant, brand, workflow, command
+   kind, and caller-supplied key, using canonical request hashing.
+6. Evidence is versioned, canonical, privacy-safe, append-only, hash-linked,
+   sequence-ordered, and committed atomically with authority-changing state.
+7. Cancellation and supersession are terminal transitions that preserve
+   evidence and invalidate pending approvals.
+8. Execution fails closed when canonical artifact persistence is unavailable.
+9. Operator status exposes safe business state first, with technical details
+   progressively disclosed only when authorized.
+
+These decisions preserve the separate Campaign Plan, Campaign Asset, Marketing
+Brief, publishing and learning authorities. They authorize no implementation
+and select no numeric policy value, provider mechanism, queue, cloud service or
+deployment architecture.
+
 ## Consequences
 
 - MLAI-033 is Core, not Rabbit.

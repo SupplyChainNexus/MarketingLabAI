@@ -323,13 +323,28 @@ hash-linked evidence, attempt and retry accounting, failure classification and
 operator status. SQLite and PostgreSQL-compatible transactional persistence is
 the required direction, but no schema or implementation exists yet.
 
+Founder approval on 2026-08-21 resolves nine foundation boundaries: one
+workflow per executable governed marketing-work instance; independent Campaign
+Plan and workflow lifecycles with immutable plan-version references and no plan
+mutation; immutable version-and-action-bound approvals with high-impact
+separation of duties; no automatic retries before separate ceilings and timing
+approval; tenant/brand/workflow/command-kind/caller-key idempotency with
+canonical request hashing; versioned canonical privacy-safe append-only
+hash-linked sequence-ordered evidence committed atomically with authority
+changes; terminal cancellation and supersession preserving evidence and
+invalidating pending approvals; fail-closed execution without canonical
+artifact persistence; and safe business-first operator status with authorized
+progressive technical disclosure. No implementation or validation is
+authorized by those decisions.
+
 Hard limits, adaptive limits, tier entitlements and provider budgets are
 provider-neutral policy inputs only. No algorithm, distributed counter,
 commercial tier, quota value, pricing or provider-specific budget mechanism is
-selected. Aggregate granularity, lifecycle mapping, approval roles and expiry,
-retry values, idempotency retention, evidence canonicalization and retention,
-cancellation semantics, budget settlement and commercial values remain blocked
-for later owner approval.
+selected. Approval roles, expiry, withdrawal mechanics and remaining exception
+scope; retryable-failure mapping, ceilings, timing and manual authority;
+idempotency retention; evidence encoding details, privacy classification,
+retention and archival; remaining cancellation effects; budget settlement; and
+commercial values remain blocked or deferred for later authority.
 
 Provider execution, publishing, queues, Cloud Tasks, paid actions, autonomous
 agents, connectors, plugins, rate-limiting redesign, billing, customer

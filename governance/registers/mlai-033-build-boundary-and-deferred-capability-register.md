@@ -20,13 +20,13 @@ implementation increment. Their presence here does not authorize implementation.
 
 | Capability | Required boundary |
 |---|---|
-| Workflow durability | One provider-neutral, tenant-and-brand-isolated durable aggregate through the canonical SQLite/PostgreSQL-compatible persistence boundary; exact aggregate granularity remains blocked in MLAI-033.1. |
-| Approvals | Immutable approval requirements and decisions bound to the exact workflow version and action; roles, expiry, withdrawal, separation of duties and exceptions remain owner decisions. |
-| Idempotency | Durable workflow-command receipts with canonical request hashes, exact replay and changed-input conflict; scope and retention remain owner decisions. |
-| Evidence | Append-only, privacy-safe, sequence-ordered and hash-linked workflow evidence committed atomically with authority-changing state; canonicalization and retention remain owner decisions. |
-| Retries | Explicit attempt accounting and deterministic eligibility derived from failure class and policy; ceilings, timing and manual authority remain owner decisions. |
+| Workflow durability | One provider-neutral, tenant-and-brand-isolated durable aggregate per executable governed marketing-work instance through the canonical SQLite/PostgreSQL-compatible persistence boundary. |
+| Approvals | Immutable approval requirements and decisions bound to the exact workflow version and action, with separation of duties for high-impact actions; roles, expiry, withdrawal mechanics and remaining exception scope require later authority. |
+| Idempotency | Durable workflow-command receipts scoped to tenant, brand, workflow, command kind and caller-supplied key, with canonical request hashes, exact replay and changed-input conflict; retention remains unresolved. |
+| Evidence | Versioned, canonical, privacy-safe, append-only, sequence-ordered and hash-linked workflow evidence committed atomically with authority-changing state; encoding details, privacy classification, retention and archival remain unresolved. |
+| Retries | Explicit attempt accounting and deterministic eligibility derived from failure class and policy; no automatic retry is permitted until ceilings and timing are separately approved. |
 | Failure handling | ADR-0043 failure classes are the core vocabulary; raw provider or infrastructure exceptions remain adapter observations. |
-| Operator status | Current state, one safe next action, blocked reason, retry availability, required approval and progressively disclosed evidence. |
+| Operator status | Safe business state first: current state, one safe next action, blocked reason, retry availability and required approval; technical detail is progressively disclosed only when authorized. |
 | Tenant isolation | Default-deny tenant and brand ownership on workflows, approvals, attempts, idempotency and evidence; client identifiers remain routing context only. |
 | Testing | Focused transition, idempotency, approval, evidence, retry, transaction and cross-tenant tests plus affected regression, PostgreSQL-compatibility and full quality gates are required under separate TEST authority. |
 | Hard limits | A provider-neutral policy-input contract with dimension, unit, ceiling, scope, version and effective interval; values and paid-action enforcement remain separately governed. |

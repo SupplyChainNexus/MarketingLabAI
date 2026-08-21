@@ -1,17 +1,27 @@
 {
   "adr": "governance/adrs/ADR-0043-durable-marketing-workflow-spine.md",
   "blocked_decisions": [
-    "workflow aggregate granularity and lifecycle mapping",
-    "approval roles, separation of duties, expiry, withdrawal and exceptions",
+    "approval roles, expiry, withdrawal mechanics and exceptions beyond high-impact separation of duties",
     "retryable failures, attempt ceilings, timing and manual retry authority",
-    "command idempotency scope and retention",
-    "evidence canonicalization, privacy classification, retention and archival",
-    "cancellation and supersession semantics",
+    "command idempotency retention",
+    "evidence encoding details, privacy classification, retention and archival",
+    "cancellation and supersession effects on attempts and reservations beyond pending-approval invalidation and evidence preservation",
     "budget reservation, settlement, release, refund and reconciliation semantics",
     "commercial tier, entitlement, fair-use, quota and override values"
   ],
   "classification": "Core",
   "implementation_authorized": false,
+  "owner_approved_decisions": [
+    "One workflow per executable governed marketing-work instance.",
+    "Campaign Plan and workflow retain independent lifecycles; workflow stores immutable references to specific Campaign Plan versions and never mutates Campaign Plan state.",
+    "Approvals are immutable and bound to workflow version and action. Separation of duties applies to high-impact actions.",
+    "No automatic retries until retry ceilings and timing are separately approved.",
+    "Workflow command idempotency is scoped to tenant, brand, workflow, command kind, and caller-supplied key, using canonical request hashing.",
+    "Evidence is versioned, canonical, privacy-safe, append-only, hash-linked, sequence-ordered, and committed atomically with authority-changing state.",
+    "Cancellation and supersession are terminal transitions that preserve evidence and invalidate pending approvals.",
+    "Execution fails closed when canonical artifact persistence is unavailable.",
+    "Operator status exposes safe business state first, with technical details progressively disclosed only when authorized."
+  ],
   "out_of_scope": [
     "provider execution, publishing, queue integration or Cloud Tasks",
     "paid actions, autonomous agents, connectors or plugins",
