@@ -146,9 +146,14 @@ Marketing Calendar, generation, compliance, publishing and learning.
   explicit manual intervention to the recorded resume state, never automatic
   retry.
 - Command requests, receipts and evidence use the RFC 8785-compatible,
-  restricted-number `MLAI-CJ-1` UTF-8 profile, exact record-kind domains and
+  restricted-number versioned `MLAI-CJ` UTF-8 profiles, exact record-kind domains and
   domain-separated SHA-256 over privacy-safe fields. ADR-0043 fixes the complete
-  receipt envelope and evidence sequence-1 genesis value.
+  receipt envelope and evidence sequence-1 genesis value. MLAI-CJ-1 schema 1 is
+  frozen with its original `workflow_id`; new request and receipt writers use
+  MLAI-CJ-2 schema 2, keeping immutable `request_workflow_id` distinct from an
+  optional existing
+  `authoritative_workflow_id`; recovery conflicts never rewrite the requested
+  successor identity or disclose cross-tenant or cross-brand authority.
 - `approved` to `running`, `blocked` to `running` and `running` to `completed`
   are execution-oriented. They require the applicable reserved or persisted
   proof from the read-only `CanonicalArtifactAvailability` interface and fail

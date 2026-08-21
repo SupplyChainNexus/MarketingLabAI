@@ -128,8 +128,9 @@ the failed workflow remains unchanged.
 
 ### Canonical encoding and hashing contract
 
-Command requests, command receipts and evidence use the `MLAI-CJ-1` canonical
-JSON profile. It adopts RFC 8785 JSON Canonicalization Scheme string escaping
+Command requests, command receipts and evidence use the versioned `MLAI-CJ`
+canonical JSON profiles. Their shared encoding rules adopt RFC 8785 JSON
+Canonicalization Scheme string escaping
 and UTF-16 key ordering after the additional NFC normalization below, while
 using a restricted numeric profile so business decimals never depend on binary
 floating-point.
@@ -179,49 +180,86 @@ floating-point.
   interchangeable.
 - Encode timestamps as UTC RFC 3339 `YYYY-MM-DDTHH:MM:SS.ffffffZ`, with exactly
   six fractional digits, no leap second and no timezone offset other than `Z`.
-- Every canonical envelope contains `canonicalization_version: "MLAI-CJ-1"`,
+- Every canonical envelope contains `canonicalization_version`,
   `schema_version` and one of the exact record-kind values defined below. The
-  initial command-request, command-receipt and workflow-evidence schemas each
-  use integer `schema_version: 1`. A future value requires a separately governed
-  schema and never changes the bytes or meaning of version `1`.
+  initial command-request, command-receipt and workflow-evidence schemas use
+  `canonicalization_version: "MLAI-CJ-1"` and integer `schema_version: 1`.
+  Their bytes, fields and meanings are frozen. In particular, version 1 keeps
+  its exact `workflow_id` field; it is never renamed, replaced or reinterpreted.
+- MLAI-CJ-2 command requests and command receipts use
+  `canonicalization_version: "MLAI-CJ-2"` and integer `schema_version: 2`.
+  New workflow-foundation request and receipt writers emit version 2. Readers
+  dispatch on the exact pair of version fields, distinguish version 1 from
+  version 2, and reject every unsupported or mismatched pair deterministically.
+  They never silently convert, rewrite or rehash persisted canonical bytes.
+  Workflow evidence remains on its frozen MLAI-CJ-1 version-1 schema unless a
+  later governed evidence schema is approved. MLAI-CJ-2 uses the same escaping,
+  NFC normalization, UTF-16 key ordering, restricted-number, omission, null,
+  timestamp and UTF-8 rules above; its distinct version fields, domains and
+  envelope schemas provide the version separation.
 
 #### Domain separation and hash construction
 
 The exact record kinds and ASCII domain strings are:
 
-| Envelope | `record_kind` | Domain string |
+| Envelope and version | `record_kind` | Domain string |
 |---|---|---|
-| Command request | `command_request` | `earthonox/mlai-033.1/command-request/MLAI-CJ-1` |
-| Command receipt | `command_receipt` | `earthonox/mlai-033.1/command-receipt/MLAI-CJ-1` |
-| Workflow evidence | `workflow_evidence` | `earthonox/mlai-033.1/workflow-evidence/MLAI-CJ-1` |
+| MLAI-CJ-1 command request, schema 1 | `command_request` | `earthonox/mlai-033.1/command-request/MLAI-CJ-1` |
+| MLAI-CJ-1 command receipt, schema 1 | `command_receipt` | `earthonox/mlai-033.1/command-receipt/MLAI-CJ-1` |
+| MLAI-CJ-1 workflow evidence, schema 1 | `workflow_evidence` | `earthonox/mlai-033.1/workflow-evidence/MLAI-CJ-1` |
+| MLAI-CJ-2 command request, schema 2 | `command_request` | `earthonox/mlai-033.1/command-request/MLAI-CJ-2` |
+| MLAI-CJ-2 command receipt, schema 2 | `command_receipt` | `earthonox/mlai-033.1/command-receipt/MLAI-CJ-2` |
 
 For each envelope, the SHA-256 input is exactly the UTF-8 bytes of its domain
 string, one LF byte `0x0A`, the ASCII bytes of its exact `record_kind`, one LF
-byte `0x0A`, and the `MLAI-CJ-1` canonical JSON bytes. There is no trailing LF.
+byte `0x0A`, and the canonical JSON bytes for the envelope's declared MLAI-CJ
+version. There is no trailing LF.
 Store and compare the 32-byte SHA-256 digest as exactly 64 lowercase hexadecimal
 characters.
 
 #### Command request and receipt envelopes
 
-The canonical command-request envelope contains exactly the version fields and
-record kind above plus `request_id`, `tenant_id`, `brand_id`, `workflow_id`,
+The frozen MLAI-CJ-1 schema-1 command-request envelope contains exactly its
+version fields and record kind plus `request_id`, `tenant_id`, `brand_id`,
+`workflow_id`, `expected_workflow_version`, `command_kind`,
+`idempotency_key_sha256`, `actor_ref`, `requested_at` and a versioned
+`safe_command` object. Its frozen command-receipt envelope contains exactly its
+version fields, `record_kind: "command_receipt"`, `receipt_id`, `request_id`,
+`request_hash`, `tenant_id`, `brand_id`, `workflow_id`,
+`workflow_version_before`, `workflow_version_after`, `command_kind`,
+`idempotency_key_sha256`, `actor_ref`, `outcome`, nullable `failure_class`,
+nullable `conflicts_with_receipt_id`, `requested_at`, `recorded_at` and
+`safe_result_refs`, with the frozen meanings, value restrictions and sorting
+rules governed before MLAI-CJ-2. MLAI-CJ-2 does not redefine those bytes.
+
+The MLAI-CJ-2 schema-2 canonical command-request envelope contains exactly its
+version fields and record kind plus `request_id`, `tenant_id`, `brand_id`,
+`request_workflow_id`,
 `expected_workflow_version`, `command_kind`, `idempotency_key_sha256`,
 `actor_ref`, `requested_at` and a versioned `safe_command` object. The request
 hash excludes receipt identifiers, outcomes, result references, server-recorded
-timestamps and evidence digests.
+timestamps and evidence digests. `request_workflow_id` is the immutable workflow
+identifier supplied by the caller. It participates in the canonical request
+bytes and request hash and is never rewritten during replay, conflict handling,
+recovery or persistence.
 
-`idempotency_key_sha256` is SHA-256 over the ASCII domain string
-`earthonox/mlai-033.1/idempotency-key/MLAI-CJ-1`, one LF byte `0x0A` and the
+For MLAI-CJ-1, `idempotency_key_sha256` remains SHA-256 over the ASCII domain
+string `earthonox/mlai-033.1/idempotency-key/MLAI-CJ-1`. For MLAI-CJ-2 it is
+SHA-256 over `earthonox/mlai-033.1/idempotency-key/MLAI-CJ-2`. In each case the
+domain is followed by one LF byte `0x0A` and the
 shortest UTF-8 bytes of the NFC-normalized caller key, with no trailing LF. Its
 representation is exactly 64 lowercase hexadecimal characters.
 
-The complete canonical command-receipt envelope is separate from the request
-envelope and contains exactly:
+The complete MLAI-CJ-2 schema-2 canonical command-receipt envelope is separate
+from the request envelope and contains exactly:
 
 - the version fields and `record_kind: "command_receipt"`;
 - `receipt_id`, `request_id`, `request_hash`, `tenant_id`, `brand_id`,
-  `workflow_id`, `workflow_version_before`, `workflow_version_after`,
+  `request_workflow_id`, `workflow_version_before`, `workflow_version_after`,
   `command_kind`, `idempotency_key_sha256` and `actor_ref`;
+- `authoritative_workflow_id` exactly when an existing authoritative workflow
+  differs from `request_workflow_id`; otherwise that field is omitted and is
+  never encoded as null;
 - `outcome`, whose only values are `applied`, `rejected` and
   `conflict_detected`;
 - nullable `failure_class` and `conflicts_with_receipt_id`, where null is
@@ -236,13 +274,56 @@ envelope and contains exactly:
 
 Each safe result or source reference is an object containing exactly `kind`,
 `id` and positive integer `version`; it contains no display name, URL, customer
-content or provider payload.
+content or provider payload. In an MLAI-CJ-2 recovery-conflict receipt, the
+existing-successor reference has exact `kind: "workflow"`, `id` equal to the
+existing successor identifier and `version` equal to that successor's
+authoritative optimistic workflow version when the conflict receipt is
+created. The original-authoritative-receipt reference has exact
+`kind: "command_receipt"`, `id` equal to that receipt identifier and
+`version: 1`, where `1` is the immutable receipt-record version and is not an
+MLAI-CJ envelope schema version. Sorting by normalized `kind`, normalized `id`
+and integer `version` places `command_receipt` before `workflow`; no caller or
+writer order is preserved.
 
 An exact idempotent replay returns the original persisted receipt bytes and
 digest; it creates no replacement receipt. Changed input under the same approved
 idempotency scope produces a separately identified `conflict_detected` receipt
 that references the original receipt and cannot replace the scope's original
 receipt.
+
+For failed-workflow recovery, the proposed successor identifier is always
+`request_workflow_id` and is hashed as supplied. If successor `B` already owns
+the failed predecessor and a request proposes successor `A`, the persisted
+MLAI-CJ-2 conflict receipt contains `request_workflow_id: A`,
+`authoritative_workflow_id: B`, `outcome: "conflict_detected"` and
+`conflicts_with_receipt_id` equal to the original authoritative recovery
+receipt. Its `safe_result_refs` contain exactly the safe workflow reference for
+`B` and the safe command-receipt reference for that original receipt, using the
+reference schema and ordering above. Both `workflow_version_before` and
+`workflow_version_after` equal `B`'s authoritative optimistic workflow version
+at the moment the receipt is written. No workflow mutation occurs, and no
+receipt may state or imply that the original request targeted `B`.
+
+The first request proposing `A` persists its conflict receipt under its own
+approved idempotency scope. Exact replay of that request returns the original
+persisted MLAI-CJ-2 conflict receipt bytes and digest. A request proposing a different successor
+identifier has different canonical request bytes and its own deterministic
+conflict receipt referencing `B`; it neither reuses nor rewrites the receipt
+for `A`.
+
+Receipt persistence ownership and foreign-key association are separate from
+immutable request identity. When requested workflow `A` was never created and
+authoritative workflow `B` exists, the storage-only ownership and foreign-key
+association must bind the conflict receipt to `B`. The receipt must safely
+reference `B` and `B`'s original authoritative receipt. That association binds
+the receipt to the existing
+`authoritative_workflow_id`; that association is not a canonical receipt field
+and cannot alter `request_workflow_id` or its request hash. The canonical
+receipt includes both identity fields whenever the authoritative identifier is
+present. Authority lookup, ownership association, safe references and replay
+remain tenant-and-brand scoped. A mismatch fails closed without returning
+either workflow identity or the authoritative receipt identity across tenant or
+brand boundaries.
 
 #### Evidence envelope and chain
 

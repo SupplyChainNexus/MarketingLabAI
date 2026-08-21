@@ -340,9 +340,14 @@ authorized by those decisions.
 ADR-0043 now clarifies the four implementation contracts that previously
 blocked safe foundation work: the complete default-deny transition matrix and
 manual blocked-recovery rules; the RFC 8785-compatible restricted-number
-`MLAI-CJ-1` canonical UTF-8 JSON profile with exact request, receipt and evidence
+versioned `MLAI-CJ` canonical UTF-8 JSON profiles with exact request, receipt and evidence
 domains and envelopes, privacy-safe exclusions, SHA-256 construction and
-evidence genesis; reserved and
+evidence genesis. MLAI-CJ-1 schema 1 and its `workflow_id` remain frozen; new
+request and receipt writers use MLAI-CJ-2 schema 2, which distinguishes
+immutable `request_workflow_id` from an optional existing
+`authoritative_workflow_id`, so
+recovery conflicts preserve the proposed successor in the request hash while
+safely referencing the tenant-and-brand-scoped existing successor; reserved and
 persisted artifact proofs from a future read-only
 `CanonicalArtifactAvailability` interface for execution-oriented transitions;
 and explicit high-impact action classes with unclassified actions

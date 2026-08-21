@@ -862,9 +862,12 @@ operator status with authorized progressive technical disclosure.
 
 The MLAI-033.1 implementation contract is default-deny. ADR-0043 now records
 the complete state-transition matrix; terminal and manual blocked-recovery
-semantics; the RFC 8785-compatible restricted-number `MLAI-CJ-1` canonical
-UTF-8 JSON profile, exact request, receipt and evidence domains and envelopes,
-SHA-256 construction and evidence genesis;
+semantics; the RFC 8785-compatible restricted-number versioned `MLAI-CJ`
+canonical UTF-8 JSON profiles, exact request, receipt and evidence domains and envelopes,
+SHA-256 construction and evidence genesis. MLAI-CJ-1 schema 1 remains frozen;
+new request and receipt writers use MLAI-CJ-2 schema 2 with immutable
+`request_workflow_id`, separately optional `authoritative_workflow_id`, and
+tenant-and-brand-safe deterministic recovery-conflict replay;
 the read-only `CanonicalArtifactAvailability` proof required for execution
 transitions; and the explicit high-impact action classes subject to separation
 of duties. Unlisted transitions and unclassified actions fail closed. These
