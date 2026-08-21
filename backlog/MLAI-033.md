@@ -8,6 +8,14 @@ Founder-locked core architecture epic
 
 Core. Not Rabbit.
 
+## Build boundary and deferred capabilities
+
+The governed implementation boundary, pilot and paid-production prerequisites,
+evidence-triggered future work and explicit non-core exclusions are maintained
+in the [MLAI-033 Build Boundary and Deferred Capability Register](../governance/registers/mlai-033-build-boundary-and-deferred-capability-register.md).
+The register grants no implementation authority and does not resolve the
+blocked owner decisions in MLAI-033.1.
+
 ## Purpose
 
 MarketingLabAI needs one durable workflow spine for campaign planning,
