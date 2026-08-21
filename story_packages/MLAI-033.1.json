@@ -1,0 +1,41 @@
+{
+  "adr": "governance/adrs/ADR-0043-durable-marketing-workflow-spine.md",
+  "blocked_decisions": [
+    "workflow aggregate granularity and lifecycle mapping",
+    "approval roles, separation of duties, expiry, withdrawal and exceptions",
+    "retryable failures, attempt ceilings, timing and manual retry authority",
+    "command idempotency scope and retention",
+    "evidence canonicalization, privacy classification, retention and archival",
+    "cancellation and supersession semantics",
+    "budget reservation, settlement, release, refund and reconciliation semantics",
+    "commercial tier, entitlement, fair-use, quota and override values"
+  ],
+  "classification": "Core",
+  "implementation_authorized": false,
+  "out_of_scope": [
+    "provider execution, publishing, queue integration or Cloud Tasks",
+    "paid actions, autonomous agents, connectors or plugins",
+    "adaptive-rate algorithms or a new rate-limiting architecture",
+    "pricing, commercial tiers, quota values or billing",
+    "real-customer activation or real-data processing",
+    "cloud, IAM, secrets, external databases, deployment or release changes",
+    "application code, tests, infrastructure or workflow implementation"
+  ],
+  "rabbit": false,
+  "schema_version": 2,
+  "scope": [
+    "provider-neutral durable workflow aggregate and canonical identifier",
+    "exact Campaign Plan and optional Marketing Brief version references",
+    "ADR-0043 workflow states, failure classes and deterministic transition requirements",
+    "command idempotency and optimistic workflow version requirements",
+    "version-and-action-bound approval record requirements",
+    "append-only privacy-safe hash-linked evidence requirements",
+    "retry eligibility, attempt accounting and failure classification requirements",
+    "tenant-and-brand-isolated operator-status projection requirements",
+    "SQLite and PostgreSQL-compatible transactional persistence direction",
+    "provider-neutral hard-limit, adaptive-limit, entitlement and provider-budget policy inputs"
+  ],
+  "status": "proposed and governance-defined; implementation and validation not authorized",
+  "story_id": "MLAI-033.1",
+  "title": "Deterministic Marketing Workflow State, Approval and Evidence Foundation"
+}

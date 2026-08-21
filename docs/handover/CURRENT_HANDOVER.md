@@ -8,7 +8,7 @@
 - Last completed epic: MLAI-029 Marketing Strategy Intelligence
 - Active epic: MLAI-031 Controlled Pilot Hosting
 - Last completed story: MLAI-031.18C Threat Model and Server-Session Lifecycle Foundation
-- Active story: none; further engineering requires separate authorization
+- Active story: none; MLAI-033.1 is governance-defined but implementation is not authorized
 
 ## Product direction
 
@@ -310,6 +310,35 @@ Agents remain downstream capabilities. Intent routing is next-core after the
 spine; visual formatting, opportunity boosting and attribution remain future
 work until the spine, tenant boundaries, approvals, budget controls and audit
 evidence are proven.
+
+### MLAI-033.1 governance definition
+
+MLAI-033.1 — Deterministic Marketing Workflow State, Approval and Evidence
+Foundation is proposed and governance-defined only. It defines a future
+provider-neutral durable aggregate with a canonical tenant-and-brand-scoped
+identifier, exact Campaign Plan and optional Marketing Brief version
+references, ADR-0043 states and failure classes, deterministic transitions,
+command idempotency, version-and-action-bound approvals, privacy-safe
+hash-linked evidence, attempt and retry accounting, failure classification and
+operator status. SQLite and PostgreSQL-compatible transactional persistence is
+the required direction, but no schema or implementation exists yet.
+
+Hard limits, adaptive limits, tier entitlements and provider budgets are
+provider-neutral policy inputs only. No algorithm, distributed counter,
+commercial tier, quota value, pricing or provider-specific budget mechanism is
+selected. Aggregate granularity, lifecycle mapping, approval roles and expiry,
+retry values, idempotency retention, evidence canonicalization and retention,
+cancellation semantics, budget settlement and commercial values remain blocked
+for later owner approval.
+
+Provider execution, publishing, queues, Cloud Tasks, paid actions, autonomous
+agents, connectors, plugins, rate-limiting redesign, billing, customer
+activation, cloud, IAM, secrets, external databases, deployment and release are
+outside MLAI-033.1. RISK-040 and TD-043 remain open until a separately
+authorized implementation is durably persisted and validated. MLAI-033 remains
+Core, and all existing Campaign Plan, Campaign Asset, Marketing Brief,
+Marketing Calendar, generation, compliance, publishing and learning lifecycle
+owners remain distinct.
 
 ## MLAI-031.13 handover note
 

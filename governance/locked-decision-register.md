@@ -836,6 +836,27 @@ Tasks, social platforms, email, Shopify and analytics integrations are adapters
 or later capabilities. They must not become competing owners of campaign state,
 approval authority, spend rules or learning evidence.
 
+#### MLAI-033.1 proposed story-definition boundary
+
+MLAI-033.1 defines, but does not implement or validate, the first workflow-spine
+increment. A future provider-neutral durable aggregate must use a canonical
+tenant-and-brand-scoped workflow identifier, exact Campaign Plan and optional
+Marketing Brief version references, ADR-0043 states and failures,
+deterministic transitions, command idempotency, workflow-version-and-action-
+bound approvals, append-only privacy-safe hash-linked evidence, governed retry
+and attempt accounting, failure classification, operator status and canonical
+SQLite/PostgreSQL-compatible transactions.
+
+Hard limits, adaptive limits, entitlements and provider budgets remain
+provider-neutral policy inputs. This definition selects no adaptive algorithm,
+rate-limiting architecture, pricing, commercial tier, quota value or
+provider-specific mechanism. Aggregate granularity, lifecycle mapping,
+approval roles and expiry, retry values, idempotency retention, evidence
+canonicalization and retention, cancellation semantics, budget settlement and
+commercial values remain blocked for later owner approval. This clarification
+creates no implementation, test, commit, push, cloud, deployment, activation or
+release authority and changes no founder-reserved decision.
+
 ### LDR-062 — First-service origin bootstrap is temporary and reconciled
 
 **Status:** Current / Binding release governance
