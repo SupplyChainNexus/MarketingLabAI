@@ -16,10 +16,20 @@
     "deterministic competing-renewal rejection and permanent predecessor invalidation",
     "per-use membership revalidation and supported membership-change invalidation",
     "privacy-safe lifecycle audit evidence",
-    "focused tests written but not executed",
+    "focused and full repository validation supplied by the operator",
     "backlog, decision, risk, debt and handover reconciliation"
   ],
-  "status": "implemented; tests written but execution unauthorized",
+  "status": "implemented; locally validated; formally closed",
   "story_id": "MLAI-031.18C",
-  "title": "Threat Model and Server-Session Lifecycle Foundation"
+  "title": "Threat Model and Server-Session Lifecycle Foundation",
+  "validation_evidence": {
+    "black_check": "passed",
+    "focused_tests": "46 passed",
+    "full_repository_suite": "1046 passed",
+    "git_diff_check": "passed",
+    "infrastructure_coherence_ci_check": "passed with zero blocking findings",
+    "provenance": "operator-supplied local validation against the exact implementation bytes before commit",
+    "ruff": "passed",
+    "scope_limit": "not live PostgreSQL rehearsal, production validation, deployment validation or external CI evidence"
+  }
 }

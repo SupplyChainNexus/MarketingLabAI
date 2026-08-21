@@ -7,8 +7,8 @@
 - Starting state: clean at the MLAI-031.18C implementation baseline
 - Last completed epic: MLAI-029 Marketing Strategy Intelligence
 - Active epic: MLAI-031 Controlled Pilot Hosting
-- Last completed story: MLAI-031.18B High-Assurance SaaS Security Architecture Lock
-- Active story: MLAI-031.18C Threat Model and Server-Session Lifecycle Foundation
+- Last completed story: MLAI-031.18C Threat Model and Server-Session Lifecycle Foundation
+- Active story: none; further engineering requires separate authorization
 
 ## Product direction
 
@@ -378,10 +378,11 @@ security-CI and incident-recovery rehearsal as unimplemented. RISK-038 keeps
 activation closed until applicable controls have current environment-bound
 evidence.
 
-The next security implementation must be separately authorized and should begin
-with a repository-confirmed threat model and the session/token lifecycle. This
-governance lock performs no authentication, cloud, IAM, Identity Platform,
-Secret Manager, database, deployment or release-state mutation.
+Any next security implementation must be separately authorized and must extend
+the repository-confirmed threat model and session/token lifecycle without
+claiming the deferred controls below. The governance lock itself performed no
+authentication, cloud, IAM, Identity Platform, Secret Manager, database,
+deployment or release-state mutation.
 
 ## MLAI-031.18C session lifecycle foundation
 
@@ -404,6 +405,18 @@ when an existing membership role or active state changes. Provider-global,
 cross-tenant, MFA, recovery, refresh-token and security-engine invalidation are
 not implemented and remain deferred under RISK-039 and TD-042.
 
-Focused lifecycle and governance tests were written but not run because TEST is
-outside the MLAI-031.18C authority. No cloud, external database, identity,
-secret, deployment, release-state or release operation occurred.
+MLAI-031.18C is formally closed on operator-supplied local validation against
+the exact implementation bytes before commit: 46 focused tests passed, 1,046
+full repository tests passed, Ruff passed, Black check passed, the
+infrastructure coherence CI check passed with zero blocking findings, and
+`git diff --check` passed. This is not live PostgreSQL rehearsal, production
+validation, deployment validation or external CI evidence. No cloud, secret,
+external-database, deployment, release-state or release operation occurred.
+
+Provider-global revocation, cross-tenant or global invalidation, password and
+recovery events, MFA and factor-change invalidation, provider refresh-token
+revocation orchestration, suspicious-activity and security-engine hooks, a
+dedicated administrator revocation transport, edge enforcement, centralized
+detection, and production and external rehearsal evidence remain open or
+deferred under RISK-038, RISK-039, TD-041 and TD-042. MLAI-033 remains the next
+locked product-architecture story and has not begun implementation.

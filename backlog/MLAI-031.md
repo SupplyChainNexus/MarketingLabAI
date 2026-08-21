@@ -314,7 +314,7 @@ monitoring delivery or customer activation into that first increment.
 
 ## MLAI-031.18C — Threat Model and Server-Session Lifecycle Foundation
 
-Status: implemented; focused tests written but execution unauthorized
+Status: implemented; locally validated; formally closed
 
 ### Purpose
 
@@ -338,4 +338,21 @@ without a parallel store, provider refresh-token persistence or schema change.
   failure leaves no created session or rolls renewal back to its predecessor.
 - Provider-global, cross-tenant, MFA, recovery and security-engine invalidation
   remain explicit deferred gaps.
-- Focused tests are written but are not run under this story authority.
+- Focused and full repository validation evidence is recorded for the exact
+  implementation bytes before commit.
+
+### Closure validation
+
+- Operator-supplied local validation: 46 focused tests passed and 1,046 full
+  repository tests passed.
+- Ruff, Black check and `git diff --check` passed.
+- The infrastructure coherence CI check passed with zero blocking findings.
+- This is local pre-commit validation evidence. It is not a live PostgreSQL
+  rehearsal, production validation, deployment validation or external CI evidence.
+- No cloud, secret, external-database, deployment or release operation occurred.
+- Provider-global revocation, cross-tenant or global invalidation, password and
+  recovery events, MFA and factor-change invalidation, provider refresh-token
+  revocation orchestration, suspicious-activity and security-engine hooks, a
+  dedicated administrator revocation transport, edge enforcement, centralized
+  detection, and production and external rehearsal evidence remain open or
+  deferred under RISK-038, RISK-039, TD-041 and TD-042.

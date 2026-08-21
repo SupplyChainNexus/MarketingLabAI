@@ -933,3 +933,13 @@ contains no session identifiers, token hashes, CSRF material or provider and
 refresh credentials. Lifecycle audit and session mutation commit or roll back
 together. Provider-global, cross-tenant, MFA, recovery and security-engine
 invalidation remain deferred and require separate authority.
+
+MLAI-031.18C is implemented, locally validated and formally closed. The
+operator supplied validation against the exact implementation bytes before
+commit: 46 focused tests passed, 1,046 full repository tests passed, Ruff and
+Black check passed, the infrastructure coherence CI check passed with zero
+blocking findings, and `git diff --check` passed. This evidence is local
+pre-commit validation, not live PostgreSQL rehearsal, production validation,
+deployment validation or external CI evidence. It grants no cloud, secret,
+external-database, deployment, release or customer-activation authority and
+does not close any deferred control named above.
