@@ -4,12 +4,18 @@
     "approval roles, expiry, withdrawal mechanics and exceptions beyond high-impact separation of duties",
     "retryable failures, attempt ceilings, timing and manual retry authority",
     "command idempotency retention",
-    "evidence encoding details, privacy classification, retention and archival",
+    "evidence retention and archival",
     "cancellation and supersession effects on attempts and reservations beyond pending-approval invalidation and evidence preservation",
     "budget reservation, settlement, release, refund and reconciliation semantics",
     "commercial tier, entitlement, fair-use, quota and override values"
   ],
   "classification": "Core",
+  "clarified_contracts": [
+    "ADR-0043 default-deny transition matrix with failed, completed, superseded and cancelled terminal; blocked recovery is manual to the recorded resume state",
+    "RFC 8785-compatible restricted-number MLAI-CJ-1 canonical UTF-8 JSON with exact escaping, ordering, omission, null, numeric and timestamp rules, exact command-request, command-receipt and workflow-evidence domains and envelopes, sensitive-field exclusions, domain-separated SHA-256 and sequence-1 evidence genesis",
+    "CanonicalArtifactAvailability read-only proof for execution-oriented transitions, with reserved proof required to enter running and persisted integrity proof required to complete or cause an external side effect",
+    "high-impact separation of duties for paid or spend actions, publishing or launch, learning adoption, policy or control exceptions, external-state mutations and externally effective cancellation or supersession; unclassified actions are policy_blocked"
+  ],
   "implementation_authorized": false,
   "owner_approved_decisions": [
     "One workflow per executable governed marketing-work instance.",

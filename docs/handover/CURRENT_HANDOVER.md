@@ -337,13 +337,25 @@ artifact persistence; and safe business-first operator status with authorized
 progressive technical disclosure. No implementation or validation is
 authorized by those decisions.
 
+ADR-0043 now clarifies the four implementation contracts that previously
+blocked safe foundation work: the complete default-deny transition matrix and
+manual blocked-recovery rules; the RFC 8785-compatible restricted-number
+`MLAI-CJ-1` canonical UTF-8 JSON profile with exact request, receipt and evidence
+domains and envelopes, privacy-safe exclusions, SHA-256 construction and
+evidence genesis; reserved and
+persisted artifact proofs from a future read-only
+`CanonicalArtifactAvailability` interface for execution-oriented transitions;
+and explicit high-impact action classes with unclassified actions
+`policy_blocked`. The clarification implements no workflow or artifact
+repository and grants no implementation or validation authority.
+
 Hard limits, adaptive limits, tier entitlements and provider budgets are
 provider-neutral policy inputs only. No algorithm, distributed counter,
 commercial tier, quota value, pricing or provider-specific budget mechanism is
 selected. Approval roles, expiry, withdrawal mechanics and remaining exception
 scope; retryable-failure mapping, ceilings, timing and manual authority;
-idempotency retention; evidence encoding details, privacy classification,
-retention and archival; remaining cancellation effects; budget settlement; and
+idempotency retention; evidence retention and archival; remaining cancellation
+effects; budget settlement; and
 commercial values remain blocked or deferred for later authority.
 
 Provider execution, publishing, queues, Cloud Tasks, paid actions, autonomous

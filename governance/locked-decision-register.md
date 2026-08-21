@@ -860,13 +860,23 @@ supersession that preserve evidence and invalidate pending approvals; fail-close
 execution without canonical artifact persistence; and safe business-first
 operator status with authorized progressive technical disclosure.
 
+The MLAI-033.1 implementation contract is default-deny. ADR-0043 now records
+the complete state-transition matrix; terminal and manual blocked-recovery
+semantics; the RFC 8785-compatible restricted-number `MLAI-CJ-1` canonical
+UTF-8 JSON profile, exact request, receipt and evidence domains and envelopes,
+SHA-256 construction and evidence genesis;
+the read-only `CanonicalArtifactAvailability` proof required for execution
+transitions; and the explicit high-impact action classes subject to separation
+of duties. Unlisted transitions and unclassified actions fail closed. These
+clarifications add no workflow state and grant no implementation authority.
+
 Hard limits, adaptive limits, entitlements and provider budgets remain
 provider-neutral policy inputs. This definition selects no adaptive algorithm,
 rate-limiting architecture, pricing, commercial tier, quota value or
 provider-specific mechanism. Approval roles, expiry, withdrawal mechanics and
 exception scope beyond the locked high-impact separation rule; retryable-failure
 mapping, ceilings, timing and manual-retry authority; idempotency retention;
-evidence encoding details, privacy classification, retention and archival;
+evidence retention and archival;
 cancellation effects beyond pending-approval invalidation and evidence
 preservation; budget settlement; and commercial values remain blocked or
 deferred for later authority. This clarification creates no implementation,

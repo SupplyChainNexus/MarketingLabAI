@@ -139,13 +139,37 @@ Marketing Calendar, generation, compliance, publishing and learning.
 - Safe business-first operator status, with technical detail progressively
   disclosed only when authorized.
 
+### Clarified foundation contracts
+
+- ADR-0043 contains the complete default-deny transition matrix. `failed`,
+  `completed`, `superseded` and `cancelled` are terminal; blocked recovery is
+  explicit manual intervention to the recorded resume state, never automatic
+  retry.
+- Command requests, receipts and evidence use the RFC 8785-compatible,
+  restricted-number `MLAI-CJ-1` UTF-8 profile, exact record-kind domains and
+  domain-separated SHA-256 over privacy-safe fields. ADR-0043 fixes the complete
+  receipt envelope and evidence sequence-1 genesis value.
+- `approved` to `running`, `blocked` to `running` and `running` to `completed`
+  are execution-oriented. They require the applicable reserved or persisted
+  proof from the read-only `CanonicalArtifactAvailability` interface and fail
+  closed on missing, inaccessible, superseded, integrity-invalid or
+  cross-tenant artifacts.
+- Paid or spend actions, publishing or launch, learning adoption, policy or
+  control exceptions, external-state mutations and externally effective
+  cancellation or supersession are high-impact and require separation of
+  duties. Unclassified actions are `policy_blocked`; ordinary internal planning
+  and read-only status viewing are not high-impact.
+
+These contracts authorize no implementation and do not implement canonical
+artifact persistence.
+
 ### Decisions still blocked or deferred
 
 - Approval roles, expiry, withdrawal mechanics and exception scope beyond the
   approved high-impact separation-of-duties rule.
 - Retryable failure mapping, attempt ceilings, timing and manual-retry authority.
 - Command-idempotency retention.
-- Evidence encoding details, privacy classification, retention and archival.
+- Evidence retention and archival.
 - Cancellation and supersession effects on attempts and reservations beyond
   pending-approval invalidation and evidence preservation.
 - Currency, precision, reservation, settlement, release, refund and provider
