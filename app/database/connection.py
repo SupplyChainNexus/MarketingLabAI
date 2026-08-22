@@ -465,6 +465,255 @@ class SQLiteDatabase:
                 CREATE INDEX IF NOT EXISTS idx_campaign_plans_status
                     ON campaign_plans(tenant_id, status);
 
+                CREATE TABLE IF NOT EXISTS marketing_workflows (
+                    workflow_id TEXT NOT NULL,
+                    tenant_id TEXT NOT NULL,
+                    brand_id TEXT NOT NULL,
+                    campaign_plan_id TEXT NOT NULL,
+                    campaign_plan_version INTEGER NOT NULL,
+                    marketing_brief_id TEXT,
+                    marketing_brief_version INTEGER,
+                    predecessor_workflow_id TEXT,
+                    successor_workflow_id TEXT,
+                    state TEXT NOT NULL,
+                    failure_class TEXT,
+                    version INTEGER NOT NULL,
+                    blocked_resume_state TEXT,
+                    canonical_artifact_ref_json TEXT,
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    PRIMARY KEY (tenant_id, brand_id, workflow_id),
+                    FOREIGN KEY (tenant_id) REFERENCES tenants(tenant_id),
+                    FOREIGN KEY (brand_id) REFERENCES brands(brand_id)
+                        ON DELETE CASCADE
+                );
+
+                CREATE INDEX IF NOT EXISTS idx_marketing_workflows_state
+                    ON marketing_workflows(tenant_id, brand_id, state);
+
+                CREATE UNIQUE INDEX IF NOT EXISTS
+                    idx_marketing_workflows_recovery_predecessor
+                    ON marketing_workflows(
+                        tenant_id, brand_id, predecessor_workflow_id
+                    )
+                    WHERE predecessor_workflow_id IS NOT NULL;
+
+                CREATE TABLE IF NOT EXISTS workflow_command_receipts (
+                    receipt_id TEXT PRIMARY KEY,
+                    tenant_id TEXT NOT NULL,
+                    brand_id TEXT NOT NULL,
+                    workflow_id TEXT NOT NULL,
+                    command_kind TEXT NOT NULL,
+                    idempotency_key_sha256 TEXT NOT NULL,
+                    request_hash TEXT NOT NULL,
+                    receipt_hash TEXT NOT NULL,
+                    outcome TEXT NOT NULL,
+                    canonical_json TEXT NOT NULL,
+                    recorded_at TEXT NOT NULL,
+                    FOREIGN KEY (tenant_id, brand_id, workflow_id)
+                        REFERENCES marketing_workflows(
+                            tenant_id, brand_id, workflow_id
+                        )
+                );
+
+                CREATE INDEX IF NOT EXISTS idx_workflow_receipts_scope
+                    ON workflow_command_receipts(
+                        tenant_id, brand_id, workflow_id,
+                        command_kind, idempotency_key_sha256
+                    );
+
+                CREATE TABLE IF NOT EXISTS workflow_idempotency_scopes (
+                    tenant_id TEXT NOT NULL,
+                    brand_id TEXT NOT NULL,
+                    workflow_id TEXT NOT NULL,
+                    command_kind TEXT NOT NULL,
+                    idempotency_key_sha256 TEXT NOT NULL,
+                    request_hash TEXT NOT NULL,
+                    original_receipt_id TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    PRIMARY KEY (
+                        tenant_id, brand_id, workflow_id,
+                        command_kind, idempotency_key_sha256
+                    ),
+                    FOREIGN KEY (original_receipt_id)
+                        REFERENCES workflow_command_receipts(receipt_id),
+                    FOREIGN KEY (tenant_id, brand_id, workflow_id)
+                        REFERENCES marketing_workflows(
+                            tenant_id, brand_id, workflow_id
+                        )
+                );
+
+                CREATE TABLE IF NOT EXISTS workflow_approvals (
+                    approval_id TEXT PRIMARY KEY,
+                    tenant_id TEXT NOT NULL,
+                    brand_id TEXT NOT NULL,
+                    workflow_id TEXT NOT NULL,
+                    workflow_version INTEGER NOT NULL,
+                    action TEXT NOT NULL,
+                    decision TEXT NOT NULL,
+                    requested_by_actor_ref TEXT NOT NULL,
+                    decided_by_actor_ref TEXT NOT NULL,
+                    decided_at TEXT NOT NULL,
+                    canonical_json TEXT NOT NULL,
+                    UNIQUE (
+                        tenant_id, brand_id, workflow_id,
+                        workflow_version, action
+                    ),
+                    FOREIGN KEY (tenant_id, brand_id, workflow_id)
+                        REFERENCES marketing_workflows(
+                            tenant_id, brand_id, workflow_id
+                        )
+                );
+
+                CREATE INDEX IF NOT EXISTS idx_workflow_approvals_binding
+                    ON workflow_approvals(
+                        tenant_id, brand_id, workflow_id,
+                        workflow_version, action
+                    );
+
+                CREATE TABLE IF NOT EXISTS workflow_evidence (
+                    evidence_id TEXT PRIMARY KEY,
+                    tenant_id TEXT NOT NULL,
+                    brand_id TEXT NOT NULL,
+                    workflow_id TEXT NOT NULL,
+                    workflow_version INTEGER NOT NULL,
+                    sequence INTEGER NOT NULL,
+                    predecessor_sha256 TEXT NOT NULL,
+                    evidence_sha256 TEXT NOT NULL,
+                    canonical_json TEXT NOT NULL,
+                    occurred_at TEXT NOT NULL,
+                    UNIQUE (tenant_id, brand_id, workflow_id, sequence),
+                    FOREIGN KEY (tenant_id, brand_id, workflow_id)
+                        REFERENCES marketing_workflows(
+                            tenant_id, brand_id, workflow_id
+                        )
+                );
+
+                CREATE INDEX IF NOT EXISTS idx_workflow_evidence_chain
+                    ON workflow_evidence(
+                        tenant_id, brand_id, workflow_id, sequence
+                    );
+
+                CREATE TABLE IF NOT EXISTS workflow_artifact_proofs (
+                    proof_id TEXT PRIMARY KEY,
+                    tenant_id TEXT NOT NULL,
+                    brand_id TEXT NOT NULL,
+                    workflow_id TEXT NOT NULL,
+                    workflow_version INTEGER NOT NULL,
+                    command_receipt_id TEXT NOT NULL,
+                    evidence_id TEXT NOT NULL,
+                    availability TEXT NOT NULL,
+                    artifact_id TEXT NOT NULL,
+                    artifact_version INTEGER NOT NULL,
+                    repository_revision TEXT NOT NULL,
+                    content_sha256 TEXT,
+                    proved_at TEXT NOT NULL,
+                    canonical_json TEXT NOT NULL,
+                    UNIQUE (command_receipt_id),
+                    UNIQUE (evidence_id),
+                    FOREIGN KEY (tenant_id, brand_id, workflow_id)
+                        REFERENCES marketing_workflows(
+                            tenant_id, brand_id, workflow_id
+                        ),
+                    FOREIGN KEY (command_receipt_id)
+                        REFERENCES workflow_command_receipts(receipt_id),
+                    FOREIGN KEY (evidence_id)
+                        REFERENCES workflow_evidence(evidence_id)
+                );
+
+                CREATE INDEX IF NOT EXISTS idx_workflow_artifact_proof_scope
+                    ON workflow_artifact_proofs(
+                        tenant_id, brand_id, workflow_id, workflow_version
+                    );
+
+                CREATE TABLE IF NOT EXISTS workflow_recovery_scopes (
+                    tenant_id TEXT NOT NULL,
+                    brand_id TEXT NOT NULL,
+                    predecessor_workflow_id TEXT NOT NULL,
+                    successor_workflow_id TEXT NOT NULL,
+                    request_hash TEXT NOT NULL,
+                    original_receipt_id TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    PRIMARY KEY (
+                        tenant_id, brand_id, predecessor_workflow_id
+                    ),
+                    UNIQUE (tenant_id, brand_id, successor_workflow_id),
+                    FOREIGN KEY (
+                        tenant_id, brand_id, predecessor_workflow_id
+                    ) REFERENCES marketing_workflows(
+                        tenant_id, brand_id, workflow_id
+                    ),
+                    FOREIGN KEY (
+                        tenant_id, brand_id, successor_workflow_id
+                    ) REFERENCES marketing_workflows(
+                        tenant_id, brand_id, workflow_id
+                    ),
+                    FOREIGN KEY (original_receipt_id)
+                        REFERENCES workflow_command_receipts(receipt_id)
+                );
+
+                CREATE TABLE IF NOT EXISTS workflow_recovery_conflict_scopes (
+                    tenant_id TEXT NOT NULL,
+                    brand_id TEXT NOT NULL,
+                    predecessor_workflow_id TEXT NOT NULL,
+                    request_workflow_id TEXT NOT NULL,
+                    command_kind TEXT NOT NULL,
+                    idempotency_key_sha256 TEXT NOT NULL,
+                    request_hash TEXT NOT NULL,
+                    authoritative_workflow_id TEXT NOT NULL,
+                    authoritative_receipt_id TEXT NOT NULL,
+                    conflict_receipt_id TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    PRIMARY KEY (
+                        tenant_id, brand_id, request_workflow_id,
+                        command_kind, idempotency_key_sha256
+                    ),
+                    FOREIGN KEY (
+                        tenant_id, brand_id, predecessor_workflow_id
+                    ) REFERENCES marketing_workflows(
+                        tenant_id, brand_id, workflow_id
+                    ),
+                    FOREIGN KEY (
+                        tenant_id, brand_id, authoritative_workflow_id
+                    ) REFERENCES marketing_workflows(
+                        tenant_id, brand_id, workflow_id
+                    ),
+                    FOREIGN KEY (authoritative_receipt_id)
+                        REFERENCES workflow_command_receipts(receipt_id),
+                    FOREIGN KEY (conflict_receipt_id)
+                        REFERENCES workflow_command_receipts(receipt_id)
+                );
+
+                CREATE TABLE IF NOT EXISTS workflow_recovery_conflict_replays (
+                    tenant_id TEXT NOT NULL,
+                    brand_id TEXT NOT NULL,
+                    request_workflow_id TEXT NOT NULL,
+                    command_kind TEXT NOT NULL,
+                    idempotency_key_sha256 TEXT NOT NULL,
+                    request_hash TEXT NOT NULL,
+                    requested_predecessor_workflow_id TEXT NOT NULL,
+                    conflict_receipt_id TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    PRIMARY KEY (
+                        tenant_id, brand_id, request_workflow_id,
+                        command_kind, idempotency_key_sha256, request_hash
+                    ),
+                    FOREIGN KEY (
+                        tenant_id, brand_id, request_workflow_id,
+                        command_kind, idempotency_key_sha256
+                    ) REFERENCES workflow_recovery_conflict_scopes(
+                        tenant_id, brand_id, request_workflow_id,
+                        command_kind, idempotency_key_sha256
+                    ),
+                    FOREIGN KEY (
+                        tenant_id, brand_id, requested_predecessor_workflow_id
+                    ) REFERENCES marketing_workflows(
+                        tenant_id, brand_id, workflow_id
+                    ),
+                    FOREIGN KEY (conflict_receipt_id)
+                        REFERENCES workflow_command_receipts(receipt_id)
+                );
+
                 CREATE INDEX IF NOT EXISTS idx_prompt_packs_tenant
                     ON prompt_packs(tenant_id);
 
@@ -505,6 +754,16 @@ class SQLiteDatabase:
                 VALUES (
                     2,
                     'Add versioned compliance rules',
+                    strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+                )
+                """)
+
+            connection.execute("""
+                INSERT OR IGNORE INTO schema_migrations (
+                    version, description, applied_at
+                ) VALUES (
+                    18,
+                    'Add durable marketing workflow foundation',
                     strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
                 )
                 """)

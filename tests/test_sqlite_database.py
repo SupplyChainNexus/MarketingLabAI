@@ -40,6 +40,7 @@ class SQLiteDatabaseTests(unittest.TestCase):
                 "customer_intelligence_profiles",
                 "data_migration_log",
                 "marketing_briefs",
+                "marketing_workflows",
                 "memory_events",
                 "pilot_activation_events",
                 "pilot_privacy_acceptances",
@@ -52,6 +53,14 @@ class SQLiteDatabaseTests(unittest.TestCase):
                 "strategy_decisions",
                 "tenant_memberships",
                 "tenants",
+                "workflow_approvals",
+                "workflow_artifact_proofs",
+                "workflow_command_receipts",
+                "workflow_evidence",
+                "workflow_idempotency_scopes",
+                "workflow_recovery_conflict_replays",
+                "workflow_recovery_conflict_scopes",
+                "workflow_recovery_scopes",
             ],
         )
 
