@@ -5,8 +5,10 @@
 - `MLAI_PERSISTENCE_BACKEND=postgresql` selects the canonical PostgreSQL adapter.
 - `MLAI_DATABASE_URL` is required and must be supplied through Secret Manager in
   hosted environments; credentials never belong in Git, evidence, logs or packages.
-- Canonical schema generation covers all 21 tables and indexes, including the tenant
-  foreign-key boundary added to the migrated `brands` table.
+- Canonical schema generation derives the complete current table and index set from
+  the repository schema source, including the tenant foreign-key boundary added to
+  the migrated `brands` table. Rehearsal expectations use that same source rather
+  than a hard-coded table count.
 - Repository SQL uses one adapter boundary for placeholders, UTC timestamps and
   conflict-safe inserts. PostgreSQL integrity errors retain the established
   repository conflict behavior.
@@ -28,6 +30,23 @@ empty PostgreSQL target bound to the exact candidate commit:
 6. Classify and remediate every failure, then rerun the same gate.
 7. Store only a sanitized, immutable evidence reference and the candidate commit in
    `MLAI_DURABLE_ADAPTER_EVIDENCE_REFERENCE`.
+
+### Local session-lifecycle rehearsal harness
+
+`python -m tools.postgresql_rehearsal` runs the focused live PostgreSQL session
+contracts against the loopback-only database named by `MLAI_DATABASE_URL`. The
+database name must match `mlai_rehearsal` or an explicitly disposable
+`mlai_rehearsal_*` name. The operator must provision that database as empty; the
+harness never requires cluster-wide `CREATEDB` authority and refuses a missing or
+non-empty target. Empty-target inspection covers non-system schemas, tables, views,
+materialized views, sequences, routines and user-defined types. `localhost` is
+accepted only when every resolved address is loopback-local. Each test resets only
+the disposable target's `public` schema and registers the same reset as cleanup
+before application composition. The harness derives table and migration expectations
+from the canonical schema builders, applies bounded connection, statement and lock
+timeouts, streams redacted tracebacks, and drops and independently verifies absence
+of the exact disposable database after success, failure or timeout. It never changes
+PostgreSQL server configuration and is not a production or managed-backup rehearsal.
 
 ## Rollback and cutover
 
