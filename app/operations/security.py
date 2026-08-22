@@ -76,13 +76,18 @@ class ProductionSecurityEvaluator:
         self.external_evidence = evidence
 
     def evaluate(self) -> ProductionSecurityReport:
-        self.database.initialise()
-        tables = set(self.database.table_names())
+        schema_ready = self.database.schema_is_ready()
+        tables = set(self.database.table_names()) if schema_ready else set()
         approved_tenants = {
             "strand-auto-parts-pilot",
             "velani-wholesale-pilot",
         }
         checks = (
+            SecurityCheck(
+                "database_schema_ready",
+                schema_ready,
+                "canonical database schema and migrations are present",
+            ),
             SecurityCheck(
                 "google_identity_selected",
                 self.config.identity_provider == "google-cloud-identity-platform",

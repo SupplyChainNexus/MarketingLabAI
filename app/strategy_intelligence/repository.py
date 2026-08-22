@@ -21,7 +21,7 @@ def _identifier(value: str, name: str) -> str:
 class StrategyRepository:
     def __init__(self, database: SQLiteDatabase | None = None) -> None:
         self.database = database or SQLiteDatabase()
-        self.database.initialise()
+        self.database.ensure_initialised()
 
     def save(self, decision: StrategyDecision) -> None:
         if not isinstance(decision, StrategyDecision):

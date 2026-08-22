@@ -17,7 +17,7 @@ class MarketingBriefRepository:
         database: SQLiteDatabase | None = None,
     ) -> None:
         self.database = database or SQLiteDatabase()
-        self.database.initialise()
+        self.database.ensure_initialised()
 
     def save(self, brief: MarketingBrief) -> None:
         "Persist a new Marketing Brief version."

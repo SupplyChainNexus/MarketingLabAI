@@ -79,7 +79,7 @@ class CanonicalApplication:
         """Build all canonical repositories over one database."""
 
         selected_database = database or SQLiteDatabase()
-        selected_database.initialise()
+        selected_database.ensure_initialised()
 
         identities = IdentityRepository(selected_database)
         return cls(

@@ -1,4 +1,4 @@
-﻿"""SQLite persistence for versioned Prompt Packs."""
+"""SQLite persistence for versioned Prompt Packs."""
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ class PromptPackRepository:
         database: SQLiteDatabase | None = None,
     ) -> None:
         self.database = database or SQLiteDatabase()
-        self.database.initialise()
+        self.database.ensure_initialised()
 
     def save(self, prompt_pack: PromptPack) -> None:
         """Persist a new Prompt Pack version."""

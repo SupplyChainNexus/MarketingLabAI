@@ -62,17 +62,24 @@ class OperationalReadinessEvaluator:
     ) -> None:
         self.config = config
         self.database = database
-        self.repository = repository or ReadinessEvidenceRepository(database)
+        self.repository = repository
 
     def evaluate(self) -> OperationalReadinessReport:
-        self.database.initialise()
+        schema_ready = self.database.schema_is_ready()
+        repository = self.repository
+        if schema_ready and repository is None:
+            repository = ReadinessEvidenceRepository(
+                self.database, ensure_initialised=False
+            )
         evidence = (
-            self.repository.current_passes(
+            repository.current_passes(
                 self.REQUIRED_EVIDENCE,
                 environment=self.config.environment,
                 commit_sha=self.config.deployment_commit,
             )
-            if self.config.deployment_commit != "unrecorded"
+            if schema_ready
+            and repository is not None
+            and self.config.deployment_commit != "unrecorded"
             else {}
         )
         checks = (
@@ -83,7 +90,7 @@ class OperationalReadinessEvaluator:
             ),
             OperationalCheck(
                 "readiness_evidence_schema",
-                "pilot_readiness_evidence" in self.database.table_names(),
+                schema_ready,
                 "immutable readiness evidence is persisted under migration 17",
             ),
             *tuple(

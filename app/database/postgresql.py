@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 import tempfile
+import threading
 from collections.abc import Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from pathlib import Path
@@ -278,6 +279,8 @@ class PostgreSQLDatabase(SQLiteDatabase):
             "postgresql+psycopg://", "postgresql://", 1
         )
         self.database_path = Path("postgresql-managed")
+        self._initialization_lock = threading.Lock()
+        self._initialization_complete = False
 
     def connect(self) -> PostgreSQLConnectionAdapter:
         try:
@@ -309,7 +312,7 @@ class PostgreSQLDatabase(SQLiteDatabase):
         finally:
             connection.close()
 
-    def initialise(self) -> None:
+    def _apply_schema(self) -> None:
         with self.transaction() as connection:
             for statement in build_postgresql_schema():
                 connection.execute(statement)

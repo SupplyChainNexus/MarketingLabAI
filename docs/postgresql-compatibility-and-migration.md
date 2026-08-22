@@ -12,6 +12,12 @@
 - Repository SQL uses one adapter boundary for placeholders, UTC timestamps and
   conflict-safe inserts. PostgreSQL integrity errors retain the established
   repository conflict behavior.
+- Database instances expose a single-flight `ensure_initialised()` lifecycle used
+  by application composition and repository constructors. Only successful schema
+  application is cached. Explicit `initialise()` remains the operator and test
+  reconciliation boundary and always reapplies idempotent schema checks.
+- Readiness evaluation is observational: it verifies the canonical table set and
+  migration versions without applying DDL or repairing an incomplete target.
 - Synthetic migration copies every table in one target transaction, verifies exact
   counts and proves the SQLite source hash did not change.
 

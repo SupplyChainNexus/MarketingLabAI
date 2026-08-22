@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import sqlite3
+import threading
 from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
@@ -16,12 +17,50 @@ from app.tenants.migration import (
 class SQLiteDatabase:
     """Manage SQLite connections and database initialisation."""
 
+    REQUIRED_MIGRATION_VERSIONS = frozenset(range(1, 19))
+    REQUIRED_TABLES = frozenset(
+        {
+            "api_idempotency_records",
+            "authorization_audit_events",
+            "brands",
+            "business_intelligence_profiles",
+            "campaign_plans",
+            "compliance_rules",
+            "customer_intelligence_profiles",
+            "data_migration_log",
+            "marketing_briefs",
+            "marketing_workflows",
+            "memory_events",
+            "pilot_activation_events",
+            "pilot_privacy_acceptances",
+            "pilot_readiness_evidence",
+            "pilot_sessions",
+            "positioning_decisions",
+            "product_intelligence_profiles",
+            "prompt_packs",
+            "schema_migrations",
+            "strategy_decisions",
+            "tenant_memberships",
+            "tenants",
+            "workflow_approvals",
+            "workflow_artifact_proofs",
+            "workflow_command_receipts",
+            "workflow_evidence",
+            "workflow_idempotency_scopes",
+            "workflow_recovery_conflict_replays",
+            "workflow_recovery_conflict_scopes",
+            "workflow_recovery_scopes",
+        }
+    )
+
     def __init__(
         self,
         database_path: str | Path = "database/marketinglabai.db",
     ) -> None:
         self.database_path = Path(database_path)
         self.database_path.parent.mkdir(parents=True, exist_ok=True)
+        self._initialization_lock = threading.Lock()
+        self._initialization_complete = False
 
     def connect(self) -> sqlite3.Connection:
         """Create and return a configured SQLite connection."""
@@ -65,8 +104,27 @@ class SQLiteDatabase:
         finally:
             connection.close()
 
+    def ensure_initialised(self) -> None:
+        """Apply the schema once per instance, caching only successful completion."""
+
+        if self._initialization_complete:
+            return
+        with self._initialization_lock:
+            if self._initialization_complete:
+                return
+            self._apply_schema()
+            self._initialization_complete = True
+
     def initialise(self) -> None:
-        """Create all current database tables and indexes."""
+        """Explicitly reconcile all current database tables and indexes."""
+
+        with self._initialization_lock:
+            self._initialization_complete = False
+            self._apply_schema()
+            self._initialization_complete = True
+
+    def _apply_schema(self) -> None:
+        """Apply the canonical schema without changing lifecycle state."""
 
         with self.transaction() as connection:
             connection.executescript("""
@@ -948,6 +1006,21 @@ class SQLiteDatabase:
                 """).fetchall()
 
         return [str(row["name"]) for row in rows]
+
+    def schema_is_ready(self) -> bool:
+        """Observe whether the complete canonical schema is present without repair."""
+
+        try:
+            tables = set(self.table_names())
+            if not self.REQUIRED_TABLES.issubset(tables):
+                return False
+            with self.connection() as connection:
+                rows = connection.execute(
+                    "SELECT version FROM schema_migrations ORDER BY version"
+                ).fetchall()
+        except Exception:
+            return False
+        return {int(row[0]) for row in rows} == self.REQUIRED_MIGRATION_VERSIONS
 
     def integrity_check(self) -> str:
         """Run SQLite's built-in database integrity check."""

@@ -60,6 +60,7 @@ class ProductionSecurityReadinessTests(unittest.TestCase):
     def test_complete_security_evidence_never_activates_real_data(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             database = SQLiteDatabase(Path(directory) / "security.sqlite3")
+            database.initialise()
             report = (
                 ProductionSecurityEvaluator(
                     self.configuration(MLAI_SECURITY_EVIDENCE_JSON="{}"),
@@ -82,10 +83,12 @@ class ProductionSecurityReadinessTests(unittest.TestCase):
             MLAI_IDENTITY_PROVIDER="synthetic-test",
         )
         with tempfile.TemporaryDirectory() as directory:
+            database = SQLiteDatabase(Path(directory) / "security.sqlite3")
+            database.initialise()
             report = (
                 ProductionSecurityEvaluator(
                     config,
-                    SQLiteDatabase(Path(directory) / "security.sqlite3"),
+                    database,
                     external_evidence=self.external_evidence(),
                 )
                 .evaluate()
@@ -97,10 +100,12 @@ class ProductionSecurityReadinessTests(unittest.TestCase):
 
     def test_missing_external_rehearsal_evidence_remains_a_blocker(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
+            database = SQLiteDatabase(Path(directory) / "security.sqlite3")
+            database.initialise()
             report = (
                 ProductionSecurityEvaluator(
                     self.configuration(),
-                    SQLiteDatabase(Path(directory) / "security.sqlite3"),
+                    database,
                 )
                 .evaluate()
                 .to_dict()

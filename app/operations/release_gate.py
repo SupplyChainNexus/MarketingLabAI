@@ -60,12 +60,17 @@ class PilotReleaseGate:
         self.database = database
 
     def evaluate(self) -> ReleaseGateReport:
-        self.database.initialise()
-        migration_versions = self._migration_versions()
+        schema_ready = self.database.schema_is_ready()
+        migration_versions = self._migration_versions() if schema_ready else set()
         checks = (
             GateCheck(
+                "database_schema_ready",
+                schema_ready,
+                "canonical schema and migrations must exist before readiness",
+            ),
+            GateCheck(
                 "database_integrity",
-                self.database.integrity_check() == "ok",
+                schema_ready and self.database.integrity_check() == "ok",
                 f"{self.config.persistence_backend} integrity check",
             ),
             GateCheck(
@@ -106,14 +111,18 @@ class PilotReleaseGate:
                 "real-data activation freeze retained",
             ),
         )
-        repository = ReadinessEvidenceRepository(self.database)
+        repository = (
+            ReadinessEvidenceRepository(self.database, ensure_initialised=False)
+            if schema_ready
+            else None
+        )
         security_evidence = (
             repository.current_passes(
                 ProductionSecurityEvaluator.EXTERNAL_EVIDENCE,
                 environment=self.config.environment,
                 commit_sha=self.config.deployment_commit,
             )
-            if self.config.deployment_commit != "unrecorded"
+            if repository is not None and self.config.deployment_commit != "unrecorded"
             else {}
         )
         security = (
@@ -141,17 +150,24 @@ class PilotReleaseGate:
     def security_evidence(self) -> dict:
         """Return production-security evidence without changing activation."""
 
+        schema_ready = self.database.schema_is_ready()
+        repository = (
+            ReadinessEvidenceRepository(self.database, ensure_initialised=False)
+            if schema_ready
+            else None
+        )
         return (
             ProductionSecurityEvaluator(
                 self.config,
                 self.database,
                 external_evidence=(
-                    ReadinessEvidenceRepository(self.database).current_passes(
+                    repository.current_passes(
                         ProductionSecurityEvaluator.EXTERNAL_EVIDENCE,
                         environment=self.config.environment,
                         commit_sha=self.config.deployment_commit,
                     )
-                    if self.config.deployment_commit != "unrecorded"
+                    if repository is not None
+                    and self.config.deployment_commit != "unrecorded"
                     else {}
                 ),
             )
