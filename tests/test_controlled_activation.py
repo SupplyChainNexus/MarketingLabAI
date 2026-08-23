@@ -8,6 +8,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from app.database.connection import SQLiteDatabase
+from app.database.factory import bootstrap_database
 from app.design_partner import (
     ActivatedDataCategory,
     ActivationStage,
@@ -30,6 +31,7 @@ class ControlledActivationTests(unittest.TestCase):
     def setUp(self) -> None:
         self.temp = tempfile.TemporaryDirectory()
         self.database = SQLiteDatabase(Path(self.temp.name) / "activation.sqlite3")
+        bootstrap_database(self.database)
         TenantRepository(self.database).save(
             Tenant("velani-wholesale-pilot", "Velani Wholesale")
         )

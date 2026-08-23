@@ -5,6 +5,7 @@ import unittest
 from pathlib import Path
 
 from app.database.connection import SQLiteDatabase
+from app.database.factory import bootstrap_database
 from app.database.repositories import BrandRepository
 from app.positioning_intelligence import (
     CandidateStatus,
@@ -26,6 +27,7 @@ class PositioningValuePropositionTests(unittest.TestCase):
     def setUp(self) -> None:
         self.folder = tempfile.TemporaryDirectory()
         database = SQLiteDatabase(Path(self.folder.name) / "db.sqlite")
+        bootstrap_database(database)
         BrandRepository(database).save(
             {"brand_id": "brand", "tenant_id": "default", "name": "Brand"}
         )

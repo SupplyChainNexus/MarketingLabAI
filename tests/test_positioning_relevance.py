@@ -6,6 +6,7 @@ from pathlib import Path
 
 from app.customer_intelligence import CustomerIntelligenceProfile, CustomerPersona
 from app.database.connection import SQLiteDatabase
+from app.database.factory import bootstrap_database
 from app.database.repositories import BrandRepository, CustomerIntelligenceRepository
 from app.positioning_intelligence import (
     PositioningDecision,
@@ -26,6 +27,7 @@ class PositioningRelevanceTests(unittest.TestCase):
     def setUp(self) -> None:
         self.folder = tempfile.TemporaryDirectory()
         self.database = SQLiteDatabase(Path(self.folder.name) / "db.sqlite")
+        bootstrap_database(self.database)
         self.brands = BrandRepository(self.database)
         self.customers = CustomerIntelligenceRepository(self.database)
         self.products = ProductIntelligenceRepository(self.database)
