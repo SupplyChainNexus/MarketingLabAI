@@ -29,6 +29,7 @@ from app.marketing_workflow.canonical import (
 from app.marketing_workflow.models import WorkflowAuthority
 from app.marketing_workflow.orchestration import (
     PROGRESS_ORDINAL,
+    OperationClaimConflictError,
     OperationClaimResult,
     WorkflowApiOrchestration,
 )
@@ -929,6 +930,27 @@ class WorkflowApiOperations:
             client_key_digest=digest,
         )
         if existing_claim is not None and existing_claim.final_response_json:
+            stored_plan = json.loads(existing_claim.command_plan_json)
+            stored_command = stored_plan["commands"][0]
+            stored_safe = stored_command["safe_command"]
+            candidate_plan = self._operation_plan(
+                tenant_id=tenant_id,
+                brand_id=brand_id,
+                actor_ref=actor,
+                workflow_id=workflow_id,
+                operation="approval_decision",
+                client_digest=digest,
+                parent_id=existing_claim.parent_orchestration_id,
+                command_kind="record_approval",
+                expected=expected_version,
+                safe={**stored_safe, "decision": decision},
+                requested_at=stored_plan["requested_at"],
+            )
+            if (
+                existing_claim.workflow_id != workflow_id
+                or self._request_hash(candidate_plan) != existing_claim.request_hash
+            ):
+                raise OperationClaimConflictError(existing_claim)
             return workflow_response_from_envelope(
                 json.loads(existing_claim.final_response_json), replayed=True
             )
