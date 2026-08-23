@@ -17,9 +17,14 @@ from app.marketing_workflow.canonical import (
     MLAI_CJ_1,
     MLAI_CJ_2,
     canonical_json,
+    deterministic_actor_ref,
+    deterministic_command_key_digest,
+    deterministic_subcommand_request_id,
+    deterministic_workflow_id,
     idempotency_key_sha256,
     record_sha256,
     utc_timestamp,
+    validate_client_idempotency_key,
 )
 from app.marketing_workflow.models import (
     ApprovalDecision,
@@ -313,6 +318,83 @@ class MarketingWorkflowFoundationTests(unittest.TestCase):
             record_sha256("command_request", golden_envelope),
             "6ad2fdf41500a0141fb687f85653cbe6d4da1a138e5766a3eed8ff9358acb0e9",
         )
+
+    def test_mlai_033_2_identity_derivations_have_frozen_vectors(self) -> None:
+        client_key = "client-key-0123456789abcdef"
+        client_digest = idempotency_key_sha256(client_key)
+        self.assertEqual(
+            client_digest,
+            "72f08398b1dc93426bc383f54115c462b51f804fe4e7be63a7a39c3591f12388",
+        )
+        self.assertEqual(
+            deterministic_workflow_id(
+                tenant_id="tenant_demo",
+                brand_id="brand_demo",
+                actor_ref="act_demo",
+                operation="planning_to_approval",
+                client_key_digest=client_digest,
+            ),
+            "mwf_96fed3b7e6a95c30a0f6198dbdf14c63",
+        )
+        self.assertEqual(
+            deterministic_actor_ref(
+                provider="identity_provider", subject_id="subject_demo"
+            ),
+            "act_0800e4ab912d3675c21049a58c88ddf6",
+        )
+        self.assertEqual(
+            deterministic_subcommand_request_id(
+                orchestration_id="orch_demo",
+                ordinal=1,
+                command_kind="create_workflow",
+            ),
+            "req_f1229366dc43c4c8d5cb7460aa7720ed",
+        )
+        self.assertEqual(
+            deterministic_command_key_digest(
+                client_key_digest=client_digest,
+                ordinal=1,
+                command_kind="create_workflow",
+            ),
+            "34732600cc0600ffcfea37b98a2b4dd198ec5d92f1139db8125f4a370d9c3e3d",
+        )
+
+    def test_client_key_validation_is_strict_without_changing_legacy_keys(self) -> None:
+        self.assertEqual(
+            validate_client_idempotency_key("client-key-0123456789abcdef"),
+            "client-key-0123456789abcdef",
+        )
+        for invalid in (
+            "short",
+            "client key with spaces 0123456789",
+            "client-key-0123456789abcdef/",
+            "x" * 257,
+            None,
+            True,
+        ):
+            with (
+                self.subTest(value=invalid),
+                self.assertRaises((TypeError, ValueError)),
+            ):
+                validate_client_idempotency_key(invalid)
+        self.assertEqual(idempotency_key_sha256("key"), idempotency_key_sha256("key"))
+
+    def test_identity_inputs_are_privacy_safe_and_deterministic(self) -> None:
+        workflow = deterministic_workflow_id(
+            tenant_id="tenant_demo",
+            brand_id="brand_demo",
+            actor_ref="act_demo",
+            operation="planning_to_approval",
+            client_key_digest="a" * 64,
+        )
+        self.assertTrue(workflow.startswith("mwf_"))
+        self.assertEqual(len(workflow), 36)
+        self.assertNotIn("tenant_demo", workflow)
+        actor = deterministic_actor_ref(
+            provider="identity_provider", subject_id="subject_sensitive"
+        )
+        self.assertNotIn("identity_provider", actor)
+        self.assertNotIn("subject_sensitive", actor)
 
     def test_creation_request_receipt_hashing_and_exact_replay(self) -> None:
         command = self._command("workflow-create", key="create-key")

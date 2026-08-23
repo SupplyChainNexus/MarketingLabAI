@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import unicodedata
 from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime
@@ -33,6 +34,15 @@ IDEMPOTENCY_DOMAINS = {
     (MLAI_CJ_1, 1): "earthonox/mlai-033.1/idempotency-key/MLAI-CJ-1",
     (MLAI_CJ_2, 2): "earthonox/mlai-033.1/idempotency-key/MLAI-CJ-2",
 }
+IDENTITY_DOMAINS = {
+    "workflow": "earthonox/mlai-033.2/workflow-id/v1",
+    "actor": "earthonox/mlai-033.2/actor-ref/v1",
+    "request": "earthonox/mlai-033.2/subcommand-request/v1",
+    "command_key": "earthonox/mlai-033.2/subcommand-idempotency/v1",
+}
+CLIENT_KEY_MIN_BYTES = 22
+CLIENT_KEY_MAX_BYTES = 256
+CLIENT_KEY_PATTERN = re.compile(r"^[A-Za-z0-9._~-]+$")
 SENSITIVE_FIELD_MARKERS = frozenset(
     {
         "access_token",
@@ -203,6 +213,110 @@ def idempotency_key_sha256(
     return hashlib.sha256(
         domain.encode("ascii") + b"\n" + normalized.encode("utf-8")
     ).hexdigest()
+
+
+def validate_client_idempotency_key(value: str) -> str:
+    """Validate the new API key representation without changing legacy keys."""
+
+    if not isinstance(value, str):
+        raise TypeError("client idempotency key must be a string")
+    normalized = _nfc(value)
+    encoded = normalized.encode("utf-8")
+    if not (
+        CLIENT_KEY_MIN_BYTES <= len(encoded) <= CLIENT_KEY_MAX_BYTES
+        and CLIENT_KEY_PATTERN.fullmatch(normalized)
+    ):
+        raise ValueError(
+            "client idempotency key must be 22 to 256 URL-safe UTF-8 bytes"
+        )
+    return normalized
+
+
+def _identity_digest(kind: str, payload: Mapping[str, Any]) -> str:
+    try:
+        domain = IDENTITY_DOMAINS[kind]
+    except KeyError as error:
+        raise ValueError("unsupported identity derivation kind") from error
+    return hashlib.sha256(
+        domain.encode("ascii") + b"\n" + canonical_json_bytes(payload)
+    ).hexdigest()
+
+
+def deterministic_workflow_id(
+    *,
+    tenant_id: str,
+    brand_id: str,
+    actor_ref: str,
+    operation: str,
+    client_key_digest: str,
+) -> str:
+    """Derive one stable, privacy-safe 128-bit workflow identity."""
+
+    assert_privacy_safe(
+        {
+            "tenant_id": tenant_id,
+            "brand_id": brand_id,
+            "actor_ref": actor_ref,
+            "operation": operation,
+            "client_key_digest": client_key_digest,
+        }
+    )
+    digest = _identity_digest(
+        "workflow",
+        {
+            "actor_ref": _nfc(actor_ref),
+            "brand_id": _nfc(brand_id),
+            "client_key_digest": _nfc(client_key_digest),
+            "operation": _nfc(operation),
+            "tenant_id": _nfc(tenant_id),
+        },
+    )
+    return f"mwf_{digest[:32]}"
+
+
+def deterministic_actor_ref(*, provider: str, subject_id: str) -> str:
+    """Derive a stable pseudonymous reference from authenticated identity."""
+
+    digest = _identity_digest(
+        "actor",
+        {"provider": _nfc(provider), "subject_id": _nfc(subject_id)},
+    )
+    return f"act_{digest[:32]}"
+
+
+def deterministic_subcommand_request_id(
+    *, orchestration_id: str, ordinal: int, command_kind: str
+) -> str:
+    """Derive a stable request ID for one orchestration command."""
+
+    if type(ordinal) is not int or ordinal < 1:
+        raise ValueError("subcommand ordinal must be a positive integer")
+    digest = _identity_digest(
+        "request",
+        {
+            "command_kind": _nfc(command_kind),
+            "ordinal": ordinal,
+            "orchestration_id": _nfc(orchestration_id),
+        },
+    )
+    return f"req_{digest[:32]}"
+
+
+def deterministic_command_key_digest(
+    *, client_key_digest: str, ordinal: int, command_kind: str
+) -> str:
+    """Derive a command-specific digest from the orchestration claim."""
+
+    if type(ordinal) is not int or ordinal < 1:
+        raise ValueError("subcommand ordinal must be a positive integer")
+    return _identity_digest(
+        "command_key",
+        {
+            "client_key_digest": _nfc(client_key_digest),
+            "command_kind": _nfc(command_kind),
+            "ordinal": ordinal,
+        },
+    )
 
 
 def sanitized_sha256(value: Mapping[str, Any]) -> str:

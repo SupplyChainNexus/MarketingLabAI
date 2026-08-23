@@ -1,5 +1,12 @@
 """Durable provider-neutral marketing workflow foundation."""
 
+from app.marketing_workflow.canonical import (
+    deterministic_actor_ref,
+    deterministic_command_key_digest,
+    deterministic_subcommand_request_id,
+    deterministic_workflow_id,
+    validate_client_idempotency_key,
+)
 from app.marketing_workflow.models import (
     ApprovalDecision,
     ArtifactAvailability,
@@ -36,4 +43,9 @@ __all__ = [
     "WorkflowCommand",
     "WorkflowState",
     "new_workflow_id",
+    "deterministic_actor_ref",
+    "deterministic_command_key_digest",
+    "deterministic_subcommand_request_id",
+    "deterministic_workflow_id",
+    "validate_client_idempotency_key",
 ]

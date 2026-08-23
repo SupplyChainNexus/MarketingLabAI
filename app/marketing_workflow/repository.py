@@ -16,6 +16,7 @@ from app.marketing_workflow.canonical import (
     MLAI_CJ_2_SCHEMA_VERSION,
     assert_privacy_safe,
     canonical_json,
+    deterministic_workflow_id,
     idempotency_key_sha256,
     record_sha256,
     sanitized_sha256,
@@ -53,10 +54,23 @@ class OptimisticWorkflowConflictError(RuntimeError):
     """Raised when the persisted workflow version changes concurrently."""
 
 
-def new_workflow_id() -> str:
-    """Return a provider-neutral opaque workflow identifier."""
+def new_workflow_id(
+    *,
+    tenant_id: str,
+    brand_id: str,
+    actor_ref: str,
+    operation: str,
+    client_key_digest: str,
+) -> str:
+    """Return the deterministic provider-neutral workflow identifier."""
 
-    return f"mwf_{uuid4().hex}"
+    return deterministic_workflow_id(
+        tenant_id=tenant_id,
+        brand_id=brand_id,
+        actor_ref=actor_ref,
+        operation=operation,
+        client_key_digest=client_key_digest,
+    )
 
 
 class MarketingWorkflowRepository:
