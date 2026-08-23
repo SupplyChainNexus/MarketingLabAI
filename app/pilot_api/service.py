@@ -20,6 +20,7 @@ from app.design_partner import (
     SignupConflictError,
 )
 from app.identity import AuthorizationDeniedError, IdentityProviderAdapter
+from app.marketing_workflow.canonical import validate_client_idempotency_key
 from app.pilot_api.contracts import (
     ApiResponse,
     ApprovalRequest,
@@ -33,6 +34,9 @@ from app.pilot_api.contracts import (
     ExportRequest,
     GenerationRequest,
     OnboardingRequest,
+    WorkflowApprovalDecisionRequest,
+    WorkflowCommandRequest,
+    WorkflowCreateRequest,
     WorkflowReviewRequest,
 )
 from app.pilot_api.idempotency import IdempotencyRepository
@@ -73,6 +77,155 @@ class PilotApiService:
             founder_invitation_hashes or {},
         )
         self.acceptance_evaluator = acceptance_evaluator
+        from app.pilot_api.workflow import WorkflowApiOperations
+
+        self.workflow_api = WorkflowApiOperations(application)
+
+    def create_workflow(
+        self,
+        *,
+        credential: str,
+        tenant_id: str,
+        request: WorkflowCreateRequest,
+        idempotency_key: str,
+        csrf_token: str = "",
+    ) -> ApiResponse:
+        principal = self._workflow_principal(credential, tenant_id, csrf_token)
+        validate_client_idempotency_key(idempotency_key)
+        try:
+            return self.workflow_api.create_and_plan(
+                principal=principal,
+                tenant_id=tenant_id,
+                request=request,
+                idempotency_key=idempotency_key,
+            )
+        except Exception as error:
+            raise self._workflow_error(error) from error
+
+    def workflow_status(
+        self, *, credential: str, tenant_id: str, brand_id: str, workflow_id: str
+    ) -> ApiResponse:
+        principal = self._principal_only(credential, tenant_id)
+        try:
+            return self.workflow_api.status(
+                principal=principal,
+                tenant_id=tenant_id,
+                brand_id=brand_id,
+                workflow_id=workflow_id,
+            )
+        except Exception as error:
+            raise self._workflow_error(error) from error
+
+    def request_workflow_approval(
+        self,
+        *,
+        credential: str,
+        tenant_id: str,
+        brand_id: str,
+        workflow_id: str,
+        request: WorkflowCommandRequest,
+        idempotency_key: str,
+        csrf_token: str = "",
+    ) -> ApiResponse:
+        principal = self._workflow_principal(credential, tenant_id, csrf_token)
+        validate_client_idempotency_key(idempotency_key)
+        try:
+            return self.workflow_api.request_approval(
+                principal=principal,
+                tenant_id=tenant_id,
+                brand_id=brand_id,
+                workflow_id=workflow_id,
+                expected_version=request.expected_version,
+                idempotency_key=idempotency_key,
+            )
+        except Exception as error:
+            raise self._workflow_error(error) from error
+
+    def decide_workflow_approval(
+        self,
+        *,
+        credential: str,
+        tenant_id: str,
+        brand_id: str,
+        workflow_id: str,
+        request: WorkflowApprovalDecisionRequest,
+        idempotency_key: str,
+        csrf_token: str = "",
+    ) -> ApiResponse:
+        principal = self._workflow_principal(credential, tenant_id, csrf_token)
+        validate_client_idempotency_key(idempotency_key)
+        try:
+            return self.workflow_api.decide(
+                principal=principal,
+                tenant_id=tenant_id,
+                brand_id=brand_id,
+                workflow_id=workflow_id,
+                expected_version=request.expected_version,
+                decision=request.decision,
+                idempotency_key=idempotency_key,
+            )
+        except Exception as error:
+            raise self._workflow_error(error) from error
+
+    def _principal_only(self, credential: str, tenant_id: str):
+        try:
+            principal = self.identity_provider.authenticate(credential)
+            self.application.authorize(principal, tenant_id=tenant_id)
+            return principal
+        except (PermissionError, AuthorizationDeniedError) as error:
+            raise PilotApiError(
+                403, "forbidden", "Tenant access was denied."
+            ) from error
+
+    def _workflow_principal(self, credential: str, tenant_id: str, csrf_token: str):
+        if not isinstance(csrf_token, str) or not csrf_token.strip():
+            raise PilotApiError(403, "csrf_required", "CSRF token required.")
+        verifier = getattr(self.identity_provider, "verify_csrf", None)
+        if verifier is None:
+            raise PilotApiError(
+                503, "csrf_unavailable", "Session CSRF validation is unavailable."
+            )
+        if not verifier(credential, csrf_token, tenant_id):
+            raise PilotApiError(403, "csrf_invalid", "CSRF validation failed.")
+        return self._principal_only(credential, tenant_id)
+
+    @staticmethod
+    def _workflow_error(error: Exception) -> PilotApiError:
+        from app.marketing_workflow.orchestration import (
+            OperationClaimConflictError,
+            OperationClaimParentConflictError,
+            OrchestrationConflictError,
+            OrchestrationWorkflowConflictError,
+        )
+        from app.marketing_workflow.repository import WorkflowAccessDeniedError
+
+        if isinstance(error, PilotApiError):
+            return error
+        if isinstance(error, (WorkflowAccessDeniedError, FileNotFoundError)):
+            return PilotApiError(404, "not_found", "Workflow was not found.")
+        if isinstance(
+            error,
+            (
+                OrchestrationConflictError,
+                OrchestrationWorkflowConflictError,
+                OperationClaimConflictError,
+                OperationClaimParentConflictError,
+            ),
+        ):
+            return PilotApiError(
+                409,
+                "idempotency_conflict",
+                "Request conflicts with an existing workflow operation.",
+            )
+        if isinstance(error, (ValueError, TypeError)):
+            return PilotApiError(400, "invalid_request", str(error))
+        if isinstance(error, (AuthorizationDeniedError, PermissionError)):
+            return PilotApiError(403, "forbidden", "Operation was denied.")
+        if isinstance(error, LifecycleConflictError):
+            return PilotApiError(409, "lifecycle_conflict", str(error))
+        return PilotApiError(
+            409, "workflow_conflict", "Workflow operation could not be applied safely."
+        )
 
     def design_partner_signup(
         self,

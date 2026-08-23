@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import re
 import sqlite3
 from dataclasses import dataclass
@@ -23,6 +24,31 @@ MAX_PLAN_BYTES = 64 * 1024
 MAX_COMMANDS = 8
 MAX_COMMAND_BYTES = 16 * 1024
 _SHA256_PATTERN = re.compile(r"^[0-9a-f]{64}$")
+
+
+def _without_requested_at(value: Any) -> Any:
+    """Remove only transport timestamps for concurrent first-claim comparison."""
+
+    if isinstance(value, dict):
+        return {
+            key: _without_requested_at(item)
+            for key, item in value.items()
+            if key != "requested_at"
+        }
+    if isinstance(value, list):
+        return [_without_requested_at(item) for item in value]
+    return value
+
+
+def _same_command_material_ignoring_timestamp(
+    existing_json: str, candidate_json: str
+) -> bool:
+    try:
+        existing = _without_requested_at(json.loads(existing_json))
+        candidate = _without_requested_at(json.loads(candidate_json))
+    except (TypeError, ValueError, json.JSONDecodeError):
+        return False
+    return canonical_json_bytes(existing) == canonical_json_bytes(candidate)
 
 
 class OrchestrationProgress(StrEnum):
@@ -439,6 +465,10 @@ class WorkflowApiOrchestrationRepository:
                 record.request_hash != request_hash
                 or record.command_plan_sha256 != plan_sha256
             ):
+                if _same_command_material_ignoring_timestamp(
+                    record.command_plan_json, plan_json
+                ):
+                    return OrchestrationClaim(record=record, created=False, replay=True)
                 raise OrchestrationConflictError(record) from error
             return OrchestrationClaim(record=record, created=False, replay=True)
         with self.database.connection() as connection:
@@ -838,8 +868,6 @@ class WorkflowApiOperationClaimRepository:
             validate_timestamp(completed_at)
         response_json = response_sha256 = None
         if final_response is not None:
-            if progress_state not in TERMINAL_PROGRESS:
-                raise ValueError("final response requires terminal progress")
             response_json, response_sha256 = _safe_response(final_response)
             if (
                 type(final_response_status) is not int
@@ -861,10 +889,17 @@ class WorkflowApiOperationClaimRepository:
                 raise OrchestrationOptimisticConflictError(
                     "operation claim version changed concurrently"
                 )
-            if current.progress_state in TERMINAL_PROGRESS:
+            same_state_response = (
+                final_response is not None and progress_state is current.progress_state
+            )
+            if current.progress_state in TERMINAL_PROGRESS and not same_state_response:
                 raise ValueError("terminal operation claim cannot advance")
-            if progress_state not in ALLOWED_PROGRESS_TRANSITIONS.get(
-                current.progress_state, frozenset()
+            if (
+                not same_state_response
+                and progress_state
+                not in ALLOWED_PROGRESS_TRANSITIONS.get(
+                    current.progress_state, frozenset()
+                )
             ):
                 raise ValueError("invalid operation claim progress transition")
             if (
@@ -873,6 +908,7 @@ class WorkflowApiOperationClaimRepository:
                     OrchestrationProgress.CONFLICT_DETECTED,
                     OrchestrationProgress.FAILED,
                 }
+                and not same_state_response
                 and PROGRESS_ORDINAL[progress_state] <= current.progress_ordinal
             ):
                 raise ValueError("operation claim progress must be monotonic")

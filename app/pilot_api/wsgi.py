@@ -15,6 +15,9 @@ from app.pilot_api.contracts import (
     ExportRequest,
     GenerationRequest,
     OnboardingRequest,
+    WorkflowApprovalDecisionRequest,
+    WorkflowCommandRequest,
+    WorkflowCreateRequest,
     WorkflowReviewRequest,
 )
 from app.pilot_api.service import PilotApiError, PilotApiService
@@ -27,12 +30,20 @@ class PilotWsgiApplication:
         self.service = service
 
     def __call__(self, environ, start_response):
+        body = None
+        headers = None
         try:
             response = self._dispatch(environ)
-            status, payload = response.status, {
-                "data": response.data,
-                "replayed": response.replayed,
-            }
+            status = response.status
+            if response.body_bytes is not None:
+                body = response.body_bytes
+                headers = list(response.headers)
+            else:
+                payload = {"data": response.data}
+                if response.replay_marker_in_body:
+                    payload["replayed"] = response.replayed
+                body = json.dumps(payload, ensure_ascii=False, sort_keys=True).encode()
+                headers = [("Content-Type", "application/json; charset=utf-8")]
         except PilotApiError as error:
             status = error.status
             payload = {"error": {"code": error.code, "message": error.message}}
@@ -40,7 +51,12 @@ class PilotWsgiApplication:
             status, payload = 400, {
                 "error": {"code": "invalid_request", "message": str(error)}
             }
-        body = json.dumps(payload, ensure_ascii=False, sort_keys=True).encode()
+        if body is None:
+            body = json.dumps(payload, ensure_ascii=False, sort_keys=True).encode()
+            headers = [("Content-Type", "application/json; charset=utf-8")]
+        headers = list(headers)
+        if not any(name.casefold() == "content-length" for name, _ in headers):
+            headers.append(("Content-Length", str(len(body))))
         phrase = {
             200: "OK",
             201: "Created",
@@ -52,21 +68,17 @@ class PilotWsgiApplication:
         }.get(status, "Error")
         start_response(
             f"{status} {phrase}",
-            [
-                ("Content-Type", "application/json; charset=utf-8"),
-                ("Content-Length", str(len(body))),
-            ],
+            headers,
         )
         return [body]
 
     def _dispatch(self, environ):
-        if environ.get("REQUEST_METHOD") != "POST":
-            raise PilotApiError(404, "not_found", "Endpoint was not found.")
+        method = environ.get("REQUEST_METHOD")
         path = str(environ.get("PATH_INFO", ""))
         credential = self._bearer(environ.get("HTTP_AUTHORIZATION", ""))
-        body, key = self._json_body(environ), str(
-            environ.get("HTTP_IDEMPOTENCY_KEY", "")
-        )
+        body = self._json_body(environ) if method == "POST" else {}
+        key = str(environ.get("HTTP_IDEMPOTENCY_KEY", ""))
+        csrf = str(environ.get("HTTP_X_CSRF_TOKEN", ""))
         if path == "/v1/pilot/design-partner/signup":
             return self.service.design_partner_signup(
                 credential=credential,
@@ -76,6 +88,48 @@ class PilotWsgiApplication:
         if not tenant_id:
             raise PilotApiError(400, "tenant_required", "X-Tenant-ID is required.")
         common = {"credential": credential, "tenant_id": tenant_id}
+        match = re.fullmatch(r"/v1/pilot/workflows/([^/]+)", path)
+        if match and method == "GET":
+            brand_id = str(environ.get("HTTP_X_BRAND_ID", "")).strip()
+            if not brand_id:
+                raise PilotApiError(400, "brand_required", "X-Brand-ID is required.")
+            return self.service.workflow_status(
+                brand_id=brand_id, workflow_id=match.group(1), **common
+            )
+        if method != "POST":
+            raise PilotApiError(404, "not_found", "Endpoint was not found.")
+        if path == "/v1/pilot/workflows":
+            return self.service.create_workflow(
+                request=WorkflowCreateRequest(**body),
+                idempotency_key=key,
+                csrf_token=csrf,
+                **common,
+            )
+        match = re.fullmatch(r"/v1/pilot/workflows/([^/]+)/request-approval", path)
+        if match:
+            return self.service.request_workflow_approval(
+                brand_id=str(body.get("brand_id", "")),
+                workflow_id=match.group(1),
+                request=WorkflowCommandRequest(
+                    expected_version=body.get("expected_version")
+                ),
+                idempotency_key=key,
+                csrf_token=csrf,
+                **common,
+            )
+        match = re.fullmatch(r"/v1/pilot/workflows/([^/]+)/approval", path)
+        if match:
+            return self.service.decide_workflow_approval(
+                brand_id=str(body.get("brand_id", "")),
+                workflow_id=match.group(1),
+                request=WorkflowApprovalDecisionRequest(
+                    expected_version=body.get("expected_version"),
+                    decision=body.get("decision", ""),
+                ),
+                idempotency_key=key,
+                csrf_token=csrf,
+                **common,
+            )
         if path == "/v1/pilot/privacy/pack":
             return self.service.privacy_pack(**common)
         if path == "/v1/pilot/privacy/authorize":

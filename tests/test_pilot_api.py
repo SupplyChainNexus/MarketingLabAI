@@ -2,12 +2,16 @@
 
 from __future__ import annotations
 
+import base64
+import hashlib
 import io
 import json
 import tempfile
 import unittest
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date
 from pathlib import Path
+from unittest.mock import patch
 
 from app.ai.providers.mock import MockIntelligenceProvider
 from app.ai.registry import IntelligenceProviderRegistry
@@ -26,6 +30,8 @@ from app.design_partner import FounderDesignPartnerSignupService, PilotPrivacyPo
 from app.identity import AuthenticatedPrincipal, TenantMembership, TenantRole
 from app.identity.provider import IdentityProviderAdapter
 from app.marketing_brief import BriefStatus, MarketingBrief, MarketingBriefEvidence
+from app.marketing_workflow import MarketingWorkflowService
+from app.marketing_workflow.canonical import canonical_json, record_sha256
 from app.pilot_api import PilotApiService, PilotWsgiApplication
 from app.pilot_api.contracts import GenerationRequest
 from app.positioning_intelligence import (
@@ -52,6 +58,10 @@ class SyntheticIdentityProvider(IdentityProviderAdapter):
             return identities[credential]
         except KeyError as error:
             raise PermissionError("Invalid synthetic credential.") from error
+
+    @staticmethod
+    def verify_csrf(credential: str, csrf_token: str, tenant_id: str) -> bool:
+        return bool(credential and tenant_id and csrf_token == "synthetic-csrf")
 
 
 class PilotApiTests(unittest.TestCase):
@@ -206,19 +216,24 @@ class PilotApiTests(unittest.TestCase):
         path: str,
         body: dict | None = None,
         *,
+        method: str = "POST",
         token: str = "valid-token",
         tenant_id: str = "default",
         idempotency_key: str = "request-one",
-    ) -> tuple[int, dict]:
+        csrf_token: str = "",
+        raw: bool = False,
+    ) -> tuple:
         encoded = json.dumps(body or {}).encode()
         environ = {
-            "REQUEST_METHOD": "POST",
+            "REQUEST_METHOD": method,
             "PATH_INFO": path,
             "CONTENT_LENGTH": str(len(encoded)),
             "CONTENT_TYPE": "application/json",
             "HTTP_AUTHORIZATION": f"Bearer {token}",
             "HTTP_X_TENANT_ID": tenant_id,
             "HTTP_IDEMPOTENCY_KEY": idempotency_key,
+            "HTTP_X_CSRF_TOKEN": csrf_token,
+            "HTTP_X_BRAND_ID": "brand-one",
             "wsgi.input": io.BytesIO(encoded),
         }
         captured = {}
@@ -228,7 +243,10 @@ class PilotApiTests(unittest.TestCase):
             captured["headers"] = headers
 
         response_body = b"".join(self.wsgi(environ, start_response))
-        return captured["status"], json.loads(response_body)
+        result = captured["status"], json.loads(response_body)
+        if raw:
+            return (*result, captured["headers"], response_body)
+        return result
 
     def test_founder_signup_creates_owner_without_a_tenant_header(self) -> None:
         status, payload = self.request(
@@ -323,6 +341,511 @@ class PilotApiTests(unittest.TestCase):
         self.assertEqual(metadata["approved_brief_id"], "brief-one")
         self.assertEqual(metadata["approved_positioning_id"], "positioning-one")
         self.assertEqual(metadata["authenticated_subject_id"], "pilot-user")
+
+    def test_workflow_create_plan_requires_csrf_and_replays(self) -> None:
+        body = {
+            "brand_id": "brand-one",
+            "campaign_plan_id": "campaign-one",
+            "campaign_plan_version": 1,
+            "marketing_brief_id": "brief-one",
+            "marketing_brief_version": 1,
+        }
+        status, payload = self.request(
+            "/v1/pilot/workflows", body, idempotency_key="a" * 22
+        )
+        self.assertEqual(status, 403)
+        self.assertEqual(payload["error"]["code"], "csrf_required")
+        status, payload = self.request(
+            "/v1/pilot/workflows",
+            body,
+            idempotency_key="a" * 22,
+            csrf_token="synthetic-csrf",
+        )
+        self.assertEqual(status, 202)
+        self.assertEqual(payload["data"]["state"], "awaiting_approval")
+        replay_status, replay = self.request(
+            "/v1/pilot/workflows",
+            body,
+            idempotency_key="a" * 22,
+            csrf_token="synthetic-csrf",
+        )
+        self.assertEqual(replay_status, 202)
+        self.assertNotIn("replayed", replay)
+        self.assertEqual(payload["data"]["workflow_id"], replay["data"]["workflow_id"])
+
+    def test_workflow_status_and_approval_stop_at_approved(self) -> None:
+        body = {
+            "brand_id": "brand-one",
+            "campaign_plan_id": "campaign-one",
+            "campaign_plan_version": 1,
+            "marketing_brief_id": "brief-one",
+            "marketing_brief_version": 1,
+        }
+        _, created = self.request(
+            "/v1/pilot/workflows",
+            body,
+            idempotency_key="b" * 22,
+            csrf_token="synthetic-csrf",
+        )
+        workflow_id = created["data"]["workflow_id"]
+        status, payload = self.request(
+            f"/v1/pilot/workflows/{workflow_id}",
+            method="GET",
+            body=None,
+        )
+        self.assertEqual(status, 200)
+        self.assertEqual(payload["data"]["state"], "awaiting_approval")
+        self.assertIn("technical_details", payload["data"])
+        status, payload = self.request(
+            f"/v1/pilot/workflows/{workflow_id}/approval",
+            {"brand_id": "brand-one", "expected_version": 3, "decision": "approved"},
+            idempotency_key="c" * 22,
+            csrf_token="synthetic-csrf",
+        )
+        self.assertEqual(status, 200)
+        self.assertEqual(payload["data"]["state"], "approved")
+
+        status, payload = self.request(
+            f"/v1/pilot/workflows/{workflow_id}", method="GET", body=None
+        )
+        self.assertEqual(status, 200)
+        self.assertEqual(payload["data"]["state"], "approved")
+
+    def test_workflow_operations_use_child_claims_and_exact_replay(self) -> None:
+        body = {
+            "brand_id": "brand-one",
+            "campaign_plan_id": "campaign-one",
+            "campaign_plan_version": 1,
+            "marketing_brief_id": "brief-one",
+            "marketing_brief_version": 1,
+        }
+        _, created = self.request(
+            "/v1/pilot/workflows",
+            body,
+            idempotency_key="child-create-key-1234567890",
+            csrf_token="synthetic-csrf",
+        )
+        workflow_id = created["data"]["workflow_id"]
+        with self.application.database.connection() as connection:
+            create_claim = connection.execute("""
+                SELECT final_response_status, final_response_json,
+                       final_response_sha256
+                FROM workflow_api_operation_claims
+                WHERE operation = 'create_and_plan'
+                """).fetchone()
+        self.assertEqual(create_claim["final_response_status"], 202)
+        self.assertIsNotNone(create_claim["final_response_json"])
+        self.assertIsNotNone(create_claim["final_response_sha256"])
+
+        first_status, status_payload, first_headers, first_bytes = self.request(
+            f"/v1/pilot/workflows/{workflow_id}", method="GET", body=None, raw=True
+        )
+        replay_status, replay_payload, replay_headers, replay_bytes = self.request(
+            f"/v1/pilot/workflows/{workflow_id}", method="GET", body=None, raw=True
+        )
+        self.assertEqual((first_status, replay_status), (200, 200))
+        self.assertEqual(status_payload["data"], replay_payload["data"])
+        self.assertNotIn("replayed", replay_payload)
+        self.assertEqual(first_headers, replay_headers)
+        self.assertEqual(first_bytes, replay_bytes)
+        with self.application.database.connection() as connection:
+            status_claim = connection.execute("""
+                SELECT final_response_json, final_response_sha256
+                FROM workflow_api_operation_claims
+                WHERE operation = 'status'
+                """).fetchone()
+        envelope = json.loads(status_claim["final_response_json"])
+        body = base64.b64decode(envelope["body_utf8_b64"])
+        self.assertEqual(body, first_bytes)
+        self.assertEqual(hashlib.sha256(body).hexdigest(), envelope["body_sha256"])
+        self.assertEqual(
+            hashlib.sha256(
+                json.dumps(
+                    {
+                        key: value
+                        for key, value in envelope.items()
+                        if key != "envelope_sha256"
+                    },
+                    ensure_ascii=False,
+                    sort_keys=True,
+                    separators=(",", ":"),
+                ).encode("utf-8")
+            ).hexdigest(),
+            envelope["envelope_sha256"],
+        )
+        self.assertIsNotNone(status_claim["final_response_sha256"])
+
+        approval_request = {
+            "brand_id": "brand-one",
+            "expected_version": 3,
+        }
+        first_status, first = self.request(
+            f"/v1/pilot/workflows/{workflow_id}/request-approval",
+            approval_request,
+            idempotency_key="child-request-key-1234567890",
+            csrf_token="synthetic-csrf",
+        )
+        replay_status, replay = self.request(
+            f"/v1/pilot/workflows/{workflow_id}/request-approval",
+            approval_request,
+            idempotency_key="child-request-key-1234567890",
+            csrf_token="synthetic-csrf",
+        )
+        self.assertEqual((first_status, replay_status), (200, 200))
+        self.assertEqual(first["data"], replay["data"])
+        self.assertNotIn("replayed", replay)
+
+        changed_status, changed = self.request(
+            f"/v1/pilot/workflows/{workflow_id}/request-approval",
+            {"brand_id": "brand-one", "expected_version": 2},
+            idempotency_key="child-request-key-1234567890",
+            csrf_token="synthetic-csrf",
+        )
+        self.assertEqual(changed_status, 409)
+        self.assertEqual(changed["error"]["code"], "idempotency_conflict")
+
+        decision = {
+            "brand_id": "brand-one",
+            "expected_version": 3,
+            "decision": "approved",
+        }
+        first_status, first = self.request(
+            f"/v1/pilot/workflows/{workflow_id}/approval",
+            decision,
+            idempotency_key="child-approval-key-1234567890",
+            csrf_token="synthetic-csrf",
+        )
+        replay_status, replay = self.request(
+            f"/v1/pilot/workflows/{workflow_id}/approval",
+            decision,
+            idempotency_key="child-approval-key-1234567890",
+            csrf_token="synthetic-csrf",
+        )
+        self.assertEqual((first_status, replay_status), (200, 200))
+        self.assertEqual(first["data"], replay["data"])
+        self.assertNotIn("replayed", replay)
+        with self.application.database.connection() as connection:
+            rows = connection.execute("""
+                SELECT operation, final_response_status, final_response_json
+                FROM workflow_api_operation_claims
+                WHERE operation IN ('status', 'request_approval', 'approval_decision')
+                ORDER BY operation
+                """).fetchall()
+        self.assertEqual(
+            {str(row["operation"]) for row in rows},
+            {"status", "request_approval", "approval_decision"},
+        )
+        self.assertTrue(all(row["final_response_json"] for row in rows))
+
+    def test_approval_rejects_tampered_evidence_chain(self) -> None:
+        body = {
+            "brand_id": "brand-one",
+            "campaign_plan_id": "campaign-one",
+            "campaign_plan_version": 1,
+            "marketing_brief_id": "brief-one",
+            "marketing_brief_version": 1,
+        }
+        _, created = self.request(
+            "/v1/pilot/workflows",
+            body,
+            idempotency_key="tamper-create-key-1234567890",
+            csrf_token="synthetic-csrf",
+        )
+        with self.application.database.transaction() as connection:
+            connection.execute(
+                """
+                UPDATE workflow_evidence
+                SET canonical_json = ?
+                WHERE sequence = 3
+                """,
+                ('{"tampered":true}',),
+            )
+        status, payload = self.request(
+            f"/v1/pilot/workflows/{created['data']['workflow_id']}/approval",
+            {
+                "brand_id": "brand-one",
+                "expected_version": 3,
+                "decision": "approved",
+            },
+            idempotency_key="tamper-approval-key-1234567890",
+            csrf_token="synthetic-csrf",
+        )
+        self.assertIn(status, {400, 409})
+        self.assertIn(
+            payload["error"]["code"], {"invalid_request", "workflow_conflict"}
+        )
+
+    def test_create_recovers_after_workflow_creation_before_child_claim(self) -> None:
+        body = {
+            "brand_id": "brand-one",
+            "campaign_plan_id": "campaign-one",
+            "campaign_plan_version": 1,
+            "marketing_brief_id": "brief-one",
+            "marketing_brief_version": 1,
+        }
+        original_claim = self.application.workflow_operation_claims.claim
+
+        def crash_before_child(*args, **kwargs):
+            raise RuntimeError("simulated child-claim crash")
+
+        self.application.workflow_operation_claims.claim = crash_before_child
+        try:
+            failed_status, failed = self.request(
+                "/v1/pilot/workflows",
+                body,
+                idempotency_key="crash-child-claim-key-123456",
+                csrf_token="synthetic-csrf",
+            )
+        finally:
+            self.application.workflow_operation_claims.claim = original_claim
+        self.assertEqual(failed_status, 409)
+        self.assertEqual(failed["error"]["code"], "workflow_conflict")
+        with self.application.database.connection() as connection:
+            self.assertEqual(
+                connection.execute(
+                    "SELECT COUNT(*) FROM marketing_workflows"
+                ).fetchone()[0],
+                1,
+            )
+            gap_workflow_id = connection.execute(
+                "SELECT workflow_id FROM marketing_workflows"
+            ).fetchone()["workflow_id"]
+            self.assertEqual(
+                connection.execute(
+                    "SELECT COUNT(*) FROM workflow_api_operation_claims "
+                    "WHERE operation = 'create_and_plan'"
+                ).fetchone()[0],
+                0,
+            )
+        gap_status, gap_payload = self.request(
+            f"/v1/pilot/workflows/{gap_workflow_id}",
+            method="GET",
+            body=None,
+        )
+        self.assertEqual(gap_status, 200)
+        self.assertEqual(gap_payload["data"]["state"], "draft")
+        with self.application.database.connection() as connection:
+            parent = connection.execute(
+                "SELECT progress_state FROM workflow_api_orchestrations"
+            ).fetchone()
+            self.assertEqual(parent["progress_state"], "claimed")
+            self.assertEqual(
+                connection.execute(
+                    "SELECT COUNT(*) FROM workflow_api_operation_claims "
+                    "WHERE operation = 'create_and_plan'"
+                ).fetchone()[0],
+                0,
+            )
+        recovered_status, recovered, recovered_headers, recovered_bytes = self.request(
+            "/v1/pilot/workflows",
+            body,
+            idempotency_key="crash-child-claim-key-123456",
+            csrf_token="synthetic-csrf",
+            raw=True,
+        )
+        self.assertEqual(recovered_status, 202, recovered)
+        self.assertEqual(recovered["data"]["state"], "awaiting_approval")
+        replay_status, replay_payload, replay_headers, replay_bytes = self.request(
+            "/v1/pilot/workflows",
+            body,
+            idempotency_key="crash-child-claim-key-123456",
+            csrf_token="synthetic-csrf",
+            raw=True,
+        )
+        self.assertEqual(replay_status, recovered_status)
+        self.assertEqual(replay_payload, recovered)
+        self.assertNotIn("replayed", replay_payload)
+        self.assertEqual(replay_headers, recovered_headers)
+        self.assertEqual(replay_bytes, recovered_bytes)
+        with self.application.database.connection() as connection:
+            self.assertEqual(
+                connection.execute(
+                    "SELECT COUNT(*) FROM marketing_workflows"
+                ).fetchone()[0],
+                1,
+            )
+            self.assertEqual(
+                connection.execute(
+                    "SELECT COUNT(*) FROM workflow_api_operation_claims "
+                    "WHERE operation = 'create_and_plan'"
+                ).fetchone()[0],
+                1,
+            )
+
+    def test_concurrent_first_submissions_converge_on_one_workflow(self) -> None:
+        body = {
+            "brand_id": "brand-one",
+            "campaign_plan_id": "campaign-one",
+            "campaign_plan_version": 1,
+            "marketing_brief_id": "brief-one",
+            "marketing_brief_version": 1,
+        }
+
+        def submit():
+            return self.request(
+                "/v1/pilot/workflows",
+                body,
+                idempotency_key="concurrent-first-key-123456",
+                csrf_token="synthetic-csrf",
+            )
+
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            results = list(executor.map(lambda _: submit(), (1, 2)))
+        self.assertEqual([status for status, _ in results], [202, 202], results)
+        self.assertEqual(
+            results[0][1]["data"]["workflow_id"], results[1][1]["data"]["workflow_id"]
+        )
+        with self.application.database.connection() as connection:
+            self.assertEqual(
+                connection.execute(
+                    "SELECT COUNT(*) FROM marketing_workflows"
+                ).fetchone()[0],
+                1,
+            )
+            self.assertEqual(
+                connection.execute(
+                    "SELECT COUNT(*) FROM workflow_api_orchestrations"
+                ).fetchone()[0],
+                1,
+            )
+
+    def test_approval_recovers_after_approval_persistence_crash(self) -> None:
+        body = {
+            "brand_id": "brand-one",
+            "campaign_plan_id": "campaign-one",
+            "campaign_plan_version": 1,
+            "marketing_brief_id": "brief-one",
+            "marketing_brief_version": 1,
+        }
+        _, created = self.request(
+            "/v1/pilot/workflows",
+            body,
+            idempotency_key="approval-recovery-create-123456",
+            csrf_token="synthetic-csrf",
+        )
+        workflow_id = created["data"]["workflow_id"]
+        original_record_approval = MarketingWorkflowService.record_approval
+
+        def persist_then_crash(service, command, **kwargs):
+            original_record_approval(service, command, **kwargs)
+            raise RuntimeError("simulated crash after approval persistence")
+
+        with patch.object(
+            MarketingWorkflowService, "record_approval", new=persist_then_crash
+        ):
+            failed_status, failed = self.request(
+                f"/v1/pilot/workflows/{workflow_id}/approval",
+                {
+                    "brand_id": "brand-one",
+                    "expected_version": 3,
+                    "decision": "approved",
+                },
+                idempotency_key="approval-recovery-key-123456",
+                csrf_token="synthetic-csrf",
+            )
+        self.assertEqual(failed_status, 409)
+        self.assertEqual(failed["error"]["code"], "workflow_conflict")
+        recovered_status, recovered = self.request(
+            f"/v1/pilot/workflows/{workflow_id}/approval",
+            {
+                "brand_id": "brand-one",
+                "expected_version": 3,
+                "decision": "approved",
+            },
+            idempotency_key="approval-recovery-key-123456",
+            csrf_token="synthetic-csrf",
+        )
+        self.assertEqual(recovered_status, 200, recovered)
+        self.assertEqual(recovered["data"]["state"], "approved")
+
+    def test_approval_rejects_ambiguous_evidence(self) -> None:
+        body = {
+            "brand_id": "brand-one",
+            "campaign_plan_id": "campaign-one",
+            "campaign_plan_version": 1,
+            "marketing_brief_id": "brief-one",
+            "marketing_brief_version": 1,
+        }
+        _, created = self.request(
+            "/v1/pilot/workflows",
+            body,
+            idempotency_key="ambiguous-evidence-create-123456",
+            csrf_token="synthetic-csrf",
+        )
+        workflow_id = created["data"]["workflow_id"]
+        with self.application.database.transaction() as connection:
+            source = connection.execute(
+                """
+                SELECT * FROM workflow_evidence
+                WHERE workflow_id = ? AND sequence = 3
+                """,
+                (workflow_id,),
+            ).fetchone()
+            envelope = json.loads(source["canonical_json"])
+            envelope["evidence_id"] = "mwe_ambiguous"
+            envelope["sequence"] = 4
+            envelope["predecessor_sha256"] = source["evidence_sha256"]
+            digest = record_sha256("workflow_evidence", envelope)
+            connection.execute(
+                """
+                INSERT INTO workflow_evidence (
+                    evidence_id, tenant_id, brand_id, workflow_id,
+                    workflow_version, sequence, predecessor_sha256,
+                    evidence_sha256, canonical_json, occurred_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    envelope["evidence_id"],
+                    envelope["tenant_id"],
+                    envelope["brand_id"],
+                    envelope["workflow_id"],
+                    envelope["workflow_version"],
+                    envelope["sequence"],
+                    envelope["predecessor_sha256"],
+                    digest,
+                    canonical_json(envelope),
+                    envelope["occurred_at"],
+                ),
+            )
+        status, payload = self.request(
+            f"/v1/pilot/workflows/{workflow_id}/approval",
+            {
+                "brand_id": "brand-one",
+                "expected_version": 3,
+                "decision": "approved",
+            },
+            idempotency_key="ambiguous-evidence-approval-123456",
+            csrf_token="synthetic-csrf",
+        )
+        self.assertIn(status, {400, 409})
+        self.assertIn(
+            payload["error"]["code"], {"invalid_request", "workflow_conflict"}
+        )
+
+    def test_workflow_cross_tenant_create_does_not_disclose(self) -> None:
+        status, payload = self.request(
+            "/v1/pilot/workflows",
+            {
+                "brand_id": "brand-one",
+                "campaign_plan_id": "campaign-one",
+                "campaign_plan_version": 1,
+            },
+            tenant_id="tenant-two",
+            idempotency_key="cross-tenant-create-123456",
+            csrf_token="synthetic-csrf",
+        )
+        self.assertIn(status, {403, 404})
+        self.assertNotIn("campaign-one", json.dumps(payload))
+
+    def test_workflow_cross_tenant_status_does_not_disclose(self) -> None:
+        status, payload = self.request(
+            "/v1/pilot/workflows/mwf_missing",
+            method="GET",
+            tenant_id="tenant-two",
+            body=None,
+        )
+        self.assertIn(status, {403, 404})
+        self.assertNotIn("mwf_missing", json.dumps(payload))
 
     def test_same_key_with_changed_request_is_a_conflict(self) -> None:
         self.request("/v1/pilot/generate", self.generation_body())
