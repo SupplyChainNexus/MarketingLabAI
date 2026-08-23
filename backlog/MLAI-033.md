@@ -59,20 +59,21 @@ rules, budget limits and evidence belong to the product core.
 - The workflow spine is documented as a product architecture boundary.
 - The Rabbit Rule classification is recorded.
 - Agent, provider and Cloud Tasks execution remain adapters, not core state.
-- The first implementation story starts with deterministic workflow state,
+- The completed and tested foundation starts with deterministic workflow state,
   idempotency, evidence and approval primitives before autonomous agents.
 
 ## MLAI-033.1 — Deterministic Marketing Workflow State, Approval and Evidence Foundation
 
 ### Status
 
-Proposed and governance-defined; implementation and validation not authorized.
+Implemented and tested as the provider-neutral durable workflow foundation;
+remaining deferred controls retain their separate authority boundaries.
 
 ### Purpose
 
 Define the first implementation boundary for one provider-neutral durable
-marketing workflow spine without implementing workflow behaviour. The future
-aggregate will coordinate exact governed work references while preserving the
+marketing workflow spine. The implemented aggregate coordinates exact governed
+work references while preserving the
 independent lifecycles of Campaign Plan, Campaign Asset, Marketing Brief,
 Marketing Calendar, generation, compliance, publishing and learning.
 
@@ -165,8 +166,9 @@ Marketing Calendar, generation, compliance, publishing and learning.
   duties. Unclassified actions are `policy_blocked`; ordinary internal planning
   and read-only status viewing are not high-impact.
 
-These contracts authorize no implementation and do not implement canonical
-artifact persistence.
+These governance contracts did not themselves authorize implementation. The
+foundation is now implemented and tested; canonical artifact persistence and
+the deferred controls below remain outside that completed boundary.
 
 ### Decisions still blocked or deferred
 
@@ -189,14 +191,86 @@ artifact persistence.
 - Adaptive-rate algorithm implementation or a new rate-limiting architecture.
 - Pricing, commercial tiers, quota values, billing or customer activation.
 - Cloud, IAM, secrets, external databases, deployment or release changes.
-- Application code, tests, infrastructure or any MLAI-033 implementation.
+- Further MLAI-033.1 expansion or MLAI-033.2 transport/workspace implementation
+  without separate authority.
 
 ### Definition acceptance
 
-- The story is recorded as proposed and governance-defined, not implemented or
-  validated.
+- The foundation is recorded as implemented and tested; the separately scoped
+  customer-facing orchestration/workspace remains unimplemented.
 - ADR-0043 and LDR-061 remain authoritative and MLAI-033 remains Core, not Rabbit.
 - Existing lifecycle owners and provider-neutral boundaries are preserved.
-- RISK-040 and TD-043 record the unimplemented spine and parallel-owner risk.
-- Implementation, testing, commit, push, cloud deployment and release each
-  require separate explicit authority.
+- RISK-040 and TD-043 retain the parallel-owner and deferred-capability risk
+  beyond the implemented foundation.
+- Further implementation, testing, commit, push, cloud deployment and release
+  each require separate explicit authority.
+
+## MLAI-033.2 — Tenant-Authorized Planning-to-Approval Workspace
+
+### Status
+
+Governance-defined and blocked on the implementation contracts below; no
+implementation, migration or validation is authorized.
+
+### Customer outcome and boundary
+
+Provide one tenant-authorized, resumable customer path that creates a governed
+marketing workflow from exact Campaign Plan and optional Marketing Brief
+versions, progresses through `draft` to `planned` to `awaiting_approval`, records
+an immutable approval decision, and reaches `approved`. The boundary stops at
+`approved`; it grants no authority for `running`, execution, generation,
+publishing, spend, providers, external effects or learning.
+
+### Locked orchestration decision
+
+- Add one provider-neutral orchestration record for resumable
+  planning-to-approval API operations.
+- The record owns only the durable request claim, server-determined workflow
+  identity, original canonical subcommand material, progress state and final
+  safe HTTP response. It does not own workflow state, approvals, workflow
+  evidence, authorization audit, Campaign Plans or Marketing Briefs.
+- Preserve API idempotency as a completed-response cache. Workflow receipts and
+  hash-linked evidence remain the authoritative domain records.
+- Require a client-generated idempotency key containing at least 128 bits of
+  entropy and a versioned, domain-separated workflow-ID derivation. Raw keys
+  must not be logged or returned. Implementation must explicitly define and
+  validate the accepted representation and length and provide golden tests;
+  the exact accepted encoding remains an unresolved implementation contract.
+  Persist the original canonical
+  subcommand request IDs, timestamps, command kinds, expected versions and
+  safe-command material before the first authority-changing command.
+- A durable uniqueness claim resolves concurrent first submissions. Exact
+  retries reuse the original canonical bytes and reconcile only missing steps;
+  changed input fails deterministically as a conflict.
+- Interrupted create-and-plan orchestration resumes from authoritative workflow
+  receipts. Approval recovery reuses an existing immutable approval and applies
+  only a missing transition.
+- A future migration is required. Historical migrations remain unchanged, and
+  this definition neither creates nor authorizes that migration.
+- Retention and archival remain deferred and require separate governance.
+- Keep the HTTP contract version, MLAI-CJ-2 envelope `schema_version: 2`, and
+  workflow safe-command `schema_version: 1` distinct. No retry may silently
+  convert or rehash persisted canonical bytes.
+- Planning-to-approval POST operations retain existing authenticated session
+  and CSRF requirements. Technical detail is omitted for callers without
+  `APPROVE`; omission must not be replaced by tenant, actor or evidence
+  disclosure.
+
+### Unresolved implementation contracts
+
+These items block implementation and must be locked separately without
+inventing privacy, retention or compatibility policy:
+
+- the workflow-ID golden vector and exact versioned derivation format;
+- actor-reference derivation and truncation;
+- subcommand request-ID and timestamp derivation;
+- the exact orchestration recovery and reconciliation algorithm;
+- approval-requester evidence lookup and digest validation; and
+- transport-idempotency raw-key compatibility treatment, including the exact
+  accepted encoding, format and length validation.
+
+### Non-authorization
+
+This governance definition authorizes no application code, test, database
+schema, migration, cloud, deployment, customer activation, release, staging,
+commit or push operation.

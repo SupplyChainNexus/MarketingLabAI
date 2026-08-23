@@ -838,8 +838,8 @@ approval authority, spend rules or learning evidence.
 
 #### MLAI-033.1 story-definition and owner-decision boundary
 
-MLAI-033.1 defines, but does not implement or validate, the first workflow-spine
-increment. A future provider-neutral durable aggregate must use a canonical
+MLAI-033.1 defined the first workflow-spine increment, which is now implemented
+and tested. The provider-neutral durable aggregate uses a canonical
 tenant-and-brand-scoped workflow identifier, exact Campaign Plan and optional
 Marketing Brief version references, ADR-0043 states and failures,
 deterministic transitions, command idempotency, workflow-version-and-action-
@@ -870,8 +870,9 @@ new request and receipt writers use MLAI-CJ-2 schema 2 with immutable
 tenant-and-brand-safe deterministic recovery-conflict replay;
 the read-only `CanonicalArtifactAvailability` proof required for execution
 transitions; and the explicit high-impact action classes subject to separation
-of duties. Unlisted transitions and unclassified actions fail closed. These
-clarifications add no workflow state and grant no implementation authority.
+of duties. Unlisted transitions and unclassified actions fail closed. The
+clarifications did not themselves grant implementation authority; the
+foundation was subsequently implemented and tested within them.
 
 Hard limits, adaptive limits, entitlements and provider budgets remain
 provider-neutral policy inputs. This definition selects no adaptive algorithm,
@@ -884,6 +885,46 @@ cancellation effects beyond pending-approval invalidation and evidence
 preservation; budget settlement; and commercial values remain blocked or
 deferred for later authority. This clarification creates no implementation,
 test, commit, push, cloud, deployment, activation or release authority.
+
+#### MLAI-033.2 dedicated planning-to-approval API orchestration
+
+MLAI-033.2 uses Option B: one provider-neutral durable orchestration record for
+resumable planning-to-approval API operations. It owns only the durable request
+claim, server-determined workflow identity, original canonical subcommand
+material, progress state and final safe HTTP response. It does not own workflow
+state, approvals, workflow evidence, authorization audit, Campaign Plans or
+Marketing Briefs. API idempotency remains a completed-response cache; workflow
+receipts and evidence remain authoritative domain records.
+
+A client-generated idempotency key containing at least 128 bits of entropy and a
+versioned, domain-separated workflow-ID derivation govern the claim. Raw keys
+must not be logged or returned; implementation must define and validate the
+accepted representation and length and add golden tests, while the exact
+accepted encoding remains unresolved. Original canonical
+subcommand request IDs, timestamps, command kinds, expected versions and
+privacy-safe command material must be durable before the first
+authority-changing command. A uniqueness claim resolves concurrent first
+submission. Exact retries reuse the original canonical bytes and reconcile only
+missing steps; changed input conflicts deterministically. Approval recovery
+reuses the immutable approval already recorded and performs only a missing
+transition.
+
+The customer boundary stops at `approved`; `running`, execution, generation,
+publishing, spend, providers, external effects and learning remain unauthorized.
+A future migration is required without changing historical migrations.
+Retention and archival remain deferred. HTTP contract versioning, MLAI-CJ-2
+schema version 2 and workflow safe-command schema version 1 remain distinct.
+Existing session and CSRF requirements continue to govern POST operations, and
+technical detail is omitted for callers without `APPROVE`.
+
+Implementation remains blocked pending separately locked contracts for the
+workflow-ID golden vector and derivation format, actor-reference derivation and
+truncation, subcommand request-ID and timestamp derivation, exact orchestration
+recovery, approval-requester evidence lookup and digest validation, and
+transport-idempotency raw-key compatibility including exact accepted encoding,
+format and length validation. This decision creates no code,
+schema, migration, test, staging, commit, push, cloud, deployment, activation or
+release authority.
 
 ### LDR-062 — First-service origin bootstrap is temporary and reconciled
 
@@ -1001,9 +1042,9 @@ does not close any deferred control named above.
 Earthonox will progressively build SOC 2 readiness through its existing
 infrastructure, security, workflow, evidence, migration, observability and
 operational-control boundaries. This is aligned Future assurance work under the
-Rabbit Rule, not authority to start a SOC 2 certification project. Current
-implementation priority remains Increment B2: comprehensive observational
-schema readiness.
+Rabbit Rule, not authority to start a SOC 2 certification project. Database
+lifecycle Increments B1, B2 and B3 are completed and committed. MLAI-033.2 is
+the active next Core story, governance-defined and implementation-blocked.
 
 Formal audit preparation, personnel controls, vendor-risk procedures, evidence
 portals, Type I preparation, Type II operating-period evidence and certification

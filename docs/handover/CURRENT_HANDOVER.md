@@ -8,7 +8,7 @@
 - Last completed epic: MLAI-029 Marketing Strategy Intelligence
 - Active epic: MLAI-031 Controlled Pilot Hosting
 - Last completed story: MLAI-031.18C Threat Model and Server-Session Lifecycle Foundation
-- Active story: none; MLAI-033.1 is governance-defined but implementation is not authorized
+- Active story: MLAI-033.2 is governance-defined and blocked on six implementation contracts; implementation is not authorized
 
 ## Product direction
 
@@ -314,14 +314,14 @@ evidence are proven.
 ### MLAI-033.1 governance definition
 
 MLAI-033.1 — Deterministic Marketing Workflow State, Approval and Evidence
-Foundation is proposed and governance-defined only. It defines a future
-provider-neutral durable aggregate with a canonical tenant-and-brand-scoped
+Foundation is implemented and tested. It provides a provider-neutral durable
+aggregate with a canonical tenant-and-brand-scoped
 identifier, exact Campaign Plan and optional Marketing Brief version
 references, ADR-0043 states and failure classes, deterministic transitions,
 command idempotency, version-and-action-bound approvals, privacy-safe
 hash-linked evidence, attempt and retry accounting, failure classification and
-operator status. SQLite and PostgreSQL-compatible transactional persistence is
-the required direction, but no schema or implementation exists yet.
+operator status through SQLite and PostgreSQL-compatible transactional
+persistence.
 
 Founder approval on 2026-08-21 resolves nine foundation boundaries: one
 workflow per executable governed marketing-work instance; independent Campaign
@@ -334,8 +334,8 @@ hash-linked sequence-ordered evidence committed atomically with authority
 changes; terminal cancellation and supersession preserving evidence and
 invalidating pending approvals; fail-closed execution without canonical
 artifact persistence; and safe business-first operator status with authorized
-progressive technical disclosure. No implementation or validation is
-authorized by those decisions.
+progressive technical disclosure. Those decisions did not themselves authorize
+implementation; the foundation was subsequently implemented and tested.
 
 ADR-0043 now clarifies the four implementation contracts that previously
 blocked safe foundation work: the complete default-deny transition matrix and
@@ -351,8 +351,9 @@ safely referencing the tenant-and-brand-scoped existing successor; reserved and
 persisted artifact proofs from a future read-only
 `CanonicalArtifactAvailability` interface for execution-oriented transitions;
 and explicit high-impact action classes with unclassified actions
-`policy_blocked`. The clarification implements no workflow or artifact
-repository and grants no implementation or validation authority.
+`policy_blocked`. The clarification itself granted no implementation authority;
+the workflow foundation is now implemented and tested, while canonical artifact
+persistence remains separate and deferred.
 
 Hard limits, adaptive limits, tier entitlements and provider budgets are
 provider-neutral policy inputs only. No algorithm, distributed counter,
@@ -366,8 +367,8 @@ commercial values remain blocked or deferred for later authority.
 Provider execution, publishing, queues, Cloud Tasks, paid actions, autonomous
 agents, connectors, plugins, rate-limiting redesign, billing, customer
 activation, cloud, IAM, secrets, external databases, deployment and release are
-outside MLAI-033.1. RISK-040 and TD-043 remain open until a separately
-authorized implementation is durably persisted and validated. MLAI-033 remains
+outside MLAI-033.1. RISK-040 and TD-043 remain open for parallel-owner and
+deferred-capability risk beyond the implemented foundation. MLAI-033 remains
 Core, and all existing Campaign Plan, Campaign Asset, Marketing Brief,
 Marketing Calendar, generation, compliance, publishing and learning lifecycle
 owners remain distinct.
@@ -479,8 +480,9 @@ recovery events, MFA and factor-change invalidation, provider refresh-token
 revocation orchestration, suspicious-activity and security-engine hooks, a
 dedicated administrator revocation transport, edge enforcement, centralized
 detection, and production and external rehearsal evidence remain open or
-deferred under RISK-038, RISK-039, TD-041 and TD-042. MLAI-033 remains the next
-locked product-architecture story and has not begun implementation.
+deferred under RISK-038, RISK-039, TD-041 and TD-042. The durable MLAI-033.1
+workflow foundation is implemented and tested; only the customer-facing
+MLAI-033.2 planning-to-approval transport/workspace slice remains unimplemented.
 
 ## SOC 2 readiness boundary
 
@@ -489,7 +491,9 @@ that must reuse Earthonox's existing infrastructure, security, workflow,
 evidence, migration, observability and operational-control boundaries. It does
 not start certification, authorize compliance software or create parallel
 evidence storage. Increment B2 comprehensive observational schema readiness
-remains the current implementation priority and is separately authorized.
+is completed and committed. Database lifecycle Increments B1 and B3 are also
+completed and committed. MLAI-033.2 is the active next Core story, but remains
+governance-defined and implementation-blocked rather than started.
 
 Formal audit preparation, personnel controls, vendor-risk procedures, evidence
 portals, Type I preparation, Type II operating-period evidence and certification
@@ -497,3 +501,34 @@ remain deferred until production scale, customer requirements or commercial due
 diligence justify them. Any reopening requires separate authority; no
 application, audit, vendor, deployment, cloud or release work is authorized by
 this governance record.
+
+## MLAI-033.2 planning-to-approval orchestration decision
+
+Option B is locked for the tenant-authorized planning-to-approval workspace: one
+provider-neutral durable orchestration record owns the request claim,
+server-determined workflow identity, original canonical subcommand material,
+progress state and final safe HTTP response. It is coordination state only. API
+idempotency stays a completed-response cache, while workflow state, approvals,
+workflow evidence, authorization audit, Campaign Plans and Marketing Briefs
+retain their existing authorities.
+
+The future orchestration requires a client-generated idempotency key containing
+at least 128 bits of entropy, a versioned domain-separated workflow-ID
+derivation, durable canonical subcommand identities and material before the
+first domain command, a concurrent
+uniqueness claim, exact-byte retry and missing-step reconciliation. Approval
+recovery reuses an existing immutable approval and performs only a missing
+transition. The workspace stops at `approved`; it authorizes no execution or
+external effect. Raw idempotency keys must not be logged or returned.
+Implementation must define and validate the accepted representation and length
+and add golden tests; the exact accepted encoding remains unresolved.
+
+No implementation or migration is authorized. Before implementation, separately
+lock the workflow-ID golden vector and derivation, actor-reference derivation and
+truncation, subcommand request-ID and timestamp derivation, exact recovery
+algorithm, approval-requester evidence lookup and digest validation, and raw-key
+compatibility at the transport idempotency boundary including the exact accepted
+encoding, format and length validation. Retention and archival also
+remain deferred. HTTP, MLAI-CJ-2 schema 2 and safe-command schema 1 versioning
+remain separate, existing session and CSRF rules remain binding, and technical
+detail is omitted for callers without `APPROVE`.

@@ -74,15 +74,17 @@ The founder approved the following implementation boundaries on 2026-08-21:
    progressively disclosed only when authorized.
 
 These decisions preserve the separate Campaign Plan, Campaign Asset, Marketing
-Brief, publishing and learning authorities. They authorize no implementation
-and select no numeric policy value, provider mechanism, queue, cloud service or
-deployment architecture.
+Brief, publishing and learning authorities. They did not themselves authorize
+implementation and select no numeric policy value, provider mechanism, queue,
+cloud service or deployment architecture. The durable workflow foundation was
+subsequently implemented and tested within those boundaries.
 
 ## MLAI-033.1 Clarified Implementation Contracts
 
-These contracts clarify the first foundation increment. They authorize no
-application, test, persistence, provider, infrastructure, deployment or release
-change.
+These contracts clarified the first foundation increment and did not themselves
+authorize application, test, persistence, provider, infrastructure, deployment
+or release change. The durable workflow foundation was subsequently implemented
+and tested; deferred capabilities retain their separate authority boundaries.
 
 ### State-transition contract
 
@@ -406,12 +408,61 @@ classified by current governance is `policy_blocked`, makes no state change or
 external call and requires later classification authority; its name, adapter or
 provider must not be used to infer classification.
 
+### MLAI-033.2 planning-to-approval API orchestration
+
+Resumable planning-to-approval API operations use one provider-neutral durable
+orchestration record. Its authority is limited to the durable request claim,
+server-determined workflow identity, original canonical subcommand material,
+progress state and final safe HTTP response. It is not a workflow aggregate,
+approval authority, workflow-evidence store, authorization-audit record,
+Campaign Plan owner or Marketing Brief owner.
+
+The existing API idempotency boundary remains a completed-response cache.
+Workflow command receipts and workflow evidence remain the authoritative domain
+records. Before the first authority-changing command, orchestration persistence
+must durably claim a client-generated idempotency key containing at least 128
+bits of entropy and store the workflow identity plus the original canonical
+subcommand request IDs,
+timestamps, command kinds, expected workflow versions and privacy-safe command
+material. Workflow identity uses a separately versioned, domain-separated
+derivation. A database uniqueness claim selects one concurrent first-submission
+authority. Raw keys must not be logged or returned. Implementation must define
+and enforce the accepted representation and length and add golden tests; the
+exact accepted encoding remains an unresolved implementation contract.
+
+An exact retry reuses the original canonical command bytes and reconciles only
+steps not already proven by authoritative workflow records. Changed input under
+the same orchestration authority returns a deterministic conflict. Recovery
+after an immutable approval exists must reuse that approval and apply only a
+missing transition; orchestration state cannot recreate, replace or reinterpret
+approval authority.
+
+The HTTP contract version, MLAI-CJ-2 envelope `schema_version: 2`, and workflow
+safe-command `schema_version: 1` are independent version domains. No dispatcher,
+retry or migration may silently convert, reinterpret or rehash persisted
+canonical bytes. Planning-to-approval POST operations retain existing session
+and CSRF enforcement. Technical details are omitted, rather than disclosed, for
+callers without `APPROVE`.
+
+This boundary ends at `approved`. It cannot initiate `running`, generation,
+publishing, spend, provider activity, external effects or learning. A future
+schema migration is required, but historical migrations remain unchanged and
+this decision creates no migration authority. Retention and archival remain
+deferred for separate governance.
+
+Implementation remains blocked until authority separately fixes the workflow-ID
+golden vector and derivation format, actor-reference derivation and truncation,
+subcommand request-ID and timestamp derivation, exact recovery algorithm,
+approval-requester evidence lookup and digest validation, and transport
+idempotency raw-key compatibility treatment including exact accepted encoding,
+format and length validation.
+
 ## Consequences
 
 - MLAI-033 is Core, not Rabbit.
 - Autonomous paid optimization, full attribution, visual generation factories
   and self-running growth agents remain future work.
-- The first implementation must build deterministic workflow state,
+- The implemented and tested foundation provides deterministic workflow state,
   idempotency, approval and evidence primitives before agent autonomy.
 - Workflow evidence must support later closed-loop learning without treating
   synthetic or incomplete results as proven customer learning.
