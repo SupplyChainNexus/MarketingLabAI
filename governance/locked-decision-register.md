@@ -888,13 +888,27 @@ test, commit, push, cloud, deployment, activation or release authority.
 
 #### MLAI-033.2 dedicated planning-to-approval API orchestration
 
-MLAI-033.2 uses Option B: one provider-neutral durable orchestration record for
-resumable planning-to-approval API operations. It owns only the durable request
-claim, server-determined workflow identity, original canonical subcommand
-material, progress state and final safe HTTP response. It does not own workflow
+The earlier `workflow_api_orchestrations`-only design is superseded for
+operation-level claims. `workflow_api_orchestrations` remains the
+workflow-level root, and `workflow_api_operation_claims` is now required for
+operation-scoped claims. The revised C1–C4 sequence supersedes the earlier C/D
+sequence. Exact replay, approval recovery and concurrent approval guarantees
+depend on migration 20 and the child-claim table.
+
+MLAI-033.2 uses Option B with a two-level boundary: one provider-neutral
+`workflow_api_orchestrations` workflow-level reservation/root and a
+`workflow_api_operation_claims` operation-level child record. Each child owns
+only immutable command-plan material, progress, optimistic version,
+idempotency digest and final safe HTTP response. Neither level owns workflow
 state, approvals, workflow evidence, authorization audit, Campaign Plans or
 Marketing Briefs. API idempotency remains a completed-response cache; workflow
 receipts and evidence remain authoritative domain records.
+
+Operation claims are unique by tenant, brand, actor reference, operation and
+client-key digest. Parent workflow reservation uniqueness remains unchanged.
+Exact replay returns the stored original response bytes. Approval recovery
+reconciles the immutable approval, receipt, evidence, workflow state and child
+progress; contradictory state fails closed without mutation.
 
 A client-generated idempotency key containing at least 128 bits of entropy and a
 versioned, domain-separated workflow-ID derivation govern the claim. `mwf_`
@@ -916,7 +930,9 @@ transition.
 The customer boundary stops at `approved`; `running`, execution, generation,
 publishing, spend, providers, external effects and learning remain unauthorized.
 A future migration is required without changing historical migrations.
-Retention and archival remain deferred. HTTP contract versioning, MLAI-CJ-2
+Migration 20 is the additive, SQLite-canonical, PostgreSQL-compatible,
+non-cascading operation-claim migration and requires readiness and disposable
+rehearsal validation. Retention and archival remain deferred. HTTP contract versioning, MLAI-CJ-2
 schema version 2 and workflow safe-command schema version 1 remain distinct.
 Existing session and CSRF requirements continue to govern POST operations, and
 technical detail is omitted for callers without `APPROVE`.
@@ -929,8 +945,10 @@ authoritative receipts and fail closed on discrepancies. Approval evidence
 requires exact scoped selection, canonical digest and chain validation. Legacy
 API idempotency remains readable, while new orchestration records store only
 digests and safe material. Implementation is still separately unauthorized and
-must be reviewed as commits A through E: identity, persistence/migration, API
-orchestration, approval evidence, then workspace. This decision creates no code,
+must be reviewed as A identity contracts; B orchestration persistence; C1
+migration 20 and child-claim persistence; C2 create/plan/status/request-
+approval and exact replay; C3 approval/rejection and evidence-bound recovery;
+C4 concurrency, rehearsal, regression and acceptance; then E workspace. This decision creates no code,
 schema, migration, test, staging, commit, push, cloud, deployment, activation or
 release authority.
 

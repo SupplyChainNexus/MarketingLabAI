@@ -223,12 +223,16 @@ publishing, spend, providers, external effects or learning.
 
 ### Locked orchestration decision
 
-- Add one provider-neutral orchestration record for resumable
-  planning-to-approval API operations.
-- The record owns only the durable request claim, server-determined workflow
-  identity, original canonical subcommand material, progress state and final
-  safe HTTP response. It does not own workflow state, approvals, workflow
-  evidence, authorization audit, Campaign Plans or Marketing Briefs.
+- Keep `workflow_api_orchestrations` as the workflow-level reservation/root and
+  add `workflow_api_operation_claims` as the operation-level child boundary.
+  Each operation claim owns immutable command-plan material, progress,
+  optimistic version, idempotency digest and final safe HTTP response. Neither
+  record owns workflow state, approvals, workflow evidence, authorization
+  audit, Campaign Plans or Marketing Briefs.
+- Operation claims are uniquely scoped by tenant, brand, actor reference,
+  operation and client-key digest. Parent workflow reservation uniqueness is
+  unchanged. Exact replay returns the stored original response bytes; changed
+  material conflicts deterministically.
 - Preserve API idempotency as a completed-response cache. Workflow receipts and
   hash-linked evidence remain the authoritative domain records.
 - Require deterministic versioned `mwf_` workflow identity derived from
@@ -248,8 +252,13 @@ publishing, spend, providers, external effects or learning.
 - Interrupted create-and-plan orchestration resumes from authoritative workflow
   receipts. Approval recovery reuses an existing immutable approval and applies
   only a missing transition.
-- A future migration is required. Historical migrations remain unchanged, and
-  this definition neither creates nor authorizes that migration.
+- Additive migration 20 is required for the child claim table. It is
+  SQLite-canonical, PostgreSQL-compatible, non-cascading, and must be covered
+  by readiness and disposable rehearsal validation. Historical migrations
+  remain unchanged, and this definition does not authorize applying it.
+- Approval recovery reconciles the immutable approval, authoritative receipt,
+  evidence, workflow state and child progress. Contradictory state fails
+  closed without mutation.
 - Retention and archival remain deferred and require separate governance.
 - Keep the HTTP contract version, MLAI-CJ-2 envelope `schema_version: 2`, and
   workflow safe-command `schema_version: 1` distinct. No retry may silently
@@ -293,11 +302,22 @@ tests are required before the relevant implementation commit is accepted:
 
 - A: canonical identity contracts and golden vectors.
 - B: orchestration persistence, migration and compatibility.
-- C: API orchestration, authorization and recovery.
-- D: approval evidence reconciliation and fail-closed validation.
+- C1: migration 20 and operation-claim persistence.
+- C2: create/plan/status/request-approval and exact replay.
+- C3: approval/rejection and evidence-bound recovery.
+- C4: concurrency, rehearsal, regression and acceptance.
 - E: customer workspace and business-first status ending at `approved`.
 
 ### Non-authorization
+
+### Supersession clarification
+
+The earlier `workflow_api_orchestrations`-only design is superseded for
+operation-level claims. `workflow_api_orchestrations` remains the
+workflow-level root, while `workflow_api_operation_claims` is now required for
+operation-scoped claims. The revised C1–C4 sequence supersedes the earlier
+C/D sequence. Exact replay, approval recovery and concurrent approval
+guarantees depend on additive migration 20 and the child-claim table.
 
 This governance definition authorizes no application code, test, database
 schema, migration, cloud, deployment, customer activation, release, staging,

@@ -410,10 +410,11 @@ provider must not be used to infer classification.
 
 ### MLAI-033.2 planning-to-approval API orchestration
 
-Resumable planning-to-approval API operations use one provider-neutral durable
-orchestration record. Its authority is limited to the durable request claim,
-server-determined workflow identity, original canonical subcommand material,
-progress state and final safe HTTP response. It is not a workflow aggregate,
+Resumable planning-to-approval API operations use a provider-neutral durable
+orchestration root plus operation-level child claims. The root remains the
+workflow reservation; each child owns only its durable request claim,
+server-determined workflow identity reference, original canonical subcommand
+material, progress state and final safe HTTP response. Neither level is a workflow aggregate,
 approval authority, workflow-evidence store, authorization-audit record,
 Campaign Plan owner or Marketing Brief owner.
 
@@ -464,6 +465,34 @@ tenant/brand/actor/operation/key-digest unique, monotonic and fail-closed on
 recovery discrepancies. Approval evidence requires exact scoped selection,
 canonical digest and chain validation. Legacy API idempotency remains readable;
 new orchestration records store only digests and safe material.
+
+#### Operation-claim amendment
+
+This amendment supersedes the earlier `workflow_api_orchestrations`-only
+design for operation-level claims. `workflow_api_orchestrations` remains the
+workflow-level root; `workflow_api_operation_claims` is now required for
+operation-scoped claims. The revised C1–C4 sequence supersedes the earlier C/D
+sequence. Exact replay, approval recovery and concurrent approval guarantees
+depend on migration 20 and the child-claim table.
+
+`workflow_api_orchestrations` remains the workflow-level reservation/root;
+`workflow_api_operation_claims` is the operation-level child boundary. Each
+operation claim has immutable command-plan material, progress, optimistic
+version, idempotency digest and final safe response. Claims are unique by
+tenant, brand, actor reference, operation and client-key digest, while parent
+workflow reservation uniqueness remains unchanged. Exact replay returns the
+stored original response bytes. Approval recovery reconciles the approval,
+receipt, evidence, workflow state and child progress; contradictory state fails
+closed without mutation.
+
+Migration 20 is additive, SQLite-canonical, PostgreSQL-compatible and
+non-cascading, with schema-readiness and disposable rehearsal validation.
+Retention and archival remain deferred. The revised implementation sequence is
+C1 migration 20 and child-claim persistence; C2 create/plan/status/request-
+approval and exact replay; C3 approval/rejection and evidence-bound recovery;
+and C4 concurrency, rehearsal, regression and acceptance. This amendment adds
+no execution, publishing, provider, spend, learning, workspace, SOC 2, cloud,
+deployment or release authority.
 
 ## Consequences
 

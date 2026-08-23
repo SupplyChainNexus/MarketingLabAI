@@ -535,5 +535,35 @@ remain separate, existing session and CSRF rules remain binding, and technical
 detail is omitted for callers without `APPROVE`.
 
 Implementation remains split into independently reviewable commits: A identity
-contracts and vectors; B orchestration persistence and migration; C API
-orchestration; D approval evidence reconciliation; and E customer workspace.
+contracts and vectors; B orchestration persistence and migration; C1 migration
+20 and child-claim persistence; C2 create/plan/status/request-approval and
+exact replay; C3 approval/rejection and evidence-bound recovery; C4 concurrency,
+rehearsal, regression and acceptance; and E customer workspace.
+
+### MLAI-033.2 operation-claim amendment
+
+This amendment supersedes the earlier `workflow_api_orchestrations`-only
+design for operation-level claims. `workflow_api_orchestrations` remains the
+workflow-level root; `workflow_api_operation_claims` is now required for
+operation-scoped claims. The revised C1–C4 sequence supersedes the earlier C/D
+sequence. Exact replay, approval recovery and concurrent approval guarantees
+depend on migration 20 and the child-claim table.
+
+`workflow_api_orchestrations` remains the workflow-level reservation/root.
+`workflow_api_operation_claims` is the operation-level child boundary. Each
+child claim stores immutable command-plan material, progress, optimistic
+version, idempotency digest and final safe response. Operation uniqueness is
+scoped by tenant, brand, actor reference, operation and client-key digest;
+parent workflow reservation uniqueness is unchanged. Exact replay returns the
+stored original response bytes. Approval recovery reconciles approval, receipt,
+evidence, workflow state and child progress; contradictory state fails closed
+without mutation.
+
+Migration 20 is additive, SQLite-canonical, PostgreSQL-compatible,
+non-cascading, and requires readiness and disposable rehearsal validation.
+Retention and archival remain deferred. The revised sequence is C1 migration
+20 and child-claim persistence; C2 create/plan/status/request-approval and
+exact replay; C3 approval/rejection and evidence-bound recovery; and C4
+concurrency, rehearsal, regression and acceptance. The customer boundary still
+stops at `approved`; no execution, publishing, provider, spend, learning,
+workspace, SOC 2, cloud, deployment or release authority is added.
