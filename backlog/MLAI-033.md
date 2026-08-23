@@ -209,7 +209,7 @@ the deferred controls below remain outside that completed boundary.
 
 ### Status
 
-Governance-defined and blocked on the implementation contracts below; no
+Governance-defined; the implementation contracts are resolved, but no
 implementation, migration or validation is authorized.
 
 ### Customer outcome and boundary
@@ -231,11 +231,14 @@ publishing, spend, providers, external effects or learning.
   evidence, authorization audit, Campaign Plans or Marketing Briefs.
 - Preserve API idempotency as a completed-response cache. Workflow receipts and
   hash-linked evidence remain the authoritative domain records.
-- Require a client-generated idempotency key containing at least 128 bits of
+- Require deterministic versioned `mwf_` workflow identity derived from
+  authenticated tenant, brand, actor, operation and client-key digest inputs.
+  Require a client-generated idempotency key containing at least 128 bits of
   entropy and a versioned, domain-separated workflow-ID derivation. Raw keys
   must not be logged or returned. Implementation must explicitly define and
   validate the accepted representation and length and provide golden tests;
-  the exact accepted encoding remains an unresolved implementation contract.
+  the exact accepted encoding is an implementation validation detail, not a
+  new product or commercial decision.
   Persist the original canonical
   subcommand request IDs, timestamps, command kinds, expected versions and
   safe-command material before the first authority-changing command.
@@ -256,18 +259,43 @@ publishing, spend, providers, external effects or learning.
   `APPROVE`; omission must not be replaced by tenant, actor or evidence
   disclosure.
 
-### Unresolved implementation contracts
+### Resolved implementation contracts
 
-These items block implementation and must be locked separately without
-inventing privacy, retention or compatibility policy:
+These contracts govern implementation. Their golden vectors and adversarial
+tests are required before the relevant implementation commit is accepted:
 
-- the workflow-ID golden vector and exact versioned derivation format;
-- actor-reference derivation and truncation;
-- subcommand request-ID and timestamp derivation;
-- the exact orchestration recovery and reconciliation algorithm;
-- approval-requester evidence lookup and digest validation; and
-- transport-idempotency raw-key compatibility treatment, including the exact
-  accepted encoding, format and length validation.
+- `mwf_` uses versioned domain-separated SHA-256 over canonical authenticated
+  tenant, brand, pseudonymous actor, operation and client-key-digest inputs;
+  output is 32 lowercase hexadecimal characters after the `mwf_` prefix. A
+  fixed golden input, preimage and digest is mandatory.
+- `act_` uses versioned domain-separated SHA-256 over authenticated provider
+  and subject identity, with stable pseudonymous 32-character lowercase hex
+  output. Display names, sessions, CSRF values and tenant membership are
+  excluded; a fixed golden vector is mandatory.
+- Sub-command request IDs and command-key digests are versioned,
+  domain-separated and derived from orchestration identity, ordinal and command
+  kind. Original requested timestamps and canonical command bytes are persisted
+  before the first authority-changing command and reused verbatim. HTTP,
+  MLAI-CJ-2/schema 2 and safe-command/schema 1 remain separate.
+- Orchestration claims use tenant, brand, actor, operation and client-key digest
+  uniqueness; progress is monotonic. Retries reconcile authoritative receipts,
+  replay exact bytes, conflict on changed input, and fail closed on discrepancies.
+- Approval requester evidence is selected only within tenant, brand, workflow,
+  action and version scope; approval identity, requester, decision, receipt,
+  canonical digest, predecessor chain and sequence must validate. Missing,
+  ambiguous, invalid or cross-tenant evidence blocks the transition.
+- Legacy API idempotency rows remain readable with their existing raw-key
+  behavior. New orchestration records store only key digests and safe canonical
+  material; raw keys are never logged or returned. Accepted key encoding,
+  format and length validation require implementation golden tests.
+
+### Independently reviewable implementation commits
+
+- A: canonical identity contracts and golden vectors.
+- B: orchestration persistence, migration and compatibility.
+- C: API orchestration, authorization and recovery.
+- D: approval evidence reconciliation and fail-closed validation.
+- E: customer workspace and business-first status ending at `approved`.
 
 ### Non-authorization
 

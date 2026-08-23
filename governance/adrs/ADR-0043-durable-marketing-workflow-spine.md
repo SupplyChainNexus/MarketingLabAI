@@ -425,10 +425,14 @@ bits of entropy and store the workflow identity plus the original canonical
 subcommand request IDs,
 timestamps, command kinds, expected workflow versions and privacy-safe command
 material. Workflow identity uses a separately versioned, domain-separated
-derivation. A database uniqueness claim selects one concurrent first-submission
-authority. Raw keys must not be logged or returned. Implementation must define
-and enforce the accepted representation and length and add golden tests; the
-exact accepted encoding remains an unresolved implementation contract.
+derivation. `mwf_` output is 32 lowercase hexadecimal characters after the
+prefix, and a fixed golden input, canonical preimage and digest are mandatory.
+The pseudonymous `act_` reference uses a separate versioned domain over
+authenticated provider and subject identity, with a fixed golden vector;
+display names, sessions, CSRF values and tenant membership are excluded. Raw
+keys must not be logged or returned. Client keys require at least 128 bits of
+entropy; accepted encoding, format and length are implementation-validated and
+golden-tested.
 
 An exact retry reuses the original canonical command bytes and reconciles only
 steps not already proven by authoritative workflow records. Changed input under
@@ -450,12 +454,16 @@ schema migration is required, but historical migrations remain unchanged and
 this decision creates no migration authority. Retention and archival remain
 deferred for separate governance.
 
-Implementation remains blocked until authority separately fixes the workflow-ID
-golden vector and derivation format, actor-reference derivation and truncation,
-subcommand request-ID and timestamp derivation, exact recovery algorithm,
-approval-requester evidence lookup and digest validation, and transport
-idempotency raw-key compatibility treatment including exact accepted encoding,
-format and length validation.
+The six implementation contracts are resolved by this boundary. Implementation
+remains separately unauthorized and must be split into: A canonical identity
+contracts and vectors; B orchestration persistence and migration; C API
+orchestration; D approval evidence reconciliation; and E customer workspace.
+Sub-command IDs and command-key digests are versioned and domain-separated;
+original timestamps and canonical bytes are immutable. Orchestration claims are
+tenant/brand/actor/operation/key-digest unique, monotonic and fail-closed on
+recovery discrepancies. Approval evidence requires exact scoped selection,
+canonical digest and chain validation. Legacy API idempotency remains readable;
+new orchestration records store only digests and safe material.
 
 ## Consequences
 

@@ -897,10 +897,14 @@ Marketing Briefs. API idempotency remains a completed-response cache; workflow
 receipts and evidence remain authoritative domain records.
 
 A client-generated idempotency key containing at least 128 bits of entropy and a
-versioned, domain-separated workflow-ID derivation govern the claim. Raw keys
-must not be logged or returned; implementation must define and validate the
-accepted representation and length and add golden tests, while the exact
-accepted encoding remains unresolved. Original canonical
+versioned, domain-separated workflow-ID derivation govern the claim. `mwf_`
+output is 32 lowercase hexadecimal characters after the prefix; a fixed golden
+input, canonical preimage and digest are mandatory. A separate versioned
+domain-separated `act_` reference derives from authenticated provider and
+subject identity, excludes display name, sessions, CSRF values and membership,
+and requires its own golden vector. Raw keys must not be logged or returned;
+accepted encoding, format and length require implementation validation and
+golden tests. Original canonical
 subcommand request IDs, timestamps, command kinds, expected versions and
 privacy-safe command material must be durable before the first
 authority-changing command. A uniqueness claim resolves concurrent first
@@ -917,12 +921,16 @@ schema version 2 and workflow safe-command schema version 1 remain distinct.
 Existing session and CSRF requirements continue to govern POST operations, and
 technical detail is omitted for callers without `APPROVE`.
 
-Implementation remains blocked pending separately locked contracts for the
-workflow-ID golden vector and derivation format, actor-reference derivation and
-truncation, subcommand request-ID and timestamp derivation, exact orchestration
-recovery, approval-requester evidence lookup and digest validation, and
-transport-idempotency raw-key compatibility including exact accepted encoding,
-format and length validation. This decision creates no code,
+The six implementation contracts are resolved by this decision. Sub-command
+IDs and command-key digests are versioned and domain-separated; original
+timestamps and canonical bytes are immutable. Orchestration claims are
+tenant/brand/actor/operation/key-digest unique and monotonic; retries reconcile
+authoritative receipts and fail closed on discrepancies. Approval evidence
+requires exact scoped selection, canonical digest and chain validation. Legacy
+API idempotency remains readable, while new orchestration records store only
+digests and safe material. Implementation is still separately unauthorized and
+must be reviewed as commits A through E: identity, persistence/migration, API
+orchestration, approval evidence, then workspace. This decision creates no code,
 schema, migration, test, staging, commit, push, cloud, deployment, activation or
 release authority.
 

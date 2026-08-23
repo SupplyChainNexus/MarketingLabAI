@@ -1,12 +1,12 @@
 {
   "adr": "governance/adrs/ADR-0043-durable-marketing-workflow-spine.md",
-  "blocked_decisions": [
-    "workflow-ID golden vector and exact versioned domain-separated derivation format",
-    "actor-reference derivation and truncation",
-    "subcommand request-ID and timestamp derivation",
-    "exact orchestration recovery and reconciliation algorithm",
-    "approval-requester evidence lookup and digest validation",
-    "transport-idempotency raw-key compatibility treatment, including exact accepted encoding, format and length validation"
+  "resolved_implementation_contracts": [
+    "versioned domain-separated mwf_ identity with authenticated tenant, brand, actor, operation and client-key-digest inputs, 32 lowercase hexadecimal output and a mandatory golden vector",
+    "versioned domain-separated pseudonymous act_ actor reference from authenticated provider and subject identity, with mandatory golden vector",
+    "versioned deterministic sub-command request IDs and command-key digests with immutable original timestamps and canonical command bytes",
+    "tenant/brand/actor/operation/key-digest uniqueness claim, monotonic orchestration recovery, exact replay and fail-closed discrepancy handling",
+    "scoped approval-requester evidence selection with digest, sequence, predecessor-chain and ambiguity validation",
+    "legacy raw-key API idempotency readability with digest-only new orchestration records, raw-key redaction and implementation golden tests for accepted encoding"
   ],
   "classification": "Core",
   "implementation_authorized": false,
@@ -15,7 +15,7 @@
     "The orchestration record owns only the durable request claim, server-determined workflow identity, original canonical subcommand material, progress state and final safe HTTP response.",
     "Workflow state, approvals, workflow evidence, authorization audit, Campaign Plans and Marketing Briefs retain their existing authorities.",
     "API idempotency remains a completed-response cache; workflow receipts and evidence remain authoritative domain records.",
-    "The idempotency key is client-generated and contains at least 128 bits of entropy; raw keys are never logged or returned; implementation defines and validates the accepted representation and length and adds golden tests, while exact encoding remains unresolved.",
+    "The idempotency key is client-generated and contains at least 128 bits of entropy; raw keys are never logged or returned; implementation validates the accepted representation and length and adds golden tests.",
     "Original canonical subcommand request IDs, timestamps, command kinds, expected versions and safe-command material are persisted before the first authority-changing command.",
     "Concurrent first submissions resolve through a durable uniqueness claim; exact retries reuse original canonical bytes and reconcile only missing steps; changed input conflicts deterministically.",
     "Approval recovery reuses an existing immutable approval and applies only a missing transition.",
@@ -42,7 +42,14 @@
     "separate HTTP, MLAI-CJ-2 and workflow safe-command version domains",
     "tenant-authorized session-and-CSRF-protected operation ending at approved"
   ],
-  "status": "governance-defined; implementation blocked and not authorized",
+  "implementation_sequence": [
+    "A: canonical identity contracts and golden vectors",
+    "B: orchestration persistence and migration",
+    "C: API orchestration, authorization and recovery",
+    "D: approval evidence reconciliation and fail-closed validation",
+    "E: customer workspace and business-first status ending at approved"
+  ],
+  "status": "governance-defined; contracts resolved; implementation not authorized",
   "story_id": "MLAI-033.2",
   "title": "Tenant-Authorized Planning-to-Approval Workspace"
 }

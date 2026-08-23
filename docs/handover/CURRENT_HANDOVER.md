@@ -8,7 +8,7 @@
 - Last completed epic: MLAI-029 Marketing Strategy Intelligence
 - Active epic: MLAI-031 Controlled Pilot Hosting
 - Last completed story: MLAI-031.18C Threat Model and Server-Session Lifecycle Foundation
-- Active story: MLAI-033.2 is governance-defined and blocked on six implementation contracts; implementation is not authorized
+- Active story: MLAI-033.2 is governance-defined with resolved implementation contracts; implementation is not authorized
 
 ## Product direction
 
@@ -512,7 +512,9 @@ idempotency stays a completed-response cache, while workflow state, approvals,
 workflow evidence, authorization audit, Campaign Plans and Marketing Briefs
 retain their existing authorities.
 
-The future orchestration requires a client-generated idempotency key containing
+The resolved contract set requires deterministic versioned `mwf_` workflow
+identity and pseudonymous versioned `act_` actor reference, plus a
+client-generated idempotency key containing
 at least 128 bits of entropy, a versioned domain-separated workflow-ID
 derivation, durable canonical subcommand identities and material before the
 first domain command, a concurrent
@@ -521,14 +523,17 @@ recovery reuses an existing immutable approval and performs only a missing
 transition. The workspace stops at `approved`; it authorizes no execution or
 external effect. Raw idempotency keys must not be logged or returned.
 Implementation must define and validate the accepted representation and length
-and add golden tests; the exact accepted encoding remains unresolved.
+and add golden tests. Fixed golden vectors are mandatory for both identity
+derivations; accepted key encoding remains an implementation validation rule.
 
-No implementation or migration is authorized. Before implementation, separately
-lock the workflow-ID golden vector and derivation, actor-reference derivation and
-truncation, subcommand request-ID and timestamp derivation, exact recovery
-algorithm, approval-requester evidence lookup and digest validation, and raw-key
-compatibility at the transport idempotency boundary including the exact accepted
-encoding, format and length validation. Retention and archival also
+No implementation or migration is authorized. The six implementation contracts
+are resolved: identity derivation and vectors, actor reference, deterministic
+sub-command IDs/timestamps, exact monotonic recovery, scoped approval-evidence
+validation, and legacy/new transport-idempotency compatibility. Retention and archival also
 remain deferred. HTTP, MLAI-CJ-2 schema 2 and safe-command schema 1 versioning
 remain separate, existing session and CSRF rules remain binding, and technical
 detail is omitted for callers without `APPROVE`.
+
+Implementation remains split into independently reviewable commits: A identity
+contracts and vectors; B orchestration persistence and migration; C API
+orchestration; D approval evidence reconciliation; and E customer workspace.
