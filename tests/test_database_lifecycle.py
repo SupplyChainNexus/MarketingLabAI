@@ -467,7 +467,7 @@ class DatabaseLifecycleTests(unittest.TestCase):
                 [item.name for item in report.checks if not item.passed],
             )
             self.assertEqual(apply_schema.call_count, 0)
-            self.assertNotIn("schema_migrations", missing.table_names())
+            self.assertFalse(missing.database_path.exists())
             self.assertIn(
                 "database_schema_ready",
                 [item.name for item in release.checks if not item.passed],

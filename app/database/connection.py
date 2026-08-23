@@ -8,6 +8,11 @@ from collections.abc import Iterator
 from contextlib import contextmanager, nullcontext
 from pathlib import Path
 
+from app.database.schema_readiness import (
+    SchemaReadinessReport,
+    observe_sqlite_schema,
+    unavailable_schema_report,
+)
 from app.tenants.migration import (
     apply_brand_ownership_migration,
     apply_tenant_migration,
@@ -79,13 +84,13 @@ class SQLiteDatabase:
         database_path: str | Path = "database/marketinglabai.db",
     ) -> None:
         self.database_path = Path(database_path)
-        self.database_path.parent.mkdir(parents=True, exist_ok=True)
         self._initialization_lock = threading.Lock()
         self._initialization_complete = False
 
     def connect(self) -> sqlite3.Connection:
         """Create and return a configured SQLite connection."""
 
+        self.database_path.parent.mkdir(parents=True, exist_ok=True)
         connection = sqlite3.connect(
             self.database_path,
             timeout=30,
@@ -94,7 +99,13 @@ class SQLiteDatabase:
             connection.row_factory = sqlite3.Row
             connection.execute("PRAGMA busy_timeout = 30000")
             connection.execute("PRAGMA foreign_keys = ON")
-            connection.execute("PRAGMA journal_mode = WAL")
+            journal_mode = connection.execute("PRAGMA journal_mode").fetchone()
+            if journal_mode is None or str(journal_mode[0]).lower() != "wal":
+                try:
+                    connection.execute("PRAGMA journal_mode = WAL")
+                except sqlite3.OperationalError as error:
+                    if not _sqlite_lock_error(error):
+                        raise
             connection.execute("PRAGMA synchronous = NORMAL")
         except Exception:
             connection.close()
@@ -116,6 +127,24 @@ class SQLiteDatabase:
                     "The database schema is not ready; run the explicit bootstrap."
                 ) from error
             raise
+        finally:
+            connection.close()
+
+    @contextmanager
+    def observation_connection(self) -> Iterator[sqlite3.Connection]:
+        """Open an existing SQLite database without creating or mutating it."""
+
+        if not self.database_path.is_file():
+            raise DatabaseSchemaNotReadyError(
+                "The database file is missing; run the explicit bootstrap."
+            )
+        uri = self.database_path.resolve().as_uri() + "?mode=ro"
+        connection = sqlite3.connect(uri, uri=True, timeout=30)
+        try:
+            connection.row_factory = sqlite3.Row
+            connection.execute("PRAGMA query_only = ON")
+            connection.execute("PRAGMA foreign_keys = ON")
+            yield connection
         finally:
             connection.close()
 
@@ -1080,7 +1109,7 @@ class SQLiteDatabase:
     def table_names(self) -> list[str]:
         """Return application table names."""
 
-        with self.connection() as connection:
+        with self.observation_connection() as connection:
             return self._table_names(connection)
 
     def _table_names(self, connection) -> list[str]:
@@ -1094,27 +1123,30 @@ class SQLiteDatabase:
         return [str(row["name"]) for row in rows]
 
     def _schema_is_ready(self, connection) -> bool:
-        tables = set(self._table_names(connection))
-        if not self.REQUIRED_TABLES.issubset(tables):
-            return False
-        rows = connection.execute(
-            "SELECT version FROM schema_migrations ORDER BY version"
-        ).fetchall()
-        return {int(row[0]) for row in rows} == self.REQUIRED_MIGRATION_VERSIONS
+        return observe_sqlite_schema(connection).ready
+
+    def schema_readiness(self) -> SchemaReadinessReport:
+        """Observe complete SQLite schema readiness without creating a file."""
+
+        if not self.database_path.is_file():
+            return unavailable_schema_report("database_file", "missing")
+        try:
+            with self.observation_connection() as connection:
+                return observe_sqlite_schema(connection)
+        except Exception as error:
+            return unavailable_schema_report(
+                "inspection", type(error).__name__.lower()
+            )
 
     def schema_is_ready(self) -> bool:
         """Observe whether the complete canonical schema is present without repair."""
 
-        try:
-            with self.connection() as connection:
-                return self._schema_is_ready(connection)
-        except Exception:
-            return False
+        return self.schema_readiness().ready
 
     def integrity_check(self) -> str:
         """Run SQLite's built-in database integrity check."""
 
-        with self.connection() as connection:
+        with self.observation_connection() as connection:
             row = connection.execute("PRAGMA integrity_check").fetchone()
 
         if row is None:

@@ -1,5 +1,23 @@
 # PostgreSQL Compatibility and Migration Runbook
 
+## Observational schema readiness
+
+Increment B2 authenticates the versioned
+`earthonox.marketinglabai.schema-manifest.v1` manifest before comparing live
+catalog metadata. Readiness covers tables, ordered columns, provider-normalized
+types, nullability, defaults, explicit indexes, primary and unique constraints,
+foreign keys, check constraints, triggers, and exact legacy migration
+version/description identities. Historical migration timestamps are not treated
+as fabricated cryptographic evidence; the canonical manifest itself carries a
+deterministic SHA-256 checksum.
+
+SQLite inspection opens an existing file in read-only/query-only mode and
+returns a structured `database_file` failure without creating a missing file or
+parent directory. PostgreSQL inspection uses `information_schema` and
+`pg_indexes` catalog reads. Neither readiness path applies DDL, repairs schema,
+acquires the migration lock, or changes migration numbering. Explicit bootstrap
+and reconciliation remain separately owned lifecycle operations.
+
 ## Implemented boundary
 
 - `MLAI_PERSISTENCE_BACKEND=postgresql` selects the canonical PostgreSQL adapter.

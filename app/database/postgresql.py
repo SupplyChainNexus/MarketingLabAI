@@ -16,7 +16,11 @@ from app.database.connection import (
     DatabaseSchemaNotReadyError,
     SQLiteDatabase,
 )
-
+from app.database.schema_readiness import (
+    SchemaReadinessReport,
+    observe_postgresql_schema,
+    unavailable_schema_report,
+)
 
 POSTGRESQL_MIGRATION_LOCK_NAMESPACE = (
     "earthonox.marketinglabai.schema-migration.v1"
@@ -403,6 +407,20 @@ class PostgreSQLDatabase(SQLiteDatabase):
                     """,
                     row,
                 )
+
+    def _schema_is_ready(self, connection) -> bool:
+        return observe_postgresql_schema(connection).ready
+
+    def schema_readiness(self) -> SchemaReadinessReport:
+        """Observe complete PostgreSQL schema readiness without applying DDL."""
+
+        try:
+            with self.connection() as connection:
+                return observe_postgresql_schema(connection)
+        except Exception as error:
+            return unavailable_schema_report(
+                "inspection", type(error).__name__.lower()
+            )
 
     def table_names(self) -> list[str]:
         with self.connection() as connection:
