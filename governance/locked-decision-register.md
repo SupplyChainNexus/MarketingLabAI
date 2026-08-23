@@ -992,3 +992,23 @@ pre-commit validation, not live PostgreSQL rehearsal, production validation,
 deployment validation or external CI evidence. It grants no cloud, secret,
 external-database, deployment, release or customer-activation authority and
 does not close any deferred control named above.
+
+### LDR-067 — Progressive SOC 2 readiness without a parallel compliance architecture
+
+**Status:** Current / Binding operational-assurance direction
+**Source:** Founder-approved SOC 2 readiness decision on 2026-08-23
+
+Earthonox will progressively build SOC 2 readiness through its existing
+infrastructure, security, workflow, evidence, migration, observability and
+operational-control boundaries. This is aligned Future assurance work under the
+Rabbit Rule, not authority to start a SOC 2 certification project. Current
+implementation priority remains Increment B2: comprehensive observational
+schema readiness.
+
+Formal audit preparation, personnel controls, vendor-risk procedures, evidence
+portals, Type I preparation, Type II operating-period evidence and certification
+remain deferred until production scale, customer requirements or commercial due
+diligence justify them. Reopening any deferred capability requires separate
+scope and implementation authority. Future SOC 2 controls must reuse existing
+system boundaries; compliance software, duplicate evidence storage and a
+parallel compliance architecture are Rabbit work and are not authorized.

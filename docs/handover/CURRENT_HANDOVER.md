@@ -481,3 +481,19 @@ dedicated administrator revocation transport, edge enforcement, centralized
 detection, and production and external rehearsal evidence remain open or
 deferred under RISK-038, RISK-039, TD-041 and TD-042. MLAI-033 remains the next
 locked product-architecture story and has not begun implementation.
+
+## SOC 2 readiness boundary
+
+LDR-067 records progressive SOC 2 readiness as aligned Future assurance work
+that must reuse Earthonox's existing infrastructure, security, workflow,
+evidence, migration, observability and operational-control boundaries. It does
+not start certification, authorize compliance software or create parallel
+evidence storage. Increment B2 comprehensive observational schema readiness
+remains the current implementation priority and is separately authorized.
+
+Formal audit preparation, personnel controls, vendor-risk procedures, evidence
+portals, Type I preparation, Type II operating-period evidence and certification
+remain deferred until production scale, customer requirements or commercial due
+diligence justify them. Any reopening requires separate authority; no
+application, audit, vendor, deployment, cloud or release work is authorized by
+this governance record.
