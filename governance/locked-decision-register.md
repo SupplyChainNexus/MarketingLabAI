@@ -918,10 +918,16 @@ domain-separated `act_` reference derives from authenticated provider and
 subject identity, excludes display name, sessions, CSRF values and membership,
 and requires its own golden vector. Raw keys must not be logged or returned;
 accepted encoding, format and length require implementation validation and
-golden tests. Original canonical
-subcommand request IDs, timestamps, command kinds, expected versions and
-privacy-safe command material must be durable before the first
-authority-changing command. A uniqueness claim resolves concurrent first
+golden tests. The parent `workflow_api_orchestrations` uniqueness claim is the
+authoritative pre-mutation reservation and is acquired before the first
+authority-changing command. Because migration 20 requires a non-null workflow
+foreign key, the `workflow_api_operation_claims` child is created immediately
+after successful workflow creation and stores the original canonical subcommand
+request IDs, timestamps, command kinds, expected versions and privacy-safe
+command material. A crash between workflow creation and child persistence is
+recovered through the parent claim and deterministic workflow identity; recovery
+never creates a second workflow. Once created, the child owns operation progress
+and exact response replay. A uniqueness claim resolves concurrent first
 submission. Exact retries reuse the original canonical bytes and reconcile only
 missing steps; changed input conflicts deterministically. Approval recovery
 reuses the immutable approval already recorded and performs only a missing
@@ -936,6 +942,10 @@ rehearsal validation. Retention and archival remain deferred. HTTP contract vers
 schema version 2 and workflow safe-command schema version 1 remain distinct.
 Existing session and CSRF requirements continue to govern POST operations, and
 technical detail is omitted for callers without `APPROVE`.
+
+Exact HTTP replay preserves the original status, ordered headers, exact UTF-8
+body bytes and body SHA-256 digest. The replay marker is internal transport
+metadata and is never added to the response body.
 
 The six implementation contracts are resolved by this decision. Sub-command
 IDs and command-key digests are versioned and domain-separated; original

@@ -559,6 +559,15 @@ stored original response bytes. Approval recovery reconciles approval, receipt,
 evidence, workflow state and child progress; contradictory state fails closed
 without mutation.
 
+The parent reservation uniqueness claim is acquired before workflow mutation.
+Because migration 20 requires a non-null workflow foreign key, the child claim
+is created immediately after successful workflow creation. A crash between
+workflow creation and child persistence is recovered through the parent claim
+and deterministic workflow identity; recovery never creates a second workflow.
+Once created, the child owns operation progress and exact response replay. Exact
+HTTP replay preserves the original status, ordered headers, exact UTF-8 body
+bytes and body SHA-256 digest; no replay marker is added to the body.
+
 Migration 20 is additive, SQLite-canonical, PostgreSQL-compatible,
 non-cascading, and requires readiness and disposable rehearsal validation.
 Retention and archival remain deferred. The revised sequence is C1 migration

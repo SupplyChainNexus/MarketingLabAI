@@ -420,12 +420,15 @@ Campaign Plan owner or Marketing Brief owner.
 
 The existing API idempotency boundary remains a completed-response cache.
 Workflow command receipts and workflow evidence remain the authoritative domain
-records. Before the first authority-changing command, orchestration persistence
-must durably claim a client-generated idempotency key containing at least 128
-bits of entropy and store the workflow identity plus the original canonical
-subcommand request IDs,
-timestamps, command kinds, expected workflow versions and privacy-safe command
-material. Workflow identity uses a separately versioned, domain-separated
+records. Before the first authority-changing command, the
+`workflow_api_orchestrations` uniqueness claim is the authoritative
+pre-mutation reservation. Because migration 20 requires a non-null workflow
+foreign key, `workflow_api_operation_claims` is created immediately after
+successful workflow creation and stores the original canonical subcommand
+request IDs, timestamps, command kinds, expected workflow versions and
+privacy-safe command material. A crash between those writes is recovered by the
+parent claim and deterministic workflow identity; recovery never creates a
+second workflow. Workflow identity uses a separately versioned, domain-separated
 derivation. `mwf_` output is 32 lowercase hexadecimal characters after the
 prefix, and a fixed golden input, canonical preimage and digest are mandatory.
 The pseudonymous `act_` reference uses a separate versioned domain over
@@ -484,6 +487,13 @@ workflow reservation uniqueness remains unchanged. Exact replay returns the
 stored original response bytes. Approval recovery reconciles the approval,
 receipt, evidence, workflow state and child progress; contradictory state fails
 closed without mutation.
+
+The parent reservation claim is acquired before workflow mutation. The child is
+created immediately after successful workflow creation because migration 20
+requires a non-null workflow foreign key. Once created, the child owns operation
+progress and exact response replay. Exact HTTP replay preserves the original
+status, ordered headers, exact UTF-8 body bytes and body SHA-256 digest; a
+replay marker is internal metadata only and is never added to the response body.
 
 Migration 20 is additive, SQLite-canonical, PostgreSQL-compatible and
 non-cascading, with schema-readiness and disposable rehearsal validation.

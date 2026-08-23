@@ -243,9 +243,14 @@ publishing, spend, providers, external effects or learning.
   validate the accepted representation and length and provide golden tests;
   the exact accepted encoding is an implementation validation detail, not a
   new product or commercial decision.
-  Persist the original canonical
-  subcommand request IDs, timestamps, command kinds, expected versions and
-  safe-command material before the first authority-changing command.
+  The `workflow_api_orchestrations` uniqueness claim is the authoritative
+  pre-mutation reservation and is acquired before any workflow mutation. Because
+  migration 20 requires a non-null workflow foreign key, the
+  `workflow_api_operation_claims` child is created immediately after successful
+  workflow creation. It persists the original canonical subcommand request IDs,
+  timestamps, command kinds, expected versions and safe-command material. A
+  crash in that interval is recovered through the parent claim and deterministic
+  workflow identity; recovery never creates a second workflow.
 - A durable uniqueness claim resolves concurrent first submissions. Exact
   retries reuse the original canonical bytes and reconcile only missing steps;
   changed input fails deterministically as a conflict.
@@ -318,6 +323,17 @@ workflow-level root, while `workflow_api_operation_claims` is now required for
 operation-scoped claims. The revised C1–C4 sequence supersedes the earlier
 C/D sequence. Exact replay, approval recovery and concurrent approval
 guarantees depend on additive migration 20 and the child-claim table.
+
+The parent reservation is acquired before workflow mutation. The child claim is
+created immediately after successful workflow creation because migration 20
+requires its workflow foreign key to be non-null. If a crash occurs between
+those writes, deterministic workflow identity and the parent claim reconcile the
+missing child without creating another workflow. Once created, the child owns
+operation progress and exact response replay.
+
+Exact HTTP replay persists and returns the original status, ordered headers,
+exact UTF-8 body bytes and body SHA-256 digest. The replay marker is internal
+transport metadata and is never added to the response body.
 
 This governance definition authorizes no application code, test, database
 schema, migration, cloud, deployment, customer activation, release, staging,
