@@ -5,16 +5,22 @@ from __future__ import annotations
 import hashlib
 import re
 import tempfile
-import threading
 from collections.abc import Iterator, Mapping, Sequence
 from contextlib import contextmanager, nullcontext
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit
 
 from app.database.connection import (
     DatabaseMigrationLockTimeoutError,
     DatabaseSchemaNotReadyError,
     SQLiteDatabase,
+)
+from app.database.lifecycle_telemetry import (
+    DatabaseLifecycleEventSink,
+    MonotonicClock,
+    monotonic_clock,
+    target_fingerprint,
 )
 from app.database.schema_readiness import (
     SchemaReadinessReport,
@@ -300,7 +306,13 @@ def build_postgresql_seed_rows() -> dict[str, tuple[tuple[Any, ...], ...]]:
 class PostgreSQLDatabase(SQLiteDatabase):
     """Run existing canonical repositories over PostgreSQL via psycopg."""
 
-    def __init__(self, database_url: str) -> None:
+    def __init__(
+        self,
+        database_url: str,
+        *,
+        lifecycle_event_sink: DatabaseLifecycleEventSink | None = None,
+        monotonic: MonotonicClock = monotonic_clock,
+    ) -> None:
         selected = str(database_url).strip()
         if not selected.startswith(("postgresql://", "postgresql+psycopg://")):
             raise PostgreSQLConfigurationError(
@@ -309,9 +321,17 @@ class PostgreSQLDatabase(SQLiteDatabase):
         self.database_url = selected.replace(
             "postgresql+psycopg://", "postgresql://", 1
         )
-        self.database_path = Path("postgresql-managed")
-        self._initialization_lock = threading.Lock()
-        self._initialization_complete = False
+        super().__init__(
+            Path("postgresql-managed"),
+            lifecycle_event_sink=lifecycle_event_sink,
+            monotonic=monotonic,
+        )
+        parsed = urlsplit(self.database_url)
+        safe_target = (
+            f"{parsed.hostname or ''}:{parsed.port or 5432}/{parsed.path.lstrip('/')}"
+        )
+        self._backend_name = "postgresql"
+        self._target_fingerprint = target_fingerprint(safe_target)
 
     def connect(self) -> PostgreSQLConnectionAdapter:
         try:
@@ -358,6 +378,10 @@ class PostgreSQLDatabase(SQLiteDatabase):
         """Hold the governed advisory lock through migration commit or rollback."""
 
         connection = self.connect()
+        wait_started_at = self._monotonic()
+        self._emit_lifecycle_event(
+            "migration_lock_waiting", "migration_lock", wait_started_at=wait_started_at
+        )
         try:
             connection.execute(
                 "SELECT set_config('lock_timeout', ?, true)",
@@ -367,12 +391,23 @@ class PostgreSQLDatabase(SQLiteDatabase):
                 "SELECT pg_advisory_xact_lock(?)",
                 (postgresql_migration_advisory_key(),),
             )
+            self._emit_lifecycle_event(
+                "migration_lock_acquired",
+                "migration_lock",
+                wait_started_at=wait_started_at,
+            )
             connection.execute("SELECT set_config('lock_timeout', '0', true)")
             yield connection
             connection.commit()
         except Exception as error:
             connection.rollback()
             if _error_has_sqlstate(error, "55P03"):
+                self._emit_lifecycle_event(
+                    "migration_lock_timeout",
+                    "migration_lock",
+                    wait_started_at=wait_started_at,
+                    failure_category="lock_timeout",
+                )
                 raise DatabaseMigrationLockTimeoutError(
                     "Timed out acquiring the PostgreSQL migration advisory lock."
                 ) from error
@@ -414,13 +449,24 @@ class PostgreSQLDatabase(SQLiteDatabase):
     def schema_readiness(self) -> SchemaReadinessReport:
         """Observe complete PostgreSQL schema readiness without applying DDL."""
 
+        observed_version = None
         try:
             with self.connection() as connection:
-                return observe_postgresql_schema(connection)
+                observed_version = self._observed_migration_version(connection)
+                report = observe_postgresql_schema(connection)
         except Exception as error:
-            return unavailable_schema_report(
+            report = unavailable_schema_report(
                 "inspection", type(error).__name__.lower()
             )
+        if not report.ready:
+            category = report.failure_categories[0] if report.failure_categories else "unknown"
+            self._emit_lifecycle_event(
+                "readiness_failure",
+                "schema_readiness",
+                observed_version=observed_version,
+                failure_category=category,
+            )
+        return report
 
     def table_names(self) -> list[str]:
         with self.connection() as connection:

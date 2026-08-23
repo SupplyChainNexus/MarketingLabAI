@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import sqlite3
 import threading
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager, nullcontext
 from pathlib import Path
 
@@ -12,6 +12,13 @@ from app.database.schema_readiness import (
     SchemaReadinessReport,
     observe_sqlite_schema,
     unavailable_schema_report,
+)
+from app.database.lifecycle_telemetry import (
+    DatabaseLifecycleEvent,
+    DatabaseLifecycleEventSink,
+    NullDatabaseLifecycleEventSink,
+    monotonic_clock,
+    target_fingerprint,
 )
 from app.tenants.migration import (
     apply_brand_ownership_migration,
@@ -82,10 +89,68 @@ class SQLiteDatabase:
     def __init__(
         self,
         database_path: str | Path = "database/marketinglabai.db",
+        *,
+        lifecycle_event_sink: DatabaseLifecycleEventSink | None = None,
+        monotonic: Callable[[], float] = monotonic_clock,
     ) -> None:
         self.database_path = Path(database_path)
         self._initialization_lock = threading.Lock()
         self._initialization_complete = False
+        # Retry ordinals are cumulative for this database object so operators can
+        # correlate repeated lifecycle instability without durable telemetry state.
+        self._initialization_failures = 0
+        self._lifecycle_event_sink = (
+            NullDatabaseLifecycleEventSink()
+            if lifecycle_event_sink is None
+            else lifecycle_event_sink
+        )
+        self._monotonic = monotonic
+        self._backend_name = "sqlite"
+        self._target_fingerprint = target_fingerprint(str(self.database_path.resolve()))
+
+    def _emit_lifecycle_event(
+        self,
+        name: str,
+        operation_type: str,
+        *,
+        started_at: float | None = None,
+        wait_started_at: float | None = None,
+        observed_version: int | None = None,
+        failure_category: str | None = None,
+        retry_ordinal: int | None = None,
+    ) -> None:
+        """Emit one allowlisted event without affecting database behavior."""
+
+        now = self._monotonic()
+        event = DatabaseLifecycleEvent(
+            name=name,
+            backend=self._backend_name,
+            operation_type=operation_type,
+            target_migration_version=max(self.REQUIRED_MIGRATION_VERSIONS),
+            target_fingerprint=self._target_fingerprint,
+            observed_version=observed_version,
+            duration_ms=(max(0, round((now - started_at) * 1000)) if started_at is not None else None),
+            wait_duration_ms=(max(0, round((now - wait_started_at) * 1000)) if wait_started_at is not None else None),
+            failure_category=failure_category,
+            retry_ordinal=self._initialization_failures if retry_ordinal is None else retry_ordinal,
+        )
+        try:
+            self._lifecycle_event_sink.emit(event)
+        except Exception:
+            pass
+
+    @staticmethod
+    def _observed_migration_version(connection) -> int | None:
+        try:
+            row = connection.execute(
+                "SELECT MAX(version) AS version FROM schema_migrations"
+            ).fetchone()
+        except Exception:
+            return None
+        if row is None:
+            return None
+        value = row["version"]
+        return int(value) if value is not None else None
 
     def connect(self) -> sqlite3.Connection:
         """Create and return a configured SQLite connection."""
@@ -175,15 +240,30 @@ class SQLiteDatabase:
         """Serialize schema reconciliation with SQLite's process-safe writer lock."""
 
         connection = None
+        wait_started_at = self._monotonic()
+        self._emit_lifecycle_event(
+            "migration_lock_waiting", "migration_lock", wait_started_at=wait_started_at
+        )
         try:
             connection = self.connect()
             connection.execute("BEGIN IMMEDIATE")
+            self._emit_lifecycle_event(
+                "migration_lock_acquired",
+                "migration_lock",
+                wait_started_at=wait_started_at,
+            )
             yield connection
             connection.commit()
         except sqlite3.OperationalError as error:
             if connection is not None:
                 connection.rollback()
             if _sqlite_lock_error(error):
+                self._emit_lifecycle_event(
+                    "migration_lock_timeout",
+                    "migration_lock",
+                    wait_started_at=wait_started_at,
+                    failure_category="lock_timeout",
+                )
                 raise DatabaseMigrationLockTimeoutError(
                     "Timed out acquiring the SQLite migration write reservation."
                 ) from error
@@ -199,29 +279,93 @@ class SQLiteDatabase:
     def ensure_initialised(self) -> None:
         """Apply the schema once per instance, caching only successful completion."""
 
+        operation = "ensure_initialised"
+        requested_at = self._monotonic()
+        self._emit_lifecycle_event("initialization_requested", operation)
         if self._initialization_complete:
+            self._emit_lifecycle_event(
+                "initialization_succeeded", operation, started_at=requested_at
+            )
             return
-        with self._initialization_lock:
+        wait_started_at = None
+        lock_acquired = self._initialization_lock.acquire(blocking=False)
+        if not lock_acquired:
+            wait_started_at = self._monotonic()
+            self._emit_lifecycle_event("initialization_waiting", operation)
+            self._initialization_lock.acquire()
+        try:
             if self._initialization_complete:
+                self._emit_lifecycle_event(
+                    "initialization_succeeded",
+                    operation,
+                    started_at=requested_at,
+                    wait_started_at=wait_started_at,
+                )
                 return
-            self._reconcile_schema(skip_if_ready=True)
+            if self._initialization_failures:
+                self._emit_lifecycle_event("initialization_retried", operation)
+            self._emit_lifecycle_event("initialization_started", operation)
+            try:
+                observed = self._reconcile_schema(skip_if_ready=True)
+            except Exception as error:
+                self._initialization_failures += 1
+                self._emit_lifecycle_event(
+                    "initialization_failed",
+                    operation,
+                    started_at=requested_at,
+                    wait_started_at=wait_started_at,
+                    failure_category=type(error).__name__.lower(),
+                    retry_ordinal=self._initialization_failures,
+                )
+                raise
             self._initialization_complete = True
+            self._emit_lifecycle_event(
+                "initialization_succeeded",
+                operation,
+                started_at=requested_at,
+                wait_started_at=wait_started_at,
+                observed_version=observed,
+            )
+        finally:
+            self._initialization_lock.release()
 
     def initialise(self) -> None:
         """Explicitly reconcile all current database tables and indexes."""
 
+        operation = "explicit_reconciliation"
+        started_at = self._monotonic()
+        self._emit_lifecycle_event("explicit_reconciliation", operation)
         with self._initialization_lock:
             self._initialization_complete = False
-            self._reconcile_schema(skip_if_ready=False)
+            self._emit_lifecycle_event("initialization_started", operation)
+            try:
+                observed = self._reconcile_schema(skip_if_ready=False)
+            except Exception as error:
+                self._initialization_failures += 1
+                self._emit_lifecycle_event(
+                    "initialization_failed",
+                    operation,
+                    started_at=started_at,
+                    failure_category=type(error).__name__.lower(),
+                    retry_ordinal=self._initialization_failures,
+                )
+                raise
             self._initialization_complete = True
+            self._emit_lifecycle_event(
+                "initialization_succeeded",
+                operation,
+                started_at=started_at,
+                observed_version=observed,
+            )
 
-    def _reconcile_schema(self, *, skip_if_ready: bool) -> None:
+    def _reconcile_schema(self, *, skip_if_ready: bool) -> int | None:
         """Inspect and reconcile schema under one database-native lock."""
 
         with self.migration_transaction() as connection:
             if skip_if_ready and self._schema_is_ready(connection):
-                return
+                return self._observed_migration_version(connection)
             self._apply_schema(connection)
+            return self._observed_migration_version(connection)
 
     def _apply_schema(self, existing_connection=None) -> None:
         """Apply the canonical schema without changing lifecycle state."""
@@ -1129,14 +1273,31 @@ class SQLiteDatabase:
         """Observe complete SQLite schema readiness without creating a file."""
 
         if not self.database_path.is_file():
-            return unavailable_schema_report("database_file", "missing")
+            report = unavailable_schema_report("database_file", "missing")
+            self._emit_lifecycle_event(
+                "readiness_failure",
+                "schema_readiness",
+                failure_category="database_file",
+            )
+            return report
+        observed_version = None
         try:
             with self.observation_connection() as connection:
-                return observe_sqlite_schema(connection)
+                observed_version = self._observed_migration_version(connection)
+                report = observe_sqlite_schema(connection)
         except Exception as error:
-            return unavailable_schema_report(
+            report = unavailable_schema_report(
                 "inspection", type(error).__name__.lower()
             )
+        if not report.ready:
+            category = report.failure_categories[0] if report.failure_categories else "unknown"
+            self._emit_lifecycle_event(
+                "readiness_failure",
+                "schema_readiness",
+                observed_version=observed_version,
+                failure_category=category,
+            )
+        return report
 
     def schema_is_ready(self) -> bool:
         """Observe whether the complete canonical schema is present without repair."""

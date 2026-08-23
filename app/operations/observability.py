@@ -8,6 +8,8 @@ from collections.abc import Callable, Mapping
 from datetime import UTC, datetime
 from typing import Any
 
+from app.database.lifecycle_telemetry import DatabaseLifecycleEvent
+
 
 class PrivacySafeJsonLogger:
     _FORBIDDEN = {
@@ -54,6 +56,32 @@ class PrivacySafeJsonLogger:
         if value is None or isinstance(value, (bool, int, float, str)):
             return value
         return str(value)
+
+
+class DatabaseLifecycleJsonEventSink:
+    """Forward allowlisted lifecycle events to the existing JSON logger."""
+
+    def __init__(self, logger: PrivacySafeJsonLogger) -> None:
+        self.logger = logger
+
+    def emit(self, event: DatabaseLifecycleEvent) -> None:
+        names = (
+            "backend",
+            "operation_type",
+            "target_migration_version",
+            "observed_version",
+            "duration_ms",
+            "wait_duration_ms",
+            "failure_category",
+            "retry_ordinal",
+            "target_fingerprint",
+        )
+        metadata = {
+            name: getattr(event, name)
+            for name in names
+            if getattr(event, name) is not None
+        }
+        self.logger.emit(event.name, **metadata)
 
 
 class OperationalSignalMonitor:
