@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from app.database import SQLiteDatabase, bootstrap_database
 from app.database.repositories import MemoryRepository
 from app.events.models import DomainEvent
 from app.memory.models import MemoryEvent
@@ -14,7 +15,9 @@ class MemoryEventRecorder:
         self,
         repository: MemoryRepository | None = None,
     ) -> None:
-        self.repository = repository or MemoryRepository()
+        self.repository = repository or MemoryRepository(
+            bootstrap_database(SQLiteDatabase())
+        )
 
     def __call__(self, event: DomainEvent) -> None:
         """Convert and store a domain event as a memory event."""

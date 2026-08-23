@@ -6,10 +6,15 @@ layers must enter the product through this boundary.
 
 ## Canonical persistence
 
-The root initialises one SQLiteDatabase and constructs the tenant, brand,
+The root bootstraps one database for explicit standalone/local composition and
+constructs the tenant, brand,
 Business Intelligence, Customer Intelligence, memory, Campaign Plan, Marketing
 Brief, Prompt Pack, and compliance-rule repositories over the same database
 instance.
+
+Repository constructors retain only their injected database dependency and do not
+apply schema changes. Hosted runtime composition selects readiness-only mode: the
+dedicated migration principal must reconcile schema before runtime workers start.
 
 SQLite is the authoritative persistence path for the secure pilot. Legacy JSON
 services are compatibility or migration inputs only. The composition root does

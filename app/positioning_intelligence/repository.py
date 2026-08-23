@@ -21,7 +21,6 @@ def _identifier(value: str, name: str) -> str:
 class PositioningRepository:
     def __init__(self, database: SQLiteDatabase | None = None) -> None:
         self.database = database or SQLiteDatabase()
-        self.database.ensure_initialised()
 
     def save(self, decision: PositioningDecision) -> None:
         if not isinstance(decision, PositioningDecision):

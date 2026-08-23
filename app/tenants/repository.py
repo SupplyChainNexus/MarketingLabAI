@@ -15,7 +15,6 @@ class TenantRepository:
         database: SQLiteDatabase | None = None,
     ) -> None:
         self.database = database or SQLiteDatabase()
-        self.database.ensure_initialised()
 
     def save(self, tenant: Tenant) -> None:
         """Insert or update a tenant."""

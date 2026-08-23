@@ -13,9 +13,19 @@
   conflict-safe inserts. PostgreSQL integrity errors retain the established
   repository conflict behavior.
 - Database instances expose a single-flight `ensure_initialised()` lifecycle used
-  by application composition and repository constructors. Only successful schema
-  application is cached. Explicit `initialise()` remains the operator and test
-  reconciliation boundary and always reapplies idempotent schema checks.
+  by application composition. Repository constructors are lifecycle-neutral and
+  never apply DDL. Only successful schema application is cached. Explicit
+  `bootstrap_database()` supports standalone tools and tests; `initialise()` remains
+  the migrator-owned reconciliation boundary.
+- PostgreSQL reconciliation holds transaction-scoped `pg_advisory_xact_lock` for
+  the stable SHA-256-derived namespace
+  `earthonox.marketinglabai.schema-migration.v1`. Lock acquisition has a five-second
+  transaction-local timeout, and the lock is retained through commit or rollback.
+  Waiting initializers recheck readiness under the lock and skip duplicate DDL.
+- Hosted runtime composition is readiness-only. A dedicated migration principal
+  owns DDL; runtime and readiness principals must not silently repair schema.
+- SQLite reconciliation uses `BEGIN IMMEDIATE`, the existing WAL configuration and
+  bounded busy timeout to serialize writers across processes without lock files.
 - Readiness evaluation is observational: it verifies the canonical table set and
   migration versions without applying DDL or repairing an incomplete target.
 - Synthetic migration copies every table in one target transaction, verifies exact

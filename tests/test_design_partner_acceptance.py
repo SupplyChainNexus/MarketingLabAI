@@ -9,6 +9,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from app.database.connection import SQLiteDatabase
+from app.database.factory import bootstrap_database
 from app.design_partner import DesignPartnerAcceptanceEvaluator, PilotPrivacyPolicy
 from app.operations import (
     OperationalReadinessEvaluator,
@@ -27,6 +28,7 @@ class DesignPartnerAcceptanceTests(unittest.TestCase):
     def setUp(self) -> None:
         self.temp = tempfile.TemporaryDirectory()
         self.database = SQLiteDatabase(Path(self.temp.name) / "acceptance.sqlite3")
+        bootstrap_database(self.database)
         self.config = PilotConfiguration.from_environment(
             {
                 "MLAI_ENVIRONMENT": "controlled-acceptance-rehearsal",

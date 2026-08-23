@@ -2,15 +2,42 @@
 
 from __future__ import annotations
 
+import hashlib
 import re
 import tempfile
 import threading
 from collections.abc import Iterator, Mapping, Sequence
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from pathlib import Path
 from typing import Any
 
-from app.database.connection import SQLiteDatabase
+from app.database.connection import (
+    DatabaseMigrationLockTimeoutError,
+    DatabaseSchemaNotReadyError,
+    SQLiteDatabase,
+)
+
+
+POSTGRESQL_MIGRATION_LOCK_NAMESPACE = (
+    "earthonox.marketinglabai.schema-migration.v1"
+)
+POSTGRESQL_MIGRATION_LOCK_TIMEOUT_SECONDS = 5
+
+
+def postgresql_migration_advisory_key() -> int:
+    """Return the stable signed 64-bit lock key for the governed namespace."""
+
+    digest = hashlib.sha256(POSTGRESQL_MIGRATION_LOCK_NAMESPACE.encode("utf-8")).digest()
+    return int.from_bytes(digest[:8], byteorder="big", signed=True)
+
+
+def _error_has_sqlstate(error: BaseException, sqlstate: str) -> bool:
+    current: BaseException | None = error
+    while current is not None:
+        if getattr(current, "sqlstate", None) == sqlstate:
+            return True
+        current = current.__cause__
+    return False
 
 
 class PostgreSQLConfigurationError(ValueError):
@@ -297,6 +324,12 @@ class PostgreSQLDatabase(SQLiteDatabase):
         connection = self.connect()
         try:
             yield connection
+        except Exception as error:
+            if _error_has_sqlstate(error, "42P01"):
+                raise DatabaseSchemaNotReadyError(
+                    "The database schema is not ready; run the explicit bootstrap."
+                ) from error
+            raise
         finally:
             connection.close()
 
@@ -306,14 +339,50 @@ class PostgreSQLDatabase(SQLiteDatabase):
         try:
             yield connection
             connection.commit()
-        except Exception:
+        except Exception as error:
             connection.rollback()
+            if _error_has_sqlstate(error, "42P01"):
+                raise DatabaseSchemaNotReadyError(
+                    "The database schema is not ready; run the explicit bootstrap."
+                ) from error
             raise
         finally:
             connection.close()
 
-    def _apply_schema(self) -> None:
-        with self.transaction() as connection:
+    @contextmanager
+    def migration_transaction(self) -> Iterator[PostgreSQLConnectionAdapter]:
+        """Hold the governed advisory lock through migration commit or rollback."""
+
+        connection = self.connect()
+        try:
+            connection.execute(
+                "SELECT set_config('lock_timeout', ?, true)",
+                (f"{POSTGRESQL_MIGRATION_LOCK_TIMEOUT_SECONDS}s",),
+            )
+            connection.execute(
+                "SELECT pg_advisory_xact_lock(?)",
+                (postgresql_migration_advisory_key(),),
+            )
+            connection.execute("SELECT set_config('lock_timeout', '0', true)")
+            yield connection
+            connection.commit()
+        except Exception as error:
+            connection.rollback()
+            if _error_has_sqlstate(error, "55P03"):
+                raise DatabaseMigrationLockTimeoutError(
+                    "Timed out acquiring the PostgreSQL migration advisory lock."
+                ) from error
+            raise
+        finally:
+            connection.close()
+
+    def _apply_schema(self, existing_connection=None) -> None:
+        selected = (
+            nullcontext(existing_connection)
+            if existing_connection is not None
+            else self.migration_transaction()
+        )
+        with selected as connection:
             for statement in build_postgresql_schema():
                 connection.execute(statement)
             seeds = build_postgresql_seed_rows()
@@ -337,7 +406,10 @@ class PostgreSQLDatabase(SQLiteDatabase):
 
     def table_names(self) -> list[str]:
         with self.connection() as connection:
-            rows = connection.execute("""
+            return self._table_names(connection)
+
+    def _table_names(self, connection) -> list[str]:
+        rows = connection.execute("""
                 SELECT table_name AS name
                 FROM information_schema.tables
                 WHERE table_schema = 'public'

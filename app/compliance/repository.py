@@ -14,7 +14,6 @@ class BrandRuleRepository:
 
     def __init__(self, database: SQLiteDatabase | None = None) -> None:
         self.database = database or SQLiteDatabase()
-        self.database.ensure_initialised()
 
     def save(self, rule: BrandRule) -> None:
         """Persist a new rule version without overwriting history."""

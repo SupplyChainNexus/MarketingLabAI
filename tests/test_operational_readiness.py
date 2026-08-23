@@ -9,6 +9,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from app.database.connection import SQLiteDatabase
+from app.database.factory import bootstrap_database
 from app.operations import (
     OperationalReadinessEvaluator,
     PilotConfiguration,
@@ -23,6 +24,7 @@ class OperationalReadinessTests(unittest.TestCase):
     def setUp(self) -> None:
         self.temp = tempfile.TemporaryDirectory()
         self.database = SQLiteDatabase(Path(self.temp.name) / "readiness.sqlite3")
+        bootstrap_database(self.database)
         self.repository = ReadinessEvidenceRepository(self.database)
         self.config = PilotConfiguration.from_environment(
             {

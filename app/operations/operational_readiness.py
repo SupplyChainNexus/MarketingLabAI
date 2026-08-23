@@ -68,9 +68,7 @@ class OperationalReadinessEvaluator:
         schema_ready = self.database.schema_is_ready()
         repository = self.repository
         if schema_ready and repository is None:
-            repository = ReadinessEvidenceRepository(
-                self.database, ensure_initialised=False
-            )
+            repository = ReadinessEvidenceRepository(self.database)
         evidence = (
             repository.current_passes(
                 self.REQUIRED_EVIDENCE,

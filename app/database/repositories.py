@@ -43,7 +43,6 @@ class BrandRepository:
         database: SQLiteDatabase | None = None,
     ) -> None:
         self.database = database or SQLiteDatabase()
-        self.database.ensure_initialised()
 
     def save(self, payload: dict[str, Any]) -> None:
         """Insert or update a tenant-owned brand record."""
@@ -220,7 +219,6 @@ class BusinessIntelligenceRepository:
 
     def __init__(self, database: SQLiteDatabase | None = None) -> None:
         self.database = database or SQLiteDatabase()
-        self.database.ensure_initialised()
 
     def save(self, profile: BusinessIntelligenceProfile) -> None:
         """Insert or update a business intelligence profile."""
@@ -369,7 +367,6 @@ class CustomerIntelligenceRepository:
 
     def __init__(self, database: SQLiteDatabase | None = None) -> None:
         self.database = database or SQLiteDatabase()
-        self.database.ensure_initialised()
 
     def save(self, profile: CustomerIntelligenceProfile) -> None:
         """Insert or update a Customer Intelligence profile."""
@@ -505,7 +502,6 @@ class MemoryRepository:
 
     def __init__(self, database: SQLiteDatabase | None = None) -> None:
         self.database = database or SQLiteDatabase()
-        self.database.ensure_initialised()
 
     def save(self, event: MemoryEvent) -> None:
         """Store a new memory event.

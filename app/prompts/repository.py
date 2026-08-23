@@ -17,7 +17,6 @@ class PromptPackRepository:
         database: SQLiteDatabase | None = None,
     ) -> None:
         self.database = database or SQLiteDatabase()
-        self.database.ensure_initialised()
 
     def save(self, prompt_pack: PromptPack) -> None:
         """Persist a new Prompt Pack version."""

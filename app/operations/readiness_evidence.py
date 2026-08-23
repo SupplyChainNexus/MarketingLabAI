@@ -88,14 +88,10 @@ class ReadinessEvidence:
 
 
 class ReadinessEvidenceRepository:
-    def __init__(
-        self, database: SQLiteDatabase, *, ensure_initialised: bool = True
-    ) -> None:
+    def __init__(self, database: SQLiteDatabase) -> None:
         if not isinstance(database, SQLiteDatabase):
             raise TypeError("database must be a SQLiteDatabase.")
         self.database = database
-        if ensure_initialised:
-            self.database.ensure_initialised()
 
     def add(self, evidence: ReadinessEvidence) -> None:
         if not isinstance(evidence, ReadinessEvidence):

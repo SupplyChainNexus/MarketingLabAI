@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import fields
 from typing import Any
 
+from app.database import SQLiteDatabase, bootstrap_database
 from app.marketing_brief.models import (
     MarketingBrief,
     current_utc_timestamp,
@@ -37,7 +38,9 @@ class MarketingBriefService:
         ):
             raise TypeError("repository must be a MarketingBriefRepository.")
 
-        self.repository = repository or MarketingBriefRepository()
+        self.repository = repository or MarketingBriefRepository(
+            bootstrap_database(SQLiteDatabase())
+        )
 
     def save(self, brief: MarketingBrief) -> None:
         "Persist a new immutable Marketing Brief version."

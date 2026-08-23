@@ -22,7 +22,6 @@ class StoredApiResponse:
 class IdempotencyRepository:
     def __init__(self, database: SQLiteDatabase) -> None:
         self.database = database
-        self.database.ensure_initialised()
 
     def get(
         self,

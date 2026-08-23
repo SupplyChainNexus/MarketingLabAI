@@ -4,8 +4,17 @@ from __future__ import annotations
 
 from typing import Any
 
-from app.database.connection import SQLiteDatabase
-from app.database.factory import create_database
+from app.database.connection import (
+    DatabaseLifecycleError,
+    DatabaseMigrationLockTimeoutError,
+    DatabaseSchemaNotReadyError,
+    SQLiteDatabase,
+)
+from app.database.factory import (
+    bootstrap_database,
+    create_database,
+    require_database_ready,
+)
 from app.database.postgresql import PostgreSQLDatabase
 from app.database.repositories import (
     BrandRepository,
@@ -17,6 +26,11 @@ __all__ = [
     "SQLiteDatabase",
     "PostgreSQLDatabase",
     "create_database",
+    "bootstrap_database",
+    "require_database_ready",
+    "DatabaseLifecycleError",
+    "DatabaseMigrationLockTimeoutError",
+    "DatabaseSchemaNotReadyError",
     "JsonToSQLiteMigrator",
     "BrandRepository",
     "BusinessIntelligenceRepository",

@@ -34,7 +34,8 @@ def create_application() -> OperationalPilotApplication:
             backend=config.persistence_backend,
             database_path=config.database_path,
             database_url=config.database_url,
-        )
+        ),
+        initialise_schema=False,
     )
     upstream = _factory(config.identity_adapter_factory)(config)
     if not isinstance(upstream, IdentityProviderAdapter):

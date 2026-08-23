@@ -9,6 +9,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from app.database.connection import SQLiteDatabase
+from app.database.factory import bootstrap_database
 from app.operations import (
     PilotConfiguration,
     ProductionSecurityEvaluator,
@@ -120,6 +121,7 @@ class ProductionSecurityReadinessTests(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as directory:
             database = SQLiteDatabase(Path(directory) / "security.sqlite3")
+            bootstrap_database(database)
             repository = ReadinessEvidenceRepository(database)
             observed = datetime.now(UTC)
             for name in ProductionSecurityEvaluator.EXTERNAL_EVIDENCE:

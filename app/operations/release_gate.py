@@ -112,9 +112,7 @@ class PilotReleaseGate:
             ),
         )
         repository = (
-            ReadinessEvidenceRepository(self.database, ensure_initialised=False)
-            if schema_ready
-            else None
+            ReadinessEvidenceRepository(self.database) if schema_ready else None
         )
         security_evidence = (
             repository.current_passes(
@@ -152,9 +150,7 @@ class PilotReleaseGate:
 
         schema_ready = self.database.schema_is_ready()
         repository = (
-            ReadinessEvidenceRepository(self.database, ensure_initialised=False)
-            if schema_ready
-            else None
+            ReadinessEvidenceRepository(self.database) if schema_ready else None
         )
         return (
             ProductionSecurityEvaluator(

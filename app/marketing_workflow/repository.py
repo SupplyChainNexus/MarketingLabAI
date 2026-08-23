@@ -64,7 +64,6 @@ class MarketingWorkflowRepository:
 
     def __init__(self, database: SQLiteDatabase | None = None) -> None:
         self.database = database or SQLiteDatabase()
-        self.database.ensure_initialised()
 
     def create(
         self, command: WorkflowCommand, workflow: MarketingWorkflow

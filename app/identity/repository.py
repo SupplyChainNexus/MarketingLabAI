@@ -19,7 +19,6 @@ MEMBERSHIP_SESSION_INVALIDATION_SQL = """
 class IdentityRepository:
     def __init__(self, database: SQLiteDatabase | None = None) -> None:
         self.database = database or SQLiteDatabase()
-        self.database.ensure_initialised()
 
     def save_membership(self, membership: TenantMembership) -> None:
         if not isinstance(membership, TenantMembership):

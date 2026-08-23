@@ -14,6 +14,7 @@ from app.compliance.engine import ComplianceEngine
 from app.compliance.repository import BrandRuleRepository
 from app.customer_intelligence.provider import CustomerContextProvider
 from app.database.connection import SQLiteDatabase
+from app.database.factory import bootstrap_database, require_database_ready
 from app.database.repositories import (
     BrandRepository,
     BusinessIntelligenceRepository,
@@ -75,11 +76,16 @@ class CanonicalApplication:
     def build(
         cls,
         database: SQLiteDatabase | None = None,
+        *,
+        initialise_schema: bool = True,
     ) -> "CanonicalApplication":
         """Build all canonical repositories over one database."""
 
         selected_database = database or SQLiteDatabase()
-        selected_database.ensure_initialised()
+        if initialise_schema:
+            bootstrap_database(selected_database)
+        else:
+            require_database_ready(selected_database)
 
         identities = IdentityRepository(selected_database)
         return cls(

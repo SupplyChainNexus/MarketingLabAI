@@ -1,10 +1,11 @@
-﻿"""Tenant application commands."""
+"""Tenant application commands."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 
 from app.commands.base import Command
+from app.database import SQLiteDatabase, bootstrap_database
 from app.tenants.models import ACTIVE_TENANT_STATUS, Tenant
 from app.tenants.repository import TenantRepository
 
@@ -21,7 +22,9 @@ class CreateTenantCommand(Command[Tenant]):
     def execute(self) -> Tenant:
         """Validate and create the tenant."""
 
-        repository = self.repository or TenantRepository()
+        repository = self.repository
+        if repository is None:
+            repository = TenantRepository(bootstrap_database(SQLiteDatabase()))
 
         tenant = Tenant(
             tenant_id=self.tenant_id,

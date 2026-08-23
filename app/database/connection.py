@@ -5,13 +5,34 @@ from __future__ import annotations
 import sqlite3
 import threading
 from collections.abc import Iterator
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from pathlib import Path
 
 from app.tenants.migration import (
     apply_brand_ownership_migration,
     apply_tenant_migration,
 )
+
+
+class DatabaseLifecycleError(RuntimeError):
+    """Base error for database bootstrap and schema lifecycle failures."""
+
+
+class DatabaseMigrationLockTimeoutError(DatabaseLifecycleError):
+    """Raised when the database-native migration lock cannot be acquired."""
+
+
+class DatabaseSchemaNotReadyError(DatabaseLifecycleError):
+    """Raised when application work targets an uninitialised schema."""
+
+
+def _sqlite_lock_error(error: BaseException) -> bool:
+    error_code = getattr(error, "sqlite_errorcode", None)
+    primary_code = error_code & 0xFF if isinstance(error_code, int) else None
+    return primary_code in {sqlite3.SQLITE_BUSY, sqlite3.SQLITE_LOCKED} or any(
+        marker in str(error).lower()
+        for marker in ("database is locked", "database table is locked")
+    )
 
 
 class SQLiteDatabase:
@@ -69,11 +90,15 @@ class SQLiteDatabase:
             self.database_path,
             timeout=30,
         )
-        connection.row_factory = sqlite3.Row
-        connection.execute("PRAGMA foreign_keys = ON")
-        connection.execute("PRAGMA journal_mode = WAL")
-        connection.execute("PRAGMA synchronous = NORMAL")
-        connection.execute("PRAGMA busy_timeout = 30000")
+        try:
+            connection.row_factory = sqlite3.Row
+            connection.execute("PRAGMA busy_timeout = 30000")
+            connection.execute("PRAGMA foreign_keys = ON")
+            connection.execute("PRAGMA journal_mode = WAL")
+            connection.execute("PRAGMA synchronous = NORMAL")
+        except Exception:
+            connection.close()
+            raise
 
         return connection
 
@@ -85,6 +110,12 @@ class SQLiteDatabase:
 
         try:
             yield connection
+        except sqlite3.OperationalError as error:
+            if "no such table" in str(error).lower():
+                raise DatabaseSchemaNotReadyError(
+                    "The database schema is not ready; run the explicit bootstrap."
+                ) from error
+            raise
         finally:
             connection.close()
 
@@ -98,11 +129,43 @@ class SQLiteDatabase:
             connection.execute("BEGIN")
             yield connection
             connection.commit()
-        except Exception:
+        except Exception as error:
             connection.rollback()
+            if isinstance(error, sqlite3.OperationalError) and "no such table" in str(
+                error
+            ).lower():
+                raise DatabaseSchemaNotReadyError(
+                    "The database schema is not ready; run the explicit bootstrap."
+                ) from error
             raise
         finally:
             connection.close()
+
+    @contextmanager
+    def migration_transaction(self) -> Iterator[sqlite3.Connection]:
+        """Serialize schema reconciliation with SQLite's process-safe writer lock."""
+
+        connection = None
+        try:
+            connection = self.connect()
+            connection.execute("BEGIN IMMEDIATE")
+            yield connection
+            connection.commit()
+        except sqlite3.OperationalError as error:
+            if connection is not None:
+                connection.rollback()
+            if _sqlite_lock_error(error):
+                raise DatabaseMigrationLockTimeoutError(
+                    "Timed out acquiring the SQLite migration write reservation."
+                ) from error
+            raise
+        except Exception:
+            if connection is not None:
+                connection.rollback()
+            raise
+        finally:
+            if connection is not None:
+                connection.close()
 
     def ensure_initialised(self) -> None:
         """Apply the schema once per instance, caching only successful completion."""
@@ -112,7 +175,7 @@ class SQLiteDatabase:
         with self._initialization_lock:
             if self._initialization_complete:
                 return
-            self._apply_schema()
+            self._reconcile_schema(skip_if_ready=True)
             self._initialization_complete = True
 
     def initialise(self) -> None:
@@ -120,14 +183,27 @@ class SQLiteDatabase:
 
         with self._initialization_lock:
             self._initialization_complete = False
-            self._apply_schema()
+            self._reconcile_schema(skip_if_ready=False)
             self._initialization_complete = True
 
-    def _apply_schema(self) -> None:
+    def _reconcile_schema(self, *, skip_if_ready: bool) -> None:
+        """Inspect and reconcile schema under one database-native lock."""
+
+        with self.migration_transaction() as connection:
+            if skip_if_ready and self._schema_is_ready(connection):
+                return
+            self._apply_schema(connection)
+
+    def _apply_schema(self, existing_connection=None) -> None:
         """Apply the canonical schema without changing lifecycle state."""
 
-        with self.transaction() as connection:
-            connection.executescript("""
+        selected = (
+            nullcontext(existing_connection)
+            if existing_connection is not None
+            else self.migration_transaction()
+        )
+        with selected as connection:
+            self._execute_schema_script(connection, """
                 CREATE TABLE IF NOT EXISTS schema_migrations (
                     version INTEGER PRIMARY KEY,
                     description TEXT NOT NULL,
@@ -993,34 +1069,47 @@ class SQLiteDatabase:
                 )
                 """)
 
+    @staticmethod
+    def _execute_schema_script(connection, script: str) -> None:
+        """Execute canonical DDL without sqlite3.executescript auto-commit."""
+
+        for statement in (part.strip() for part in script.split(";")):
+            if statement:
+                connection.execute(statement)
+
     def table_names(self) -> list[str]:
         """Return application table names."""
 
         with self.connection() as connection:
-            rows = connection.execute("""
+            return self._table_names(connection)
+
+    def _table_names(self, connection) -> list[str]:
+        rows = connection.execute("""
                 SELECT name
                 FROM sqlite_master
                 WHERE type = 'table'
                   AND name NOT LIKE 'sqlite_%'
                 ORDER BY name
                 """).fetchall()
-
         return [str(row["name"]) for row in rows]
+
+    def _schema_is_ready(self, connection) -> bool:
+        tables = set(self._table_names(connection))
+        if not self.REQUIRED_TABLES.issubset(tables):
+            return False
+        rows = connection.execute(
+            "SELECT version FROM schema_migrations ORDER BY version"
+        ).fetchall()
+        return {int(row[0]) for row in rows} == self.REQUIRED_MIGRATION_VERSIONS
 
     def schema_is_ready(self) -> bool:
         """Observe whether the complete canonical schema is present without repair."""
 
         try:
-            tables = set(self.table_names())
-            if not self.REQUIRED_TABLES.issubset(tables):
-                return False
             with self.connection() as connection:
-                rows = connection.execute(
-                    "SELECT version FROM schema_migrations ORDER BY version"
-                ).fetchall()
+                return self._schema_is_ready(connection)
         except Exception:
             return False
-        return {int(row[0]) for row in rows} == self.REQUIRED_MIGRATION_VERSIONS
 
     def integrity_check(self) -> str:
         """Run SQLite's built-in database integrity check."""

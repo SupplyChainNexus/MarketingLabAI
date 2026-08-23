@@ -1,4 +1,4 @@
-﻿"""Tenant and brand-ownership database migrations."""
+"""Tenant and brand-ownership database migrations."""
 
 from __future__ import annotations
 
@@ -89,7 +89,7 @@ def apply_brand_ownership_migration(
         ON brands(tenant_id)
         """)
 
-    connection.executescript("""
+    connection.execute("""
         CREATE TRIGGER IF NOT EXISTS
             validate_brand_tenant_insert
         BEFORE INSERT ON brands
@@ -104,7 +104,9 @@ def apply_brand_ownership_migration(
                 'Unknown tenant_id'
             );
         END;
+        """)
 
+    connection.execute("""
         CREATE TRIGGER IF NOT EXISTS
             validate_brand_tenant_update
         BEFORE UPDATE OF tenant_id ON brands
