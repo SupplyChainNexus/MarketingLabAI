@@ -129,7 +129,7 @@ class DatabaseLifecycleTelemetryTests(unittest.TestCase):
         self.assertGreater(waited.wait_duration_ms, 0)
         for event in sink.events:
             self.assertEqual(event.backend, "sqlite")
-            self.assertEqual(event.target_migration_version, 18)
+            self.assertEqual(event.target_migration_version, 19)
             self.assertRegex(event.target_fingerprint, r"^[0-9a-f]{16}$")
             self.assertNotIn(str(database.database_path), repr(event))
 
@@ -220,7 +220,7 @@ class DatabaseLifecycleTelemetryTests(unittest.TestCase):
             event for event in sink.events if event.name == "readiness_failure"
         ]
         self.assertEqual(len(readiness), 1)
-        self.assertEqual(readiness[0].observed_version, 17)
+        self.assertEqual(readiness[0].observed_version, 19)
 
     def test_inspection_failure_preserves_readable_migration_version(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -240,7 +240,7 @@ class DatabaseLifecycleTelemetryTests(unittest.TestCase):
             event for event in sink.events if event.name == "readiness_failure"
         ]
         self.assertEqual(len(readiness), 1)
-        self.assertEqual(readiness[0].observed_version, 18)
+        self.assertEqual(readiness[0].observed_version, 19)
         self.assertEqual(readiness[0].failure_category, "inspection")
 
     def test_unavailable_migration_metadata_reports_no_observed_version(self) -> None:
@@ -275,7 +275,7 @@ class DatabaseLifecycleTelemetryTests(unittest.TestCase):
             event for event in sink.events if event.name == "initialization_succeeded"
         ]
         self.assertEqual(len(succeeded), 1)
-        self.assertEqual(succeeded[0].observed_version, 18)
+        self.assertEqual(succeeded[0].observed_version, 19)
 
     def test_sqlite_target_and_json_log_do_not_disclose_path(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

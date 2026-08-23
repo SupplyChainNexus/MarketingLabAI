@@ -32,6 +32,7 @@ from app.customer_intelligence import (
 from app.database.connection import SQLiteDatabase
 from app.intelligence.models import BusinessIntelligenceProfile
 from app.marketing_brief import BriefStatus, MarketingBrief
+from app.marketing_workflow.orchestration import WorkflowApiOrchestrationRepository
 from app.models import BrandProfile, VoiceProfile
 from app.product_intelligence import (
     ProductEvidence,
@@ -118,6 +119,15 @@ class CanonicalApplicationTests(unittest.TestCase):
 
         for repository in repositories:
             self.assertIs(repository.database, self.application.database)
+
+        self.assertIsInstance(
+            self.application.workflow_orchestrations,
+            WorkflowApiOrchestrationRepository,
+        )
+        self.assertIs(
+            self.application.workflow_orchestrations.database,
+            self.application.database,
+        )
 
     def test_context_assembler_composes_company_customer_and_product_context(
         self,

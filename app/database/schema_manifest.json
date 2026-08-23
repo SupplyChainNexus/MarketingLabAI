@@ -42,6 +42,11 @@
       "strategy_decisions": [],
       "tenant_memberships": [],
       "tenants": [],
+      "workflow_api_orchestrations": [
+        "progress_ordinal between 0 and 7",
+        "progress_state in ( 'claimed', 'workflow_created', 'planned', 'awaiting_approval', 'approval_recorded', 'approved', 'conflict_detected', 'failed' )",
+        "version >= 1"
+      ],
       "workflow_approvals": [],
       "workflow_artifact_proofs": [],
       "workflow_command_receipts": [],
@@ -940,6 +945,88 @@
           null
         ]
       ],
+      "workflow_api_orchestrations": [
+        [
+          "orchestration_id",
+          null
+        ],
+        [
+          "tenant_id",
+          null
+        ],
+        [
+          "brand_id",
+          null
+        ],
+        [
+          "actor_ref",
+          null
+        ],
+        [
+          "operation",
+          null
+        ],
+        [
+          "client_key_digest",
+          null
+        ],
+        [
+          "workflow_id",
+          null
+        ],
+        [
+          "request_hash",
+          null
+        ],
+        [
+          "command_plan_json",
+          null
+        ],
+        [
+          "command_plan_sha256",
+          null
+        ],
+        [
+          "progress_state",
+          null
+        ],
+        [
+          "progress_ordinal",
+          null
+        ],
+        [
+          "version",
+          null
+        ],
+        [
+          "failure_class",
+          null
+        ],
+        [
+          "final_response_status",
+          null
+        ],
+        [
+          "final_response_json",
+          null
+        ],
+        [
+          "final_response_sha256",
+          null
+        ],
+        [
+          "created_at",
+          null
+        ],
+        [
+          "updated_at",
+          null
+        ],
+        [
+          "completed_at",
+          null
+        ]
+      ],
       "workflow_approvals": [
         [
           "approval_id",
@@ -1483,6 +1570,88 @@
         ],
         [
           "updated_at",
+          "TEXT"
+        ]
+      ],
+      "workflow_api_orchestrations": [
+        [
+          "orchestration_id",
+          "TEXT"
+        ],
+        [
+          "tenant_id",
+          "TEXT"
+        ],
+        [
+          "brand_id",
+          "TEXT"
+        ],
+        [
+          "actor_ref",
+          "TEXT"
+        ],
+        [
+          "operation",
+          "TEXT"
+        ],
+        [
+          "client_key_digest",
+          "TEXT"
+        ],
+        [
+          "workflow_id",
+          "TEXT"
+        ],
+        [
+          "request_hash",
+          "TEXT"
+        ],
+        [
+          "command_plan_json",
+          "TEXT"
+        ],
+        [
+          "command_plan_sha256",
+          "TEXT"
+        ],
+        [
+          "progress_state",
+          "TEXT"
+        ],
+        [
+          "progress_ordinal",
+          "INTEGER"
+        ],
+        [
+          "version",
+          "INTEGER"
+        ],
+        [
+          "failure_class",
+          "TEXT"
+        ],
+        [
+          "final_response_status",
+          "INTEGER"
+        ],
+        [
+          "final_response_json",
+          "TEXT"
+        ],
+        [
+          "final_response_sha256",
+          "TEXT"
+        ],
+        [
+          "created_at",
+          "TEXT"
+        ],
+        [
+          "updated_at",
+          "TEXT"
+        ],
+        [
+          "completed_at",
           "TEXT"
         ]
       ],
@@ -2767,6 +2936,28 @@
         "created_at",
         "updated_at"
       ],
+      "workflow_api_orchestrations": [
+        "orchestration_id",
+        "tenant_id",
+        "brand_id",
+        "actor_ref",
+        "operation",
+        "client_key_digest",
+        "workflow_id",
+        "request_hash",
+        "command_plan_json",
+        "command_plan_sha256",
+        "progress_state",
+        "progress_ordinal",
+        "version",
+        "failure_class",
+        "final_response_status",
+        "final_response_json",
+        "final_response_sha256",
+        "created_at",
+        "updated_at",
+        "completed_at"
+      ],
       "workflow_approvals": [
         "approval_id",
         "tenant_id",
@@ -3157,6 +3348,30 @@
         ]
       ],
       "tenants": [],
+      "workflow_api_orchestrations": [
+        [
+          [
+            "brand_id"
+          ],
+          "brands",
+          [
+            "brand_id"
+          ],
+          "NO ACTION",
+          "NO ACTION"
+        ],
+        [
+          [
+            "tenant_id"
+          ],
+          "tenants",
+          [
+            "tenant_id"
+          ],
+          "NO ACTION",
+          "NO ACTION"
+        ]
+      ],
       "workflow_approvals": [
         [
           [
@@ -3817,6 +4032,31 @@
         ]
       ],
       "tenants": [],
+      "workflow_api_orchestrations": [
+        [
+          "idx_workflow_api_orchestrations_progress",
+          false,
+          false,
+          [
+            "tenant_id",
+            "brand_id",
+            "progress_state",
+            "updated_at"
+          ],
+          ""
+        ],
+        [
+          "idx_workflow_api_orchestrations_workflow",
+          false,
+          false,
+          [
+            "tenant_id",
+            "brand_id",
+            "workflow_id"
+          ],
+          ""
+        ]
+      ],
       "workflow_approvals": [
         [
           "idx_workflow_approvals_binding",
@@ -3952,6 +4192,10 @@
       [
         18,
         "Add durable marketing workflow foundation"
+      ],
+      [
+        19,
+        "Add planning-to-approval API orchestration state"
       ]
     ],
     "nullability": {
@@ -4843,6 +5087,88 @@
           false
         ]
       ],
+      "workflow_api_orchestrations": [
+        [
+          "orchestration_id",
+          false
+        ],
+        [
+          "tenant_id",
+          false
+        ],
+        [
+          "brand_id",
+          false
+        ],
+        [
+          "actor_ref",
+          false
+        ],
+        [
+          "operation",
+          false
+        ],
+        [
+          "client_key_digest",
+          false
+        ],
+        [
+          "workflow_id",
+          false
+        ],
+        [
+          "request_hash",
+          false
+        ],
+        [
+          "command_plan_json",
+          false
+        ],
+        [
+          "command_plan_sha256",
+          false
+        ],
+        [
+          "progress_state",
+          false
+        ],
+        [
+          "progress_ordinal",
+          false
+        ],
+        [
+          "version",
+          false
+        ],
+        [
+          "failure_class",
+          true
+        ],
+        [
+          "final_response_status",
+          true
+        ],
+        [
+          "final_response_json",
+          true
+        ],
+        [
+          "final_response_sha256",
+          true
+        ],
+        [
+          "created_at",
+          false
+        ],
+        [
+          "updated_at",
+          false
+        ],
+        [
+          "completed_at",
+          true
+        ]
+      ],
       "workflow_approvals": [
         [
           "approval_id",
@@ -5207,6 +5533,7 @@
       "strategy_decisions",
       "tenant_memberships",
       "tenants",
+      "workflow_api_orchestrations",
       "workflow_approvals",
       "workflow_artifact_proofs",
       "workflow_command_receipts",
@@ -5360,6 +5687,23 @@
           "tenant_id"
         ]
       ],
+      "workflow_api_orchestrations": [
+        [
+          "orchestration_id"
+        ],
+        [
+          "tenant_id",
+          "brand_id",
+          "actor_ref",
+          "operation",
+          "client_key_digest"
+        ],
+        [
+          "tenant_id",
+          "brand_id",
+          "workflow_id"
+        ]
+      ],
       "workflow_approvals": [
         [
           "approval_id"
@@ -5441,5 +5785,5 @@
       ]
     }
   },
-  "schema_sha256": "30d09bd0bfd1748851274ce0fd365ad82446a9d1c93da6b2d49927c90a206bc2"
+  "schema_sha256": "462dd596b11207d5305f1aca24aecb5ed2b6a2feb58e7943bd95427e64c05e46"
 }

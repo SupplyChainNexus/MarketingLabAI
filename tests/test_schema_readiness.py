@@ -120,8 +120,12 @@ class _PostgreSQLCatalog:
                             }
                         )
             return _Rows(rows)
-        if "check_constraints" in normalized:
-            return _Rows()
+        if "constraint_type = 'check'" in normalized:
+            rows = []
+            for table, constraints in self.expected["check_constraints"].items():
+                for check_clause in constraints:
+                    rows.append({"table_name": table, "check_clause": check_clause})
+            return _Rows(rows)
         if "information_schema.triggers" in normalized:
             return _Rows()
         if "from schema_migrations" in normalized:

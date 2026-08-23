@@ -21,6 +21,15 @@ from app.marketing_workflow.models import (
     WorkflowCommand,
     WorkflowState,
 )
+from app.marketing_workflow.orchestration import (
+    OrchestrationConflictError,
+    OrchestrationOptimisticConflictError,
+    OrchestrationProgress,
+    OrchestrationWorkflowConflictError,
+    WorkflowApiOrchestration,
+    WorkflowApiOrchestrationRepository,
+    canonical_command_plan,
+)
 from app.marketing_workflow.repository import (
     MarketingWorkflowRepository,
     new_workflow_id,
@@ -48,4 +57,11 @@ __all__ = [
     "deterministic_subcommand_request_id",
     "deterministic_workflow_id",
     "validate_client_idempotency_key",
+    "OrchestrationConflictError",
+    "OrchestrationOptimisticConflictError",
+    "OrchestrationProgress",
+    "OrchestrationWorkflowConflictError",
+    "WorkflowApiOrchestration",
+    "WorkflowApiOrchestrationRepository",
+    "canonical_command_plan",
 ]
