@@ -112,6 +112,22 @@ class OrchestrationOptimisticConflictError(RuntimeError):
     """Raised when orchestration progress changed concurrently."""
 
 
+class OperationClaimConflictError(RuntimeError):
+    """Raised when an operation claim is reused with changed input."""
+
+    def __init__(self, record: "WorkflowApiOperationClaim") -> None:
+        super().__init__("operation claim conflicts with existing input")
+        self.record = record
+
+
+class OperationClaimParentConflictError(RuntimeError):
+    """Raised when an operation key is already bound to another parent."""
+
+    def __init__(self, record: "WorkflowApiOperationClaim") -> None:
+        super().__init__("operation key is already bound to another parent")
+        self.record = record
+
+
 @dataclass(frozen=True, slots=True)
 class WorkflowApiOrchestration:
     orchestration_id: str
@@ -139,6 +155,38 @@ class WorkflowApiOrchestration:
 @dataclass(frozen=True, slots=True)
 class OrchestrationClaim:
     record: WorkflowApiOrchestration
+    created: bool
+    replay: bool
+
+
+@dataclass(frozen=True, slots=True)
+class WorkflowApiOperationClaim:
+    operation_claim_id: str
+    parent_orchestration_id: str
+    tenant_id: str
+    brand_id: str
+    actor_ref: str
+    operation: str
+    client_key_digest: str
+    workflow_id: str
+    request_hash: str
+    command_plan_json: str
+    command_plan_sha256: str
+    progress_state: OrchestrationProgress
+    progress_ordinal: int
+    version: int
+    failure_class: str | None
+    final_response_status: int | None
+    final_response_json: str | None
+    final_response_sha256: str | None
+    created_at: str
+    updated_at: str
+    completed_at: str | None
+
+
+@dataclass(frozen=True, slots=True)
+class OperationClaimResult:
+    record: WorkflowApiOperationClaim
     created: bool
     replay: bool
 
@@ -416,6 +464,42 @@ class WorkflowApiOrchestrationRepository:
             ).fetchone()
         return None if row is None else self._from_row(row)
 
+    def get_by_workflow(
+        self, *, tenant_id: str, brand_id: str, workflow_id: str
+    ) -> WorkflowApiOrchestration | None:
+        """Return the tenant-owned orchestration reservation for a workflow."""
+
+        with self.database.connection() as connection:
+            row = self._select_by_workflow(
+                connection,
+                tenant_id=tenant_id,
+                brand_id=brand_id,
+                workflow_id=workflow_id,
+            )
+        return None if row is None else self._from_row(row)
+
+    def get_by_claim(
+        self,
+        *,
+        tenant_id: str,
+        brand_id: str,
+        actor_ref: str,
+        operation: str,
+        client_key_digest: str,
+    ) -> WorkflowApiOrchestration | None:
+        """Read a durable claim before regenerating command-plan material."""
+
+        with self.database.connection() as connection:
+            row = self._select_by_claim(
+                connection,
+                tenant_id=tenant_id,
+                brand_id=brand_id,
+                actor_ref=actor_ref,
+                operation=operation,
+                client_key_digest=client_key_digest,
+            )
+        return None if row is None else self._from_row(row)
+
     def advance(
         self,
         *,
@@ -508,4 +592,317 @@ class WorkflowApiOrchestrationRepository:
             ).fetchone()
             if row is None:
                 raise RuntimeError("orchestration disappeared during update")
+            return self._from_row(row)
+
+
+class WorkflowApiOperationClaimRepository:
+    """Persist operation-scoped claims beneath a workflow orchestration root."""
+
+    def __init__(self, database: SQLiteDatabase) -> None:
+        self.database = database
+
+    @staticmethod
+    def _from_row(row) -> WorkflowApiOperationClaim:
+        return WorkflowApiOperationClaim(
+            operation_claim_id=str(row["operation_claim_id"]),
+            parent_orchestration_id=str(row["parent_orchestration_id"]),
+            tenant_id=str(row["tenant_id"]),
+            brand_id=str(row["brand_id"]),
+            actor_ref=str(row["actor_ref"]),
+            operation=str(row["operation"]),
+            client_key_digest=str(row["client_key_digest"]),
+            workflow_id=str(row["workflow_id"]),
+            request_hash=str(row["request_hash"]),
+            command_plan_json=str(row["command_plan_json"]),
+            command_plan_sha256=str(row["command_plan_sha256"]),
+            progress_state=OrchestrationProgress(str(row["progress_state"])),
+            progress_ordinal=int(row["progress_ordinal"]),
+            version=int(row["version"]),
+            failure_class=(
+                None if row["failure_class"] is None else str(row["failure_class"])
+            ),
+            final_response_status=(
+                None
+                if row["final_response_status"] is None
+                else int(row["final_response_status"])
+            ),
+            final_response_json=(
+                None
+                if row["final_response_json"] is None
+                else str(row["final_response_json"])
+            ),
+            final_response_sha256=(
+                None
+                if row["final_response_sha256"] is None
+                else str(row["final_response_sha256"])
+            ),
+            created_at=str(row["created_at"]),
+            updated_at=str(row["updated_at"]),
+            completed_at=(
+                None if row["completed_at"] is None else str(row["completed_at"])
+            ),
+        )
+
+    @staticmethod
+    def _select_by_claim(
+        connection, *, tenant_id, brand_id, actor_ref, operation, client_key_digest
+    ):
+        return connection.execute(
+            """
+            SELECT * FROM workflow_api_operation_claims
+            WHERE tenant_id = ? AND brand_id = ? AND actor_ref = ?
+              AND operation = ? AND client_key_digest = ?
+            """,
+            (tenant_id, brand_id, actor_ref, operation, client_key_digest),
+        ).fetchone()
+
+    @staticmethod
+    def _select_by_parent_key(
+        connection, *, parent_orchestration_id, operation, client_key_digest
+    ):
+        return connection.execute(
+            """
+            SELECT * FROM workflow_api_operation_claims
+            WHERE parent_orchestration_id = ? AND operation = ?
+              AND client_key_digest = ?
+            """,
+            (parent_orchestration_id, operation, client_key_digest),
+        ).fetchone()
+
+    def claim(
+        self,
+        *,
+        operation_claim_id: str,
+        parent_orchestration_id: str,
+        tenant_id: str,
+        brand_id: str,
+        actor_ref: str,
+        operation: str,
+        client_key_digest: str,
+        workflow_id: str,
+        request_hash: str,
+        command_plan: Mapping[str, Any],
+        created_at: str,
+    ) -> OperationClaimResult:
+        """Create or replay one operation claim under an existing root."""
+
+        plan_json, plan_sha256 = canonical_command_plan(
+            command_plan,
+            tenant_id=tenant_id,
+            brand_id=brand_id,
+            actor_ref=actor_ref,
+            operation=operation,
+            workflow_id=workflow_id,
+            client_key_digest=client_key_digest,
+        )
+        validate_timestamp(created_at)
+        required_text("operation_claim_id", operation_claim_id)
+        required_text("parent_orchestration_id", parent_orchestration_id)
+        if not _SHA256_PATTERN.fullmatch(client_key_digest):
+            raise ValueError("client_key_digest must be lowercase SHA-256")
+        if not _SHA256_PATTERN.fullmatch(request_hash):
+            raise ValueError("request_hash must be lowercase SHA-256")
+        try:
+            with self.database.transaction() as connection:
+                connection.execute(
+                    """
+                    INSERT INTO workflow_api_operation_claims (
+                        operation_claim_id, parent_orchestration_id,
+                        tenant_id, brand_id, actor_ref, operation,
+                        client_key_digest, workflow_id, request_hash,
+                        command_plan_json, command_plan_sha256,
+                        progress_state, progress_ordinal, version,
+                        created_at, updated_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                              'claimed', 0, 1, ?, ?)
+                    """,
+                    (
+                        operation_claim_id,
+                        parent_orchestration_id,
+                        tenant_id,
+                        brand_id,
+                        actor_ref,
+                        operation,
+                        client_key_digest,
+                        workflow_id,
+                        request_hash,
+                        plan_json,
+                        plan_sha256,
+                        created_at,
+                        created_at,
+                    ),
+                )
+        except Exception as error:
+            if not _is_unique_violation(error):
+                raise
+            with self.database.connection() as connection:
+                existing = self._select_by_claim(
+                    connection,
+                    tenant_id=tenant_id,
+                    brand_id=brand_id,
+                    actor_ref=actor_ref,
+                    operation=operation,
+                    client_key_digest=client_key_digest,
+                )
+                if existing is None:
+                    existing = self._select_by_parent_key(
+                        connection,
+                        parent_orchestration_id=parent_orchestration_id,
+                        operation=operation,
+                        client_key_digest=client_key_digest,
+                    )
+            if existing is None:
+                raise
+            record = self._from_row(existing)
+            if (
+                record.tenant_id != tenant_id
+                or record.brand_id != brand_id
+                or record.actor_ref != actor_ref
+                or record.operation != operation
+                or record.client_key_digest != client_key_digest
+            ):
+                raise OperationClaimParentConflictError(record) from error
+            if record.parent_orchestration_id != parent_orchestration_id:
+                raise OperationClaimParentConflictError(record) from error
+            if (
+                record.workflow_id != workflow_id
+                or record.request_hash != request_hash
+                or record.command_plan_sha256 != plan_sha256
+            ):
+                raise OperationClaimConflictError(record) from error
+            return OperationClaimResult(record=record, created=False, replay=True)
+        with self.database.connection() as connection:
+            row = self._select_by_claim(
+                connection,
+                tenant_id=tenant_id,
+                brand_id=brand_id,
+                actor_ref=actor_ref,
+                operation=operation,
+                client_key_digest=client_key_digest,
+            )
+        if row is None:
+            raise RuntimeError("operation claim was not persisted")
+        return OperationClaimResult(
+            record=self._from_row(row), created=True, replay=False
+        )
+
+    def get(self, operation_claim_id: str) -> WorkflowApiOperationClaim | None:
+        with self.database.connection() as connection:
+            row = connection.execute(
+                """
+                SELECT * FROM workflow_api_operation_claims
+                WHERE operation_claim_id = ?
+                """,
+                (operation_claim_id,),
+            ).fetchone()
+        return None if row is None else self._from_row(row)
+
+    def get_by_claim(
+        self,
+        *,
+        tenant_id: str,
+        brand_id: str,
+        actor_ref: str,
+        operation: str,
+        client_key_digest: str,
+    ) -> WorkflowApiOperationClaim | None:
+        with self.database.connection() as connection:
+            row = self._select_by_claim(
+                connection,
+                tenant_id=tenant_id,
+                brand_id=brand_id,
+                actor_ref=actor_ref,
+                operation=operation,
+                client_key_digest=client_key_digest,
+            )
+        return None if row is None else self._from_row(row)
+
+    def advance(
+        self,
+        *,
+        operation_claim_id: str,
+        expected_version: int,
+        progress_state: OrchestrationProgress,
+        updated_at: str,
+        failure_class: str | None = None,
+        final_response: Mapping[str, Any] | None = None,
+        final_response_status: int | None = None,
+        completed_at: str | None = None,
+    ) -> WorkflowApiOperationClaim:
+        """Advance one child claim with the same monotonic optimistic rules."""
+
+        if type(expected_version) is not int or expected_version < 1:
+            raise ValueError("expected_version must be a positive integer")
+        validate_timestamp(updated_at)
+        if completed_at is not None:
+            validate_timestamp(completed_at)
+        response_json = response_sha256 = None
+        if final_response is not None:
+            if progress_state not in TERMINAL_PROGRESS:
+                raise ValueError("final response requires terminal progress")
+            response_json, response_sha256 = _safe_response(final_response)
+            if (
+                type(final_response_status) is not int
+                or not 100 <= final_response_status <= 599
+            ):
+                raise ValueError("final_response_status must be an HTTP status")
+        elif final_response_status is not None:
+            raise ValueError("final_response_status requires final_response")
+        with self.database.transaction() as connection:
+            row = connection.execute(
+                "SELECT * FROM workflow_api_operation_claims "
+                "WHERE operation_claim_id = ?",
+                (operation_claim_id,),
+            ).fetchone()
+            if row is None:
+                raise KeyError(operation_claim_id)
+            current = self._from_row(row)
+            if current.version != expected_version:
+                raise OrchestrationOptimisticConflictError(
+                    "operation claim version changed concurrently"
+                )
+            if current.progress_state in TERMINAL_PROGRESS:
+                raise ValueError("terminal operation claim cannot advance")
+            if progress_state not in ALLOWED_PROGRESS_TRANSITIONS.get(
+                current.progress_state, frozenset()
+            ):
+                raise ValueError("invalid operation claim progress transition")
+            if (
+                progress_state
+                not in {
+                    OrchestrationProgress.CONFLICT_DETECTED,
+                    OrchestrationProgress.FAILED,
+                }
+                and PROGRESS_ORDINAL[progress_state] <= current.progress_ordinal
+            ):
+                raise ValueError("operation claim progress must be monotonic")
+            connection.execute(
+                """
+                UPDATE workflow_api_operation_claims
+                SET progress_state = ?, progress_ordinal = ?, version = version + 1,
+                    failure_class = ?, final_response_status = ?,
+                    final_response_json = ?, final_response_sha256 = ?,
+                    updated_at = ?, completed_at = ?
+                WHERE operation_claim_id = ? AND version = ?
+                """,
+                (
+                    progress_state.value,
+                    PROGRESS_ORDINAL[progress_state],
+                    failure_class,
+                    final_response_status,
+                    response_json,
+                    response_sha256,
+                    updated_at,
+                    completed_at,
+                    operation_claim_id,
+                    expected_version,
+                ),
+            )
+            row = connection.execute(
+                "SELECT * FROM workflow_api_operation_claims "
+                "WHERE operation_claim_id = ?",
+                (operation_claim_id,),
+            ).fetchone()
+            if row is None:
+                raise RuntimeError("operation claim disappeared during update")
             return self._from_row(row)

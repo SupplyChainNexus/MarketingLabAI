@@ -50,7 +50,7 @@ def _sqlite_lock_error(error: BaseException) -> bool:
 class SQLiteDatabase:
     """Manage SQLite connections and database initialisation."""
 
-    REQUIRED_MIGRATION_VERSIONS = frozenset(range(1, 20))
+    REQUIRED_MIGRATION_VERSIONS = frozenset(range(1, 21))
     REQUIRED_TABLES = frozenset(
         {
             "api_idempotency_records",
@@ -84,6 +84,7 @@ class SQLiteDatabase:
             "workflow_recovery_conflict_scopes",
             "workflow_recovery_scopes",
             "workflow_api_orchestrations",
+            "workflow_api_operation_claims",
         }
     )
 
@@ -1070,6 +1071,67 @@ class SQLiteDatabase:
                         tenant_id, brand_id, workflow_id
                     );
 
+                CREATE TABLE IF NOT EXISTS workflow_api_operation_claims (
+                    operation_claim_id TEXT PRIMARY KEY,
+                    parent_orchestration_id TEXT NOT NULL,
+                    tenant_id TEXT NOT NULL,
+                    brand_id TEXT NOT NULL,
+                    actor_ref TEXT NOT NULL,
+                    operation TEXT NOT NULL,
+                    client_key_digest TEXT NOT NULL,
+                    workflow_id TEXT NOT NULL,
+                    request_hash TEXT NOT NULL,
+                    command_plan_json TEXT NOT NULL,
+                    command_plan_sha256 TEXT NOT NULL,
+                    progress_state TEXT NOT NULL CHECK (
+                        progress_state IN (
+                            'claimed', 'workflow_created', 'planned',
+                            'awaiting_approval', 'approval_recorded',
+                            'approved', 'conflict_detected', 'failed'
+                        )
+                    ),
+                    progress_ordinal INTEGER NOT NULL CHECK (
+                        progress_ordinal BETWEEN 0 AND 7
+                    ),
+                    version INTEGER NOT NULL CHECK (version >= 1),
+                    failure_class TEXT,
+                    final_response_status INTEGER CHECK (
+                        final_response_status IS NULL OR
+                        final_response_status BETWEEN 100 AND 599
+                    ),
+                    final_response_json TEXT,
+                    final_response_sha256 TEXT,
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    completed_at TEXT,
+                    UNIQUE (
+                        tenant_id, brand_id, actor_ref, operation,
+                        client_key_digest
+                    ),
+                    UNIQUE (
+                        parent_orchestration_id, operation, client_key_digest
+                    ),
+                    FOREIGN KEY (parent_orchestration_id)
+                        REFERENCES workflow_api_orchestrations(orchestration_id),
+                    FOREIGN KEY (tenant_id) REFERENCES tenants(tenant_id),
+                    FOREIGN KEY (brand_id) REFERENCES brands(brand_id),
+                    FOREIGN KEY (
+                        tenant_id, brand_id, workflow_id
+                    ) REFERENCES marketing_workflows(
+                        tenant_id, brand_id, workflow_id
+                    )
+                );
+
+                CREATE INDEX IF NOT EXISTS idx_workflow_api_operation_claims_progress
+                    ON workflow_api_operation_claims(
+                        tenant_id, brand_id, progress_state, updated_at
+                    );
+
+                CREATE INDEX IF NOT EXISTS idx_workflow_api_operation_claims_workflow
+                    ON workflow_api_operation_claims(
+                        tenant_id, brand_id, workflow_id
+                    );
+
                 CREATE INDEX IF NOT EXISTS idx_prompt_packs_tenant
                     ON prompt_packs(tenant_id);
 
@@ -1130,6 +1192,16 @@ class SQLiteDatabase:
                 ) VALUES (
                     19,
                     'Add planning-to-approval API orchestration state',
+                    strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+                )
+                """)
+
+            connection.execute("""
+                INSERT OR IGNORE INTO schema_migrations (
+                    version, description, applied_at
+                ) VALUES (
+                    20,
+                    'Add operation-scoped API orchestration claims',
                     strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
                 )
                 """)

@@ -79,7 +79,7 @@ class PostgreSQLRehearsalHarnessTests(unittest.TestCase):
         self.assertIn("tenant_memberships", tables)
         self.assertIn("pilot_sessions", tables)
         self.assertIn("marketing_workflows", tables)
-        self.assertEqual(migrations, set(range(1, 20)))
+        self.assertEqual(migrations, set(range(1, 21)))
 
     def test_catalog_guard_covers_all_non_system_object_classes(self) -> None:
         rows = [

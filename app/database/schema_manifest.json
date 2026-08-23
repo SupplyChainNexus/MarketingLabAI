@@ -54,7 +54,13 @@
       "workflow_idempotency_scopes": [],
       "workflow_recovery_conflict_replays": [],
       "workflow_recovery_conflict_scopes": [],
-      "workflow_recovery_scopes": []
+      "workflow_recovery_scopes": [],
+      "workflow_api_operation_claims": [
+        "final_response_status is null or final_response_status between 100 and 599",
+        "progress_ordinal between 0 and 7",
+        "progress_state in ( 'claimed', 'workflow_created', 'planned', 'awaiting_approval', 'approval_recorded', 'approved', 'conflict_detected', 'failed' )",
+        "version >= 1"
+      ]
     },
     "column_defaults": {
       "api_idempotency_records": [
@@ -1364,6 +1370,92 @@
         ],
         [
           "created_at",
+          null
+        ]
+      ],
+      "workflow_api_operation_claims": [
+        [
+          "operation_claim_id",
+          null
+        ],
+        [
+          "parent_orchestration_id",
+          null
+        ],
+        [
+          "tenant_id",
+          null
+        ],
+        [
+          "brand_id",
+          null
+        ],
+        [
+          "actor_ref",
+          null
+        ],
+        [
+          "operation",
+          null
+        ],
+        [
+          "client_key_digest",
+          null
+        ],
+        [
+          "workflow_id",
+          null
+        ],
+        [
+          "request_hash",
+          null
+        ],
+        [
+          "command_plan_json",
+          null
+        ],
+        [
+          "command_plan_sha256",
+          null
+        ],
+        [
+          "progress_state",
+          null
+        ],
+        [
+          "progress_ordinal",
+          null
+        ],
+        [
+          "version",
+          null
+        ],
+        [
+          "failure_class",
+          null
+        ],
+        [
+          "final_response_status",
+          null
+        ],
+        [
+          "final_response_json",
+          null
+        ],
+        [
+          "final_response_sha256",
+          null
+        ],
+        [
+          "created_at",
+          null
+        ],
+        [
+          "updated_at",
+          null
+        ],
+        [
+          "completed_at",
           null
         ]
       ]
@@ -2678,6 +2770,92 @@
           "created_at",
           "TEXT"
         ]
+      ],
+      "workflow_api_operation_claims": [
+        [
+          "operation_claim_id",
+          "TEXT"
+        ],
+        [
+          "parent_orchestration_id",
+          "TEXT"
+        ],
+        [
+          "tenant_id",
+          "TEXT"
+        ],
+        [
+          "brand_id",
+          "TEXT"
+        ],
+        [
+          "actor_ref",
+          "TEXT"
+        ],
+        [
+          "operation",
+          "TEXT"
+        ],
+        [
+          "client_key_digest",
+          "TEXT"
+        ],
+        [
+          "workflow_id",
+          "TEXT"
+        ],
+        [
+          "request_hash",
+          "TEXT"
+        ],
+        [
+          "command_plan_json",
+          "TEXT"
+        ],
+        [
+          "command_plan_sha256",
+          "TEXT"
+        ],
+        [
+          "progress_state",
+          "TEXT"
+        ],
+        [
+          "progress_ordinal",
+          "INTEGER"
+        ],
+        [
+          "version",
+          "INTEGER"
+        ],
+        [
+          "failure_class",
+          "TEXT"
+        ],
+        [
+          "final_response_status",
+          "INTEGER"
+        ],
+        [
+          "final_response_json",
+          "TEXT"
+        ],
+        [
+          "final_response_sha256",
+          "TEXT"
+        ],
+        [
+          "created_at",
+          "TEXT"
+        ],
+        [
+          "updated_at",
+          "TEXT"
+        ],
+        [
+          "completed_at",
+          "TEXT"
+        ]
       ]
     },
     "columns": {
@@ -3054,6 +3232,29 @@
         "request_hash",
         "original_receipt_id",
         "created_at"
+      ],
+      "workflow_api_operation_claims": [
+        "operation_claim_id",
+        "parent_orchestration_id",
+        "tenant_id",
+        "brand_id",
+        "actor_ref",
+        "operation",
+        "client_key_digest",
+        "workflow_id",
+        "request_hash",
+        "command_plan_json",
+        "command_plan_sha256",
+        "progress_state",
+        "progress_ordinal",
+        "version",
+        "failure_class",
+        "final_response_status",
+        "final_response_json",
+        "final_response_sha256",
+        "created_at",
+        "updated_at",
+        "completed_at"
       ]
     },
     "foreign_keys": {
@@ -3633,6 +3834,56 @@
           "NO ACTION",
           "NO ACTION"
         ]
+      ],
+      "workflow_api_operation_claims": [
+        [
+          [
+            "brand_id"
+          ],
+          "brands",
+          [
+            "brand_id"
+          ],
+          "NO ACTION",
+          "NO ACTION"
+        ],
+        [
+          [
+            "parent_orchestration_id"
+          ],
+          "workflow_api_orchestrations",
+          [
+            "orchestration_id"
+          ],
+          "NO ACTION",
+          "NO ACTION"
+        ],
+        [
+          [
+            "tenant_id"
+          ],
+          "tenants",
+          [
+            "tenant_id"
+          ],
+          "NO ACTION",
+          "NO ACTION"
+        ],
+        [
+          [
+            "tenant_id",
+            "brand_id",
+            "workflow_id"
+          ],
+          "marketing_workflows",
+          [
+            "tenant_id",
+            "brand_id",
+            "workflow_id"
+          ],
+          "NO ACTION",
+          "NO ACTION"
+        ]
       ]
     },
     "indexes": {
@@ -4118,7 +4369,32 @@
       "workflow_idempotency_scopes": [],
       "workflow_recovery_conflict_replays": [],
       "workflow_recovery_conflict_scopes": [],
-      "workflow_recovery_scopes": []
+      "workflow_recovery_scopes": [],
+      "workflow_api_operation_claims": [
+        [
+          "idx_workflow_api_operation_claims_progress",
+          false,
+          false,
+          [
+            "tenant_id",
+            "brand_id",
+            "progress_state",
+            "updated_at"
+          ],
+          ""
+        ],
+        [
+          "idx_workflow_api_operation_claims_workflow",
+          false,
+          false,
+          [
+            "tenant_id",
+            "brand_id",
+            "workflow_id"
+          ],
+          ""
+        ]
+      ]
     },
     "migrations": [
       [
@@ -4196,6 +4472,10 @@
       [
         19,
         "Add planning-to-approval API orchestration state"
+      ],
+      [
+        20,
+        "Add operation-scoped API orchestration claims"
       ]
     ],
     "nullability": {
@@ -5508,6 +5788,92 @@
           "created_at",
           false
         ]
+      ],
+      "workflow_api_operation_claims": [
+        [
+          "operation_claim_id",
+          false
+        ],
+        [
+          "parent_orchestration_id",
+          false
+        ],
+        [
+          "tenant_id",
+          false
+        ],
+        [
+          "brand_id",
+          false
+        ],
+        [
+          "actor_ref",
+          false
+        ],
+        [
+          "operation",
+          false
+        ],
+        [
+          "client_key_digest",
+          false
+        ],
+        [
+          "workflow_id",
+          false
+        ],
+        [
+          "request_hash",
+          false
+        ],
+        [
+          "command_plan_json",
+          false
+        ],
+        [
+          "command_plan_sha256",
+          false
+        ],
+        [
+          "progress_state",
+          false
+        ],
+        [
+          "progress_ordinal",
+          false
+        ],
+        [
+          "version",
+          false
+        ],
+        [
+          "failure_class",
+          true
+        ],
+        [
+          "final_response_status",
+          true
+        ],
+        [
+          "final_response_json",
+          true
+        ],
+        [
+          "final_response_sha256",
+          true
+        ],
+        [
+          "created_at",
+          false
+        ],
+        [
+          "updated_at",
+          false
+        ],
+        [
+          "completed_at",
+          true
+        ]
       ]
     },
     "tables": [
@@ -5533,6 +5899,7 @@
       "strategy_decisions",
       "tenant_memberships",
       "tenants",
+      "workflow_api_operation_claims",
       "workflow_api_orchestrations",
       "workflow_approvals",
       "workflow_artifact_proofs",
@@ -5782,8 +6149,25 @@
           "brand_id",
           "successor_workflow_id"
         ]
+      ],
+      "workflow_api_operation_claims": [
+        [
+          "operation_claim_id"
+        ],
+        [
+          "parent_orchestration_id",
+          "operation",
+          "client_key_digest"
+        ],
+        [
+          "tenant_id",
+          "brand_id",
+          "actor_ref",
+          "operation",
+          "client_key_digest"
+        ]
       ]
     }
   },
-  "schema_sha256": "462dd596b11207d5305f1aca24aecb5ed2b6a2feb58e7943bd95427e64c05e46"
+  "schema_sha256": "c7d78428f34c8c571776ca6fbc37fa0003bfbcafea6c57174a20cad281bbaee4"
 }

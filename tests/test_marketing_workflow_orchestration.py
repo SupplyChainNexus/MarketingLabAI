@@ -11,10 +11,12 @@ from pathlib import Path
 from app.database.connection import SQLiteDatabase
 from app.marketing_workflow.canonical import canonical_json_bytes, utc_timestamp
 from app.marketing_workflow.orchestration import (
+    OperationClaimConflictError,
     OrchestrationConflictError,
     OrchestrationOptimisticConflictError,
     OrchestrationProgress,
     OrchestrationWorkflowConflictError,
+    WorkflowApiOperationClaimRepository,
     WorkflowApiOrchestrationRepository,
 )
 
@@ -33,7 +35,27 @@ class WorkflowApiOrchestrationTests(unittest.TestCase):
                 """,
                 ("brand-one", "default", "Brand One", "{}", "now", "now"),
             )
+            connection.execute(
+                """
+                INSERT INTO marketing_workflows (
+                    workflow_id, tenant_id, brand_id, campaign_plan_id,
+                    campaign_plan_version, state, version, created_at, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    "mwf_demo",
+                    "default",
+                    "brand-one",
+                    "plan-one",
+                    1,
+                    "draft",
+                    1,
+                    "now",
+                    "now",
+                ),
+            )
         self.repository = WorkflowApiOrchestrationRepository(self.database)
+        self.operation_repository = WorkflowApiOperationClaimRepository(self.database)
         self.request_hash = hashlib.sha256(b"request-one").hexdigest()
         self.key_digest = hashlib.sha256(b"client-key-one").hexdigest()
         self.plan = self._plan()
@@ -87,15 +109,15 @@ class WorkflowApiOrchestrationTests(unittest.TestCase):
             created_at="2026-08-23T10:00:00.000000Z",
         )
 
-    def test_migration_19_and_manifest_are_ready(self) -> None:
+    def test_migration_20_and_manifest_are_ready(self) -> None:
         self.assertTrue(self.database.schema_is_ready())
         with self.database.connection() as connection:
             migration = connection.execute(
-                "SELECT description FROM schema_migrations WHERE version = 19"
+                "SELECT description FROM schema_migrations WHERE version = 20"
             ).fetchone()
             self.assertEqual(
                 migration["description"],
-                "Add planning-to-approval API orchestration state",
+                "Add operation-scoped API orchestration claims",
             )
 
     def test_claim_replay_and_changed_input_conflict(self) -> None:
@@ -257,6 +279,139 @@ class WorkflowApiOrchestrationTests(unittest.TestCase):
                 + canonical_json_bytes(self.plan)
             ).hexdigest(),
         )
+
+    def test_operation_claim_replay_conflict_and_immutable_material(self) -> None:
+        parent = self._claim().record
+        first = self.operation_repository.claim(
+            operation_claim_id="operation-one",
+            parent_orchestration_id=parent.orchestration_id,
+            tenant_id="default",
+            brand_id="brand-one",
+            actor_ref="act_operator",
+            operation="planning_to_approval",
+            client_key_digest=self.key_digest,
+            workflow_id="mwf_demo",
+            request_hash=self.request_hash,
+            command_plan=self.plan,
+            created_at="2026-08-23T10:00:00.000000Z",
+        )
+        replay = self.operation_repository.claim(
+            operation_claim_id="operation-two",
+            parent_orchestration_id=parent.orchestration_id,
+            tenant_id="default",
+            brand_id="brand-one",
+            actor_ref="act_operator",
+            operation="planning_to_approval",
+            client_key_digest=self.key_digest,
+            workflow_id="mwf_demo",
+            request_hash=self.request_hash,
+            command_plan=self.plan,
+            created_at="2026-08-23T10:00:01.000000Z",
+        )
+        self.assertTrue(first.created)
+        self.assertTrue(replay.replay)
+        self.assertEqual(
+            first.record.command_plan_json, replay.record.command_plan_json
+        )
+        self.assertEqual(
+            first.record.command_plan_sha256, replay.record.command_plan_sha256
+        )
+        changed = self._plan()
+        changed["commands"][0]["safe_command"]["campaign_plan_version"] = 2
+        with self.assertRaises(OperationClaimConflictError):
+            self.operation_repository.claim(
+                operation_claim_id="operation-three",
+                parent_orchestration_id=parent.orchestration_id,
+                tenant_id="default",
+                brand_id="brand-one",
+                actor_ref="act_operator",
+                operation="planning_to_approval",
+                client_key_digest=self.key_digest,
+                workflow_id="mwf_demo",
+                request_hash=hashlib.sha256(b"changed").hexdigest(),
+                command_plan=changed,
+                created_at="2026-08-23T10:00:02.000000Z",
+            )
+
+    def test_operation_claim_progress_and_final_response_are_optimistic(self) -> None:
+        parent = self._claim().record
+        claim = self.operation_repository.claim(
+            operation_claim_id="operation-one",
+            parent_orchestration_id=parent.orchestration_id,
+            tenant_id="default",
+            brand_id="brand-one",
+            actor_ref="act_operator",
+            operation="planning_to_approval",
+            client_key_digest=self.key_digest,
+            workflow_id="mwf_demo",
+            request_hash=self.request_hash,
+            command_plan=self.plan,
+            created_at="2026-08-23T10:00:00.000000Z",
+        ).record
+        advanced = self.operation_repository.advance(
+            operation_claim_id=claim.operation_claim_id,
+            expected_version=1,
+            progress_state=OrchestrationProgress.WORKFLOW_CREATED,
+            updated_at="2026-08-23T10:00:01.000000Z",
+        )
+        self.assertEqual(advanced.progress_ordinal, 1)
+        with self.assertRaises(OrchestrationOptimisticConflictError):
+            self.operation_repository.advance(
+                operation_claim_id=claim.operation_claim_id,
+                expected_version=1,
+                progress_state=OrchestrationProgress.PLANNED,
+                updated_at="2026-08-23T10:00:02.000000Z",
+            )
+        final = self.operation_repository.advance(
+            operation_claim_id=claim.operation_claim_id,
+            expected_version=2,
+            progress_state=OrchestrationProgress.CONFLICT_DETECTED,
+            updated_at="2026-08-23T10:00:03.000000Z",
+            final_response={"status": "conflict_detected"},
+            final_response_status=409,
+            completed_at="2026-08-23T10:00:03.000000Z",
+        )
+        self.assertEqual(final.final_response_status, 409)
+        self.assertIsNotNone(final.final_response_sha256)
+
+    def test_operation_claim_is_concurrency_safe_and_non_cascading(self) -> None:
+        parent = self._claim().record
+
+        def submit(index: int):
+            try:
+                return self.operation_repository.claim(
+                    operation_claim_id=f"operation-{index}",
+                    parent_orchestration_id=parent.orchestration_id,
+                    tenant_id="default",
+                    brand_id="brand-one",
+                    actor_ref="act_operator",
+                    operation="planning_to_approval",
+                    client_key_digest=self.key_digest,
+                    workflow_id="mwf_demo",
+                    request_hash=self.request_hash,
+                    command_plan=self.plan,
+                    created_at="2026-08-23T10:00:00.000000Z",
+                )
+            except Exception as error:  # pragma: no cover - asserted below
+                return error
+
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            results = list(executor.map(submit, (1, 2)))
+        self.assertEqual(sum(isinstance(item, Exception) for item in results), 0)
+        self.assertEqual(sum(item.created for item in results), 1)
+        self.assertEqual(sum(item.replay for item in results), 1)
+        with self.database.connection() as connection:
+            self.assertEqual(
+                connection.execute(
+                    "SELECT COUNT(*) FROM workflow_api_operation_claims"
+                ).fetchone()[0],
+                1,
+            )
+            foreign_keys = connection.execute(
+                "PRAGMA foreign_key_list('workflow_api_operation_claims')"
+            ).fetchall()
+            self.assertTrue(foreign_keys)
+            self.assertTrue(all(row[6] == "NO ACTION" for row in foreign_keys))
 
 
 if __name__ == "__main__":

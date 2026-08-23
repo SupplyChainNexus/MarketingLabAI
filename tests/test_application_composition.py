@@ -32,7 +32,10 @@ from app.customer_intelligence import (
 from app.database.connection import SQLiteDatabase
 from app.intelligence.models import BusinessIntelligenceProfile
 from app.marketing_brief import BriefStatus, MarketingBrief
-from app.marketing_workflow.orchestration import WorkflowApiOrchestrationRepository
+from app.marketing_workflow.orchestration import (
+    WorkflowApiOperationClaimRepository,
+    WorkflowApiOrchestrationRepository,
+)
 from app.models import BrandProfile, VoiceProfile
 from app.product_intelligence import (
     ProductEvidence,
@@ -126,6 +129,14 @@ class CanonicalApplicationTests(unittest.TestCase):
         )
         self.assertIs(
             self.application.workflow_orchestrations.database,
+            self.application.database,
+        )
+        self.assertIsInstance(
+            self.application.workflow_operation_claims,
+            WorkflowApiOperationClaimRepository,
+        )
+        self.assertIs(
+            self.application.workflow_operation_claims.database,
             self.application.database,
         )
 

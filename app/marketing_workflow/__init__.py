@@ -22,10 +22,14 @@ from app.marketing_workflow.models import (
     WorkflowState,
 )
 from app.marketing_workflow.orchestration import (
+    OperationClaimConflictError,
+    OperationClaimParentConflictError,
     OrchestrationConflictError,
     OrchestrationOptimisticConflictError,
     OrchestrationProgress,
     OrchestrationWorkflowConflictError,
+    WorkflowApiOperationClaim,
+    WorkflowApiOperationClaimRepository,
     WorkflowApiOrchestration,
     WorkflowApiOrchestrationRepository,
     canonical_command_plan,
@@ -63,5 +67,9 @@ __all__ = [
     "OrchestrationWorkflowConflictError",
     "WorkflowApiOrchestration",
     "WorkflowApiOrchestrationRepository",
+    "WorkflowApiOperationClaim",
+    "WorkflowApiOperationClaimRepository",
+    "OperationClaimConflictError",
+    "OperationClaimParentConflictError",
     "canonical_command_plan",
 ]

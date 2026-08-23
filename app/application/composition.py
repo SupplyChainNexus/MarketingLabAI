@@ -31,7 +31,10 @@ from app.marketing_brief.campaign_workflow import MarketingBriefCampaignWorkflow
 from app.marketing_brief.prompt_pack import MarketingBriefPromptPackService
 from app.marketing_brief.repository import MarketingBriefRepository
 from app.marketing_brief.service import MarketingBriefService
-from app.marketing_workflow.orchestration import WorkflowApiOrchestrationRepository
+from app.marketing_workflow.orchestration import (
+    WorkflowApiOperationClaimRepository,
+    WorkflowApiOrchestrationRepository,
+)
 from app.marketing_workflow.repository import MarketingWorkflowRepository
 from app.positioning_intelligence import (
     PositioningContextProvider,
@@ -69,6 +72,7 @@ class CanonicalApplication:
     marketing_briefs: MarketingBriefRepository
     marketing_workflows: MarketingWorkflowRepository
     workflow_orchestrations: WorkflowApiOrchestrationRepository
+    workflow_operation_claims: WorkflowApiOperationClaimRepository
     prompt_packs: PromptPackRepository
     compliance_rules: BrandRuleRepository
     identities: IdentityRepository
@@ -104,6 +108,9 @@ class CanonicalApplication:
             marketing_briefs=MarketingBriefRepository(selected_database),
             marketing_workflows=MarketingWorkflowRepository(selected_database),
             workflow_orchestrations=WorkflowApiOrchestrationRepository(
+                selected_database
+            ),
+            workflow_operation_claims=WorkflowApiOperationClaimRepository(
                 selected_database
             ),
             prompt_packs=PromptPackRepository(selected_database),

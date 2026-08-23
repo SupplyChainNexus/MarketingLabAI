@@ -53,6 +53,7 @@ class SQLiteDatabaseTests(unittest.TestCase):
                 "strategy_decisions",
                 "tenant_memberships",
                 "tenants",
+                "workflow_api_operation_claims",
                 "workflow_api_orchestrations",
                 "workflow_approvals",
                 "workflow_artifact_proofs",
