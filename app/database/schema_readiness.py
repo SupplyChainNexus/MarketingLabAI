@@ -2,14 +2,13 @@
 
 from __future__ import annotations
 
-from copy import deepcopy
 import hashlib
 import json
 import re
+from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Mapping, Sequence
-
 
 SCHEMA_MANIFEST_ID = "earthonox.marketinglabai.schema-manifest.v1"
 _MANIFEST_PATH = Path(__file__).with_name("schema_manifest.json")
@@ -64,6 +63,100 @@ def load_schema_manifest() -> dict[str, Any]:
 
 def _normalize_sql(value: Any) -> str:
     return " ".join(str(value or "").split()).lower()
+
+
+def _strip_redundant_parentheses(value: str) -> str:
+    """Remove grouping parentheses that PostgreSQL adds while deparsing checks."""
+
+    selected = value.strip()
+    changed = True
+    while changed:
+        changed = False
+        if selected.startswith("(") and selected.endswith(")"):
+            depth = 0
+            closes_at_end = True
+            for index, character in enumerate(selected):
+                if character == "(":
+                    depth += 1
+                elif character == ")":
+                    depth -= 1
+                    if depth == 0 and index != len(selected) - 1:
+                        closes_at_end = False
+                        break
+            if closes_at_end and depth == 0:
+                selected = selected[1:-1].strip()
+                changed = True
+        simplified = re.sub(
+            r"\(([a-z_][a-z0-9_]*\s+(?:is\s+null|is\s+not\s+null|>=|<=|<>|=)\s*[^()]+)\)",
+            r"\1",
+            selected,
+        )
+        simplified = re.sub(
+            r"\(([a-z_][a-z0-9_]*\s+is\s+(?:not\s+)?null)\)",
+            r"\1",
+            simplified,
+        )
+        simplified = re.sub(r"\(([a-z_][a-z0-9_]*)\)", r"\1", simplified)
+        if simplified != selected:
+            selected = simplified
+            changed = True
+    return selected
+
+
+def _remove_postgresql_grouping_parentheses(value: str) -> str:
+    """Ignore catalog-only grouping parentheses while preserving quoted text."""
+
+    characters: list[str] = []
+    quoted = False
+    for character in value:
+        if character == "'":
+            quoted = not quoted
+        if quoted or character not in "()":
+            characters.append(character)
+    return "".join(characters)
+
+
+def _normalize_postgresql_check(value: Any) -> str:
+    """Canonicalize PostgreSQL's equivalent CHECK-expression deparsing."""
+
+    selected = _normalize_sql(value)
+    selected = re.sub(
+        r"::(?:text|character varying|integer|bigint|smallint|numeric|boolean)(?:\[\])?",
+        "",
+        selected,
+    )
+    selected = re.sub(r"\(([a-z_][a-z0-9_]*)\)", r"\1", selected)
+    selected = re.sub(
+        r"([a-z_][a-z0-9_]*)\s*=\s*any\s*\(*\s*array\[(.*?)\]\s*\)*",
+        r"\1 in (\2)",
+        selected,
+    )
+    selected = re.sub(r"\bin\s*\(([^()]*)\)", r"in [[\1]]", selected)
+    selected = _remove_postgresql_grouping_parentheses(selected)
+    selected = selected.replace("[[", "(").replace("]]", ")")
+    selected = re.sub(r"\(\s+", "(", selected)
+    selected = re.sub(r"\s+\)", ")", selected)
+    selected = _strip_redundant_parentheses(selected)
+    selected = re.sub(
+        r"\(([a-z_][a-z0-9_]*\s+(?:>=|<=|<>|=)\s+[^()]+\s+and\s+[a-z_][a-z0-9_]*\s+(?:>=|<=|<>|=)\s+[^()]+)\)",
+        r"\1",
+        selected,
+    )
+    selected = re.sub(
+        r"\b([a-z_][a-z0-9_]*)\s+between\s+([^()\s]+)\s+and\s+([^()\s]+)",
+        r"\1 >= \2 and \1 <= \3",
+        selected,
+    )
+    return " ".join(selected.split())
+
+
+def _normalize_check_constraints(value: Any, *, provider: str) -> Any:
+    if provider != "postgresql" or not isinstance(value, Mapping):
+        return value
+    return {
+        str(table): sorted(_normalize_postgresql_check(item) for item in checks)
+        for table, checks in value.items()
+    }
 
 
 def _extract_checks(sql: Any) -> list[str]:
@@ -157,7 +250,9 @@ def _sqlite_snapshot(connection) -> dict[str, Any]:
                 sql = "" if row is None else str(row["sql"] or "")
                 predicate_match = re.search(r"\bWHERE\b(.+)$", sql, re.I | re.S)
                 predicate = (
-                    "" if predicate_match is None else _normalize_sql(predicate_match[1])
+                    ""
+                    if predicate_match is None
+                    else _normalize_sql(predicate_match[1])
                 )
                 indexes.append(
                     [
@@ -233,6 +328,14 @@ def compare_schema_snapshot(
             expected[category].update(value)
         else:
             expected[category] = value
+    if provider == "postgresql":
+        expected["check_constraints"] = _normalize_check_constraints(
+            expected["check_constraints"], provider=provider
+        )
+        observed = dict(observed)
+        observed["check_constraints"] = _normalize_check_constraints(
+            observed.get("check_constraints"), provider=provider
+        )
     findings: list[SchemaReadinessFinding] = []
 
     def add_finding(category: str, object_name: str, expected_value, observed_value):
@@ -269,9 +372,7 @@ def compare_schema_snapshot(
                     object_name in observed_value,
                 )
             continue
-        if category in {"migrations", "triggers"} and isinstance(
-            observed_value, list
-        ):
+        if category in {"migrations", "triggers"} and isinstance(observed_value, list):
             key_index = 0
             expected_items = {str(item[key_index]): item for item in expected_value}
             observed_items = {str(item[key_index]): item for item in observed_value}
@@ -396,10 +497,7 @@ def _postgresql_snapshot(connection) -> dict[str, Any]:
         snapshot["column_defaults"].setdefault(table, []).append(
             [name, _postgresql_default(row["column_default"])]
         )
-    constraint_names = {
-        str(row["constraint_name"])
-        for row in constraint_rows
-    }
+    constraint_names = {str(row["constraint_name"]) for row in constraint_rows}
     for row in connection.execute("""
         SELECT tablename AS table_name, indexname AS index_name,
                indexdef AS index_definition
@@ -412,12 +510,16 @@ def _postgresql_snapshot(connection) -> dict[str, Any]:
             continue
         definition = str(row["index_definition"])
         columns_match = re.search(r"\(([^()]*)\)", definition)
-        columns = [] if columns_match is None else [
-            item.strip().strip('"') for item in columns_match.group(1).split(",")
-        ]
+        columns = (
+            []
+            if columns_match is None
+            else [item.strip().strip('"') for item in columns_match.group(1).split(",")]
+        )
         predicate_match = re.search(r"\bWHERE\b(.+)$", definition, re.I | re.S)
-        predicate = "" if predicate_match is None else _normalize_sql(
-            predicate_match[1].strip().strip("()")
+        predicate = (
+            ""
+            if predicate_match is None
+            else _normalize_sql(predicate_match[1].strip().strip("()"))
         )
         table = str(row["table_name"])
         snapshot["indexes"].setdefault(table, []).append(
@@ -476,13 +578,19 @@ def _postgresql_snapshot(connection) -> dict[str, Any]:
         JOIN information_schema.check_constraints AS cc
           ON tc.constraint_schema = cc.constraint_schema
          AND tc.constraint_name = cc.constraint_name
+        JOIN pg_catalog.pg_namespace AS pn
+          ON pn.nspname = tc.constraint_schema
+        JOIN pg_catalog.pg_constraint AS pc
+          ON pc.connamespace = pn.oid
+         AND pc.conname = tc.constraint_name
+         AND pc.contype = 'c'
         WHERE tc.constraint_schema = current_schema()
           AND tc.constraint_type = 'CHECK'
         ORDER BY tc.table_name, tc.constraint_name
         """):
-        snapshot["check_constraints"].setdefault(
-            str(row["table_name"]), []
-        ).append(_normalize_sql(row["check_clause"]))
+        snapshot["check_constraints"].setdefault(str(row["table_name"]), []).append(
+            _normalize_sql(row["check_clause"])
+        )
     for row in connection.execute("""
         SELECT event_object_table AS table_name, trigger_name,
                action_timing, event_manipulation, action_statement

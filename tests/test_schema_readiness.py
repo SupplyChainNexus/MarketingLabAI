@@ -23,7 +23,12 @@ class _Rows(list):
 
 
 class _PostgreSQLCatalog:
-    def __init__(self, *, changed_type: bool = False) -> None:
+    def __init__(
+        self,
+        *,
+        changed_type: bool = False,
+        generated_not_null_checks: bool = False,
+    ) -> None:
         manifest = load_schema_manifest()
         self.expected = deepcopy(manifest["schema"])
         for category, value in manifest["postgresql_overrides"].items():
@@ -32,6 +37,7 @@ class _PostgreSQLCatalog:
             else:
                 self.expected[category] = value
         self.changed_type = changed_type
+        self.generated_not_null_checks = generated_not_null_checks
         self.statements: list[str] = []
 
     def execute(self, sql: str):
@@ -125,6 +131,13 @@ class _PostgreSQLCatalog:
             for table, constraints in self.expected["check_constraints"].items():
                 for check_clause in constraints:
                     rows.append({"table_name": table, "check_clause": check_clause})
+            if self.generated_not_null_checks and "contype = 'c'" not in normalized:
+                rows.append(
+                    {
+                        "table_name": "tenants",
+                        "check_clause": "name IS NOT NULL",
+                    }
+                )
             return _Rows(rows)
         if "information_schema.triggers" in normalized:
             return _Rows()
@@ -253,11 +266,58 @@ class SchemaReadinessTests(unittest.TestCase):
             )
         )
 
+    def test_postgresql_ignores_generated_not_null_checks(self) -> None:
+        catalog = _PostgreSQLCatalog(generated_not_null_checks=True)
+
+        report = observe_postgresql_schema(catalog)
+
+        self.assertTrue(report.ready, report.findings)
+        self.assertTrue(
+            any("pc.contype = 'c'" in statement for statement in catalog.statements)
+        )
+
+        observed = deepcopy(load_schema_manifest()["schema"])
+        observed["check_constraints"]["tenants"].append("name is not null")
+        sqlite_report = compare_schema_snapshot(observed, provider="sqlite")
+        self.assertFalse(sqlite_report.ready)
+        self.assertIn("check_constraints", sqlite_report.failure_categories)
+
     def test_postgresql_type_drift_has_structured_category(self) -> None:
         report = observe_postgresql_schema(_PostgreSQLCatalog(changed_type=True))
 
         self.assertFalse(report.ready)
         self.assertIn("column_types", report.failure_categories)
+
+    def test_postgresql_check_constraints_normalize_catalog_deparsing(self) -> None:
+        observed = deepcopy(load_schema_manifest()["schema"])
+        observed["check_constraints"]["workflow_api_orchestrations"] = [
+            "((progress_ordinal >= 0) AND (progress_ordinal <= 7))",
+            "((progress_state)::text = ANY ((ARRAY['claimed'::text, 'workflow_created'::text, 'planned'::text, 'awaiting_approval'::text, 'approval_recorded'::text, 'approved'::text, 'conflict_detected'::text, 'failed'::text])::text[]))",
+            "(version >= 1)",
+        ]
+        observed["check_constraints"]["workflow_api_operation_claims"] = [
+            "((final_response_status IS NULL) OR ((final_response_status >= 100) AND (final_response_status <= 599)))",
+            "((progress_ordinal >= 0) AND (progress_ordinal <= 7))",
+            "((progress_state)::text = ANY ((ARRAY['claimed'::text, 'workflow_created'::text, 'planned'::text, 'awaiting_approval'::text, 'approval_recorded'::text, 'approved'::text, 'conflict_detected'::text, 'failed'::text])::text[]))",
+            "(version >= 1)",
+        ]
+        observed["foreign_keys"]["brands"] = load_schema_manifest()[
+            "postgresql_overrides"
+        ]["foreign_keys"]["brands"]
+        observed["triggers"] = []
+
+        report = compare_schema_snapshot(observed, provider="postgresql")
+
+        self.assertTrue(report.ready, report.findings)
+
+    def test_manifest_identity_and_sha256_remain_unchanged(self) -> None:
+        manifest = load_schema_manifest()
+
+        self.assertEqual(manifest["manifest_id"], SCHEMA_MANIFEST_ID)
+        self.assertEqual(
+            manifest["schema_sha256"],
+            "c7d78428f34c8c571776ca6fbc37fa0003bfbcafea6c57174a20cad281bbaee4",
+        )
 
     def test_postgresql_snapshot_contains_every_governed_category(self) -> None:
         snapshot = _postgresql_snapshot(_PostgreSQLCatalog())

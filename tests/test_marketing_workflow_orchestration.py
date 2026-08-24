@@ -407,11 +407,30 @@ class WorkflowApiOrchestrationTests(unittest.TestCase):
                 ).fetchone()[0],
                 1,
             )
-            foreign_keys = connection.execute(
-                "PRAGMA foreign_key_list('workflow_api_operation_claims')"
-            ).fetchall()
-            self.assertTrue(foreign_keys)
-            self.assertTrue(all(row[6] == "NO ACTION" for row in foreign_keys))
+            if type(self.database) is SQLiteDatabase:
+                foreign_keys = connection.execute(
+                    "PRAGMA foreign_key_list('workflow_api_operation_claims')"
+                ).fetchall()
+                self.assertTrue(foreign_keys)
+                self.assertTrue(all(row[6] == "NO ACTION" for row in foreign_keys))
+            else:
+                foreign_keys = connection.execute("""
+                    SELECT rc.delete_rule, rc.update_rule
+                    FROM information_schema.table_constraints AS tc
+                    JOIN information_schema.referential_constraints AS rc
+                      ON tc.constraint_schema = rc.constraint_schema
+                     AND tc.constraint_name = rc.constraint_name
+                    WHERE tc.table_schema = current_schema()
+                      AND tc.table_name = 'workflow_api_operation_claims'
+                      AND tc.constraint_type = 'FOREIGN KEY'
+                    """).fetchall()
+                self.assertTrue(foreign_keys)
+                self.assertTrue(
+                    all(
+                        row[0] == "NO ACTION" and row[1] == "NO ACTION"
+                        for row in foreign_keys
+                    )
+                )
 
 
 if __name__ == "__main__":

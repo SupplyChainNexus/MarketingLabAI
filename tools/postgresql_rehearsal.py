@@ -27,6 +27,8 @@ from app.database.postgresql import (
 from app.identity import TenantMembership, TenantRole
 from app.operations import PilotConfiguration, PilotSessionProvider
 from app.tenants.models import Tenant
+from tests.test_marketing_workflow_orchestration import WorkflowApiOrchestrationTests
+from tests.test_pilot_api import PilotApiTests
 from tests.test_pilot_operations import PilotOperationsTests, TrustedTestIdentity
 
 LOCAL_HOSTS = frozenset({"127.0.0.1", "localhost", "::1"})
@@ -53,6 +55,30 @@ SESSION_TESTS = (
     "test_creation_audit_failure_leaves_no_active_session",
     "test_renewal_audit_failure_rolls_back_to_active_predecessor",
     "test_session_rechecks_tenant_and_active_membership",
+)
+
+WORKFLOW_C4_TESTS = (
+    "test_migration_20_and_manifest_are_ready",
+    "test_claim_replay_and_changed_input_conflict",
+    "test_concurrent_first_submissions_have_one_authoritative_claim",
+    "test_crash_recovery_preserves_claim_and_approval_transition_gap",
+    "test_operation_claim_replay_conflict_and_immutable_material",
+    "test_operation_claim_progress_and_final_response_are_optimistic",
+    "test_operation_claim_is_concurrency_safe_and_non_cascading",
+)
+
+PILOT_C4_TESTS = (
+    "test_workflow_operations_use_child_claims_and_exact_replay",
+    "test_create_recovers_after_workflow_creation_before_child_claim",
+    "test_concurrent_first_submissions_converge_on_one_workflow",
+    "test_approval_recovers_after_approval_persistence_crash",
+    "test_approval_rejects_tampered_evidence_chain",
+    "test_approval_rejects_ambiguous_evidence",
+    "test_workflow_cross_tenant_create_does_not_disclose",
+    "test_workflow_cross_tenant_status_does_not_disclose",
+    "test_rejected_approval_claim_replays_exactly_and_conflicts_on_changed_input",
+    "test_rejected_approval_fails_closed_for_tampered_and_cross_tenant_authority",
+    "test_rejected_approval_contradictory_authority_fails_closed",
 )
 
 
@@ -294,8 +320,39 @@ def isolated_session_case(controller: LocalDatabaseController):
     return IsolatedPostgreSQLSessionTests
 
 
+def _postgresql_test_case(base_case, controller: LocalDatabaseController):
+    """Adapt an existing SQLite contract test to the guarded PostgreSQL target."""
+
+    module = sys.modules[base_case.__module__]
+
+    class IsolatedPostgreSQLContracts(base_case):
+        def setUp(self) -> None:
+            controller.reset_public_schema()
+            original_database = module.SQLiteDatabase
+            module.SQLiteDatabase = lambda _path: PostgreSQLDatabase(
+                controller.database_url
+            )
+            try:
+                super().setUp()
+            finally:
+                module.SQLiteDatabase = original_database
+
+        def tearDown(self) -> None:
+            try:
+                super().tearDown()
+            finally:
+                controller.reset_public_schema()
+
+    IsolatedPostgreSQLContracts.__name__ = f"IsolatedPostgreSQL{base_case.__name__}"
+    return IsolatedPostgreSQLContracts
+
+
 def build_live_suite(controller: LocalDatabaseController) -> unittest.TestSuite:
     IsolatedPostgreSQLSessionTests = isolated_session_case(controller)
+    IsolatedPostgreSQLWorkflowTests = _postgresql_test_case(
+        WorkflowApiOrchestrationTests, controller
+    )
+    IsolatedPostgreSQLPilotTests = _postgresql_test_case(PilotApiTests, controller)
 
     class PostgreSQLHarnessContracts(unittest.TestCase):
         def setUp(self) -> None:
@@ -333,6 +390,8 @@ def build_live_suite(controller: LocalDatabaseController) -> unittest.TestSuite:
         )
     )
     suite.addTests(IsolatedPostgreSQLSessionTests(name) for name in SESSION_TESTS)
+    suite.addTests(IsolatedPostgreSQLWorkflowTests(name) for name in WORKFLOW_C4_TESTS)
+    suite.addTests(IsolatedPostgreSQLPilotTests(name) for name in PILOT_C4_TESTS)
     return suite
 
 
