@@ -576,3 +576,16 @@ exact replay; C3 approval/rejection and evidence-bound recovery; and C4
 concurrency, rehearsal, regression and acceptance. The customer boundary still
 stops at `approved`; no execution, publishing, provider, spend, learning,
 workspace, SOC 2, cloud, deployment or release authority is added.
+
+### C4 operational acceptance
+
+Operator-supplied acceptance evidence records C4 commit
+`75d7e9307c6ef32e807dd9e9a6d563feba8e51c0` as complete. The guarded disposable
+PostgreSQL rehearsal passed all 36 selected tests, including the migration-20
+readiness gate. Operation-claim uniqueness, exact replay, concurrency,
+approval and rejection recovery, evidence validation, rollback, recovery and
+cross-tenant protection all passed. Cleanup confirmed
+`mlai_rehearsal` exists=false. At the acceptance checkpoint the branch was
+synchronized with `origin/feature/tenant-architecture` and the working tree
+was clean. No production or cloud database was contacted, and rehearsal
+credentials remained protected.
