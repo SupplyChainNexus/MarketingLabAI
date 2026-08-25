@@ -343,9 +343,9 @@ commit or push operation.
 
 ### Status
 
-Founder-approved architecture invariants and Phase B policy defaults are now
-recorded; implementation remains separately authorized. No C5 implementation
-is authorized by this decision.
+Founder-approved architecture invariants, Phase B policy defaults and the
+bounded-hybrid persistence decision are now recorded; implementation remains
+separately authorized. No C5 implementation is authorized by this decision.
 
 ### Lockable architecture invariants
 
@@ -384,8 +384,25 @@ retention, deletion, privacy and ownership policy is approved; destructive
 deletion remains disabled. Existing platform encryption/security controls are
 used without creating a new encryption commitment. Machine-readable error
 codes remain internal and provider-neutral until a public compatibility
-decision exists. Existing Campaign Asset persistence is inspected first; a
-generation-attempt record requires separate authorization.
+decision exists.
+
+### Founder-approved C5 bounded-hybrid persistence decision
+
+Campaign Asset/Asset Revision remains the sole customer-facing artifact and
+lifecycle owner. A subordinate Generation Attempt record is permitted only
+for operational provenance, retries, provider results, validation and crash
+recovery. It must not own assets, approvals, workflow state, evidence,
+publishing or customer-facing lifecycle. Operation claims remain coordination
+and replay records only, and existing evidence domains retain evidence
+ownership. Asset revisions are immutable and tenant/brand-bound. Exact replay
+returns the original persisted result without provider invocation; regeneration
+creates a new request identity and immutable successor. Contradictory,
+missing, cross-tenant or digest-invalid state fails closed without mutation.
+Any schema, migration, persistence, retention, archival, deletion,
+encryption or legal-hold implementation requires separate authorization.
+
+This decision authorizes no application, database, API, workflow, provider,
+publishing, execution, spend, learning, deployment or release implementation.
 
 Policy packs remain append-only and versioned. Architecture/Quality owns
 versioning, compatibility, rollback and golden-corpus governance;

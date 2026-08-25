@@ -536,9 +536,21 @@ evidence uses least-privilege disclosure. New raw grounding content is not
 persisted until retention, deletion, privacy and ownership policy is approved,
 and destructive deletion remains disabled. Existing platform encryption and
 security controls are reused without a new encryption commitment. Error codes
-remain internal/provider-neutral until a public compatibility decision exists;
-existing Campaign Asset persistence is inspected before any separately owned
-generation-attempt record.
+remain internal/provider-neutral until a public compatibility decision exists.
+
+The bounded-hybrid persistence decision keeps Campaign Asset/Asset Revision as
+the sole customer-facing artifact and lifecycle owner. A subordinate
+Generation Attempt record is permitted only for operational provenance,
+retries, provider results, validation and crash recovery; it must not own
+assets, approvals, workflow state, evidence, publishing or customer-facing
+lifecycle. Operation claims remain coordination and replay records only, and
+existing evidence domains retain evidence ownership. Asset revisions are
+immutable and tenant/brand-bound. Exact replay returns the original persisted
+result without provider invocation; regeneration creates a new request identity
+and immutable successor. Contradictory, missing, cross-tenant or digest-invalid
+state fails closed without mutation. Any schema, migration, persistence,
+retention, archival, deletion, encryption or legal-hold implementation requires
+separate authorization.
 
 Anti-generic thresholds, channel rule packs, factuality confidence thresholds,
 golden corpus versions, timeout/retry values, retention and archival values,
@@ -563,7 +575,9 @@ windows, golden-corpus fixture ownership, timeout/retry values, retention and
 archival values, public error-code compatibility, storage fields, migration
 details and encryption implementation details remain separately governed. C4,
 existing lifecycle ownership and the approved stop at `approved` remain
-unchanged. No persistence, schema, migration, API, workflow, provider,
+unchanged. This decision authorizes no application, database, API, workflow,
+provider, publishing, execution, spend, learning, deployment or release
+implementation. No persistence, schema, migration, API, workflow, provider,
 Campaign Asset, publishing, execution, spend, learning, deployment or release
 implementation is authorized by this decision.
 

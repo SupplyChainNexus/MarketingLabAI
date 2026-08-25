@@ -2,7 +2,7 @@
   "story_id": "MLAI-033.3",
   "title": "Evidence-Grounded Content Generation Boundary",
   "classification": "Core",
-  "status": "governance-defined; Layer 1 and Phase B policy defaults approved; implementation remains separately authorized",
+  "status": "governance-defined; Layer 1, Phase B policy defaults, and bounded-hybrid persistence ownership approved; implementation remains separately authorized",
   "implementation_authorized": false,
   "schema_version": 2,
   "adr": "governance/adrs/ADR-0043-durable-marketing-workflow-spine.md",
@@ -33,7 +33,7 @@
     "destructive deletion remains disabled until retention and legal-hold policy is approved",
     "existing platform encryption and security controls are reused without a new encryption commitment",
     "machine-readable error codes remain internal and provider-neutral until public compatibility is approved",
-    "existing Campaign Asset persistence is inspected first; a generation-attempt record requires separate authorization"
+    "Campaign Asset/Asset Revision remains the sole customer-facing artifact and lifecycle owner; a subordinate Generation Attempt record is permitted only for operational provenance, retries, provider results, validation and crash recovery"
   ],
   "phase_b_locked_defaults": [
     "the anti-generic safety floor is three semantically distinct anchors spanning at least two source categories",
@@ -47,6 +47,17 @@
     "high-risk, stale, revoked, expired, superseded, conflicting, digest-invalid and cross-tenant claims are blocked",
     "policy packs are append-only and versioned; rollback affects only new requests",
     "historical snapshots and validation results are never silently reinterpreted"
+  ],
+  "phase_c_locked_decision": [
+    "Campaign Asset/Asset Revision remains the sole customer-facing artifact and lifecycle owner",
+    "a subordinate Generation Attempt record is permitted only for operational provenance, retries, provider results, validation and crash recovery",
+    "Generation Attempt must not own assets, approvals, workflow state, evidence, publishing or customer-facing lifecycle",
+    "operation claims remain coordination and replay records only; existing evidence domains retain evidence ownership",
+    "asset revisions are immutable and tenant-and-brand-bound",
+    "exact replay returns the original persisted result without provider invocation; regeneration creates a new request identity and immutable successor",
+    "contradictory, missing, cross-tenant or digest-invalid state fails closed without mutation",
+    "schema, migration, persistence, retention, archival, deletion, encryption and legal-hold implementation requires separate authorization",
+    "this decision authorizes no application, database, API, workflow, provider, publishing, execution, spend, learning, deployment or release implementation"
   ],
   "policy_packs": [
     {"name": "anti_generic", "owner": "Architecture/Quality", "version": 1, "effective_date": "pending", "test_reference": "versioned golden evaluation corpus", "change_control": "Architecture/Quality", "rollback": "revert for new requests to prior approved pack"},
@@ -63,9 +74,9 @@
     "exact policy-pack effective dates and compatibility windows",
     "golden corpus fixture ownership and acceptance corpus contents",
     "retention, archival, deletion and legal-hold policy",
-    "Campaign Asset versus generation-attempt persistence",
-    "public machine-readable error-code compatibility",
-    "storage fields, migration details and encryption implementation details"
+    "schema, migration and persistence fields for the bounded-hybrid model",
+    "encryption implementation details",
+    "public machine-readable error-code compatibility"
   ],
   "implementation_sequence": [
     "governance and policy-pack approval",

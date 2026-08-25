@@ -1122,8 +1122,9 @@ unpersisted until retention, deletion, privacy and ownership policy is
 approved; destructive deletion remains disabled. Existing platform
 encryption/security controls are reused without a new encryption commitment.
 Machine-readable error codes remain internal/provider-neutral until a public
-compatibility decision. Existing Campaign Asset persistence is inspected
-first; a generation-attempt record requires separate authorization.
+compatibility decision. The earlier unresolved Campaign Asset versus
+generation-attempt ownership question is superseded and clarified by LDR-070;
+implementation and persistence remain separately authorized.
 
 Anti-generic thresholds, channel rule packs, factuality confidence thresholds,
 golden corpus versions, timeout/retry values, retention and archival values,
@@ -1170,3 +1171,30 @@ LDR-069 authorizes no persistence, schema, migration, API, workflow, provider,
 Campaign Asset, publishing, execution, spend, learning, deployment, release,
 SOC 2 tooling or external operation. C4, LDR-068 and ADR-0043 remain
 authoritative.
+
+### LDR-070 — C5 bounded-hybrid artifact provenance persistence
+
+**Status:** Current / Founder-approved ownership decision; implementation and
+persistence remain separately authorized
+
+**Source:** Founder approval of the C5 Phase C bounded-hybrid persistence
+decision
+
+Campaign Asset/Asset Revision remains the sole customer-facing artifact and
+lifecycle owner. A subordinate Generation Attempt record is permitted only
+for operational provenance, retries, provider results, validation and crash
+recovery. It must not own assets, approvals, workflow state, evidence,
+publishing or customer-facing lifecycle. Operation claims remain coordination
+and replay records only, and existing evidence domains retain evidence
+ownership.
+
+Asset revisions are immutable and tenant/brand-bound. Exact replay returns the
+original persisted result without provider invocation; regeneration creates a
+new request identity and immutable successor. Contradictory, missing,
+cross-tenant or digest-invalid state fails closed without mutation.
+
+Any schema, migration, persistence, retention, archival, deletion, encryption
+or legal-hold implementation requires separate authorization. LDR-070
+authorizes no application, database, API, workflow, provider, publishing,
+execution, spend, learning, deployment or release implementation. C4, LDR-068,
+LDR-069 and ADR-0043 remain authoritative.

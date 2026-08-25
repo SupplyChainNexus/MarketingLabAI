@@ -613,10 +613,18 @@ release or customer activation.
 The approved defaults permit one logical versioned tenant/brand Voice authority
 (with legacy `VoiceProfile` only as an adapter), least-privilege evidence
 disclosure, existing platform encryption controls, disabled destructive
-deletion, internal provider-neutral error codes, and inspection of existing
-Campaign Asset persistence before any generation-attempt record. New raw
-grounding persistence remains blocked until retention, deletion, privacy and
-ownership policy is approved. Founder-approved Phase B defaults lock a minimum
+deletion, and internal provider-neutral error codes. The bounded-hybrid
+persistence decision keeps Campaign Asset/Asset Revision as the sole
+customer-facing artifact and lifecycle owner. A subordinate Generation Attempt
+record may exist only for operational provenance, retries, provider results,
+validation and crash recovery; it may not own assets, approvals, workflow
+state, evidence, publishing or customer-facing lifecycle. Operation claims
+remain coordination/replay records and existing evidence domains retain
+evidence ownership. Asset revisions are immutable and tenant/brand-bound;
+exact replay returns the original persisted result without provider invocation,
+while regeneration creates a new request identity and immutable successor.
+New raw grounding persistence remains blocked until retention, deletion, privacy
+and ownership policy is approved. Founder-approved Phase B defaults lock a minimum
 anti-generic floor of three semantically distinct anchors across at least two
 source categories; channel/content-type packs may require additional anchors
 and structure. Architecture/Quality owns policy versioning, compatibility,
@@ -634,7 +642,10 @@ validation results are never silently reinterpreted.
 Exact effective dates, compatibility windows, golden-corpus fixture ownership,
 timeout/retry values, retention and archival values, public error-code
 compatibility, storage fields, migration details and encryption implementation
-details remain separately governed. No persistence, schema, migration, API,
+details remain separately governed. Contradictory, missing, cross-tenant or
+digest-invalid state must fail closed without mutation. Any schema, migration,
+persistence, retention, archival, deletion, encryption or legal-hold
+implementation requires separate authorization. No persistence, schema, migration, API,
 workflow, provider, Campaign Asset, publishing, execution, spend, learning,
 deployment or release implementation is authorized by this decision.
 
