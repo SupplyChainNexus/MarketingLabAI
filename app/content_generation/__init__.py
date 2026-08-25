@@ -17,6 +17,24 @@ from .models import (
     SourceLifecycle,
     SourceReference,
 )
+from .policy import (
+    ChannelRule,
+    PolicyError,
+    PolicyPack,
+    PolicyPackRegistry,
+    TransformationRule,
+)
+from .validation import (
+    ClaimConfidence,
+    ClaimKind,
+    ClaimRisk,
+    ContentValidator,
+    GroundedClaim,
+    GroundingAnchor,
+    ValidationFinding,
+    ValidationOutcome,
+    ValidationResult,
+)
 
 __all__ = [
     "ALLOWED_SOURCE_TYPES",
@@ -31,5 +49,19 @@ __all__ = [
     "SourceLifecycle",
     "SourceReference",
     "build_grounding_snapshot",
+    "ChannelRule",
+    "ClaimConfidence",
+    "ClaimKind",
+    "ClaimRisk",
+    "ContentValidator",
+    "GroundedClaim",
+    "GroundingAnchor",
     "load_grounding_snapshot",
+    "PolicyError",
+    "PolicyPack",
+    "PolicyPackRegistry",
+    "TransformationRule",
+    "ValidationFinding",
+    "ValidationOutcome",
+    "ValidationResult",
 ]
