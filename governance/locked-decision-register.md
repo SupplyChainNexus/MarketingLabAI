@@ -1089,3 +1089,50 @@ diligence justify them. Reopening any deferred capability requires separate
 scope and implementation authority. Future SOC 2 controls must reuse existing
 system boundaries; compliance software, duplicate evidence storage and a
 parallel compliance architecture are Rabbit work and are not authorized.
+
+### LDR-068 — C5 evidence-grounded content generation boundary
+
+**Status:** Current / Founder-approved architecture invariants; implementation
+and policy packs remain separately authorized
+
+**Source:** Founder approval of the C5 Layer 1 decision package
+
+MLAI-033.3 adds a provider-neutral evidence-grounded generation boundary. One
+immutable tenant/brand-bound grounding snapshot contains selected canonical
+fields and exact source IDs, versions and digests under deterministic,
+versioned serialization. Product, Offer, Audience, Positioning, Strategy and
+Customer Segment domains retain evidence ownership and lifecycle authority.
+Provider output never authorizes claims or approval. High-risk unsupported,
+stale, revoked, conflicting and cross-tenant claims are blocked; unknown and
+low-confidence claims are `review_required` and cannot be approved until
+resolved or explicitly revalidated.
+
+Exact replay is distinct from regeneration. Generation and asset states are
+bounded to requested, grounded, generated, reviewable, approved,
+validation_failed, rejected and superseded; terminal states cannot be revived.
+Campaign Asset remains the artifact owner. Operation claims own only
+coordination, replay and recovery. Generation does not expand ADR-0043
+workflow ownership, and missing versus cross-tenant resources use
+indistinguishable safe responses.
+
+One logical versioned tenant/brand Voice authority is approved; legacy
+`VoiceProfile` may adapt to it but is not a parallel authority. Sensitive
+evidence is disclosed least-privilege. New raw grounding content remains
+unpersisted until retention, deletion, privacy and ownership policy is
+approved; destructive deletion remains disabled. Existing platform
+encryption/security controls are reused without a new encryption commitment.
+Machine-readable error codes remain internal/provider-neutral until a public
+compatibility decision. Existing Campaign Asset persistence is inspected
+first; a generation-attempt record requires separate authorization.
+
+Anti-generic thresholds, channel rule packs, factuality confidence thresholds,
+golden corpus versions, timeout/retry values, retention and archival values,
+public error-code compatibility, storage fields, migration details and
+encryption implementation details are versioned policy packs. Each pack must
+state owner, version, effective date, test corpus/reference, change-control
+authority and rollback behavior. No policy value is locked by LDR-068.
+
+LDR-068 authorizes no application implementation, new behavior tests, schema,
+migration, database, provider, publishing, execution, spend, learning,
+workspace, cloud, deployment, SOC 2, release, staging, commit or push action.
+C4 and ADR-0043 remain authoritative.

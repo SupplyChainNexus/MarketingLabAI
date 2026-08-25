@@ -8,7 +8,7 @@
 - Last completed epic: MLAI-029 Marketing Strategy Intelligence
 - Active epic: MLAI-031 Controlled Pilot Hosting
 - Last completed story: MLAI-031.18C Threat Model and Server-Session Lifecycle Foundation
-- Active story: MLAI-033.2 is governance-defined with resolved implementation contracts; implementation is not authorized
+- Active story: MLAI-033.3 is governance-defined with Layer 1 invariants approved; implementation remains blocked pending policy packs
 
 ## Product direction
 
@@ -589,3 +589,34 @@ cross-tenant protection all passed. Cleanup confirmed
 synchronized with `origin/feature/tenant-architecture` and the working tree
 was clean. No production or cloud database was contacted, and rehearsal
 credentials remained protected.
+
+## C5 evidence-grounded content generation decision boundary
+
+Founder-approved C5 Layer 1 invariants define the next Core architecture
+boundary; implementation remains separately unauthorized. Generation must use
+an immutable tenant/brand-bound grounding snapshot with deterministic,
+versioned canonical serialization and source IDs, versions and digests.
+Product, Offer, Audience, Positioning, Strategy and Customer Segment domains
+retain evidence ownership and lifecycle authority. Provider output never
+authorizes claims or approval. High-risk unsupported, stale, revoked,
+conflicting and cross-tenant claims are blocked; unknown or low-confidence
+claims are `review_required` and cannot be approved until resolved or
+explicitly revalidated.
+
+Exact replay is distinct from regeneration. Generation and asset states remain
+bounded to draft/review/approval/rejection/supersession outcomes, Campaign
+Asset remains the artifact owner, and operation claims own only coordination,
+replay and recovery. C5 does not expand ADR-0043 workflow ownership and does
+not authorize execution, publishing, providers, spend, learning, deployment,
+release or customer activation.
+
+The approved defaults permit one logical versioned tenant/brand Voice authority
+(with legacy `VoiceProfile` only as an adapter), least-privilege evidence
+disclosure, existing platform encryption controls, disabled destructive
+deletion, internal provider-neutral error codes, and inspection of existing
+Campaign Asset persistence before any generation-attempt record. New raw
+grounding persistence remains blocked until retention, deletion, privacy and
+ownership policy is approved. Anti-generic, channel, factuality, corpus,
+timeout/retry, retention, error-code, storage/migration and encryption details
+remain versioned policy packs requiring owner, version, effective date, test
+reference, change authority and rollback behavior.

@@ -338,3 +338,65 @@ transport metadata and is never added to the response body.
 This governance definition authorizes no application code, test, database
 schema, migration, cloud, deployment, customer activation, release, staging,
 commit or push operation.
+
+## MLAI-033.3 — Evidence-Grounded Content Generation (C5)
+
+### Status
+
+Founder-approved architecture invariants; policy packs and implementation
+contracts remain separately governed. No C5 implementation is authorized.
+
+### Lockable architecture invariants
+
+- Every generation identity is bound to an immutable, tenant- and brand-bound
+  grounding snapshot containing selected canonical fields and exact source IDs,
+  versions and digests.
+- Snapshot and generation material use versioned deterministic canonical
+  serialization and domain-separated digests. Unsupported versions fail
+  closed.
+- Product, Offer, Audience, Positioning, Strategy and Customer Segment domains
+  retain evidence ownership. Only approved, current, non-revoked,
+  non-superseded and non-expired evidence may support governed claims.
+- Provider output, model choice or model version never authorizes a claim,
+  approval, workflow transition or external effect.
+- High-risk unsupported, stale, revoked, conflicting or cross-tenant claims
+  are blocked. Unknown or low-confidence claims are `review_required` and
+  cannot be approved until resolved or explicitly revalidated.
+- Exact replay returns the original persisted response and artifact references;
+  regeneration uses new request material and a new generation identity or
+  immutable successor.
+- Generation/asset lifecycle is bounded to requested, grounded, generated,
+  reviewable, approved, validation_failed, rejected and superseded states;
+  terminal states cannot be revived.
+- Campaign Asset remains the artifact lifecycle owner. Operation claims own
+  only coordination, replay and recovery.
+- Missing and cross-tenant resources produce indistinguishable safe responses.
+- The boundary adds no execution, publishing, spend, learning, deployment or
+  release authority and does not expand ADR-0043 workflow ownership.
+
+### Approved defaults and deferred policy packs
+
+Existing `VoiceProfile` may adapt into one logical versioned tenant/brand Voice
+authority but may not become a parallel authority. Sensitive evidence uses
+least-privilege disclosure. New raw grounding content is not persisted until
+retention, deletion, privacy and ownership policy is approved; destructive
+deletion remains disabled. Existing platform encryption/security controls are
+used without creating a new encryption commitment. Machine-readable error
+codes remain internal and provider-neutral until a public compatibility
+decision exists. Existing Campaign Asset persistence is inspected first; a
+generation-attempt record requires separate authorization.
+
+Anti-generic thresholds, channel rule packs, factuality confidence thresholds,
+golden corpus versions, timeout/retry values, retention and archival values,
+public error-code compatibility, storage fields, migration details and
+encryption implementation details are versioned policy packs. Each pack must
+name an owner, immutable version, effective date, test corpus/reference,
+change-control authority and rollback behavior. No policy value is selected by
+this story.
+
+### Non-authorization
+
+This definition authorizes no application code, new behavior tests, schema,
+migration, database, provider, publishing, execution, spend, learning,
+workspace, cloud, deployment, SOC 2 tooling, release, staging, commit or push
+operation. Existing C4 and ADR-0043 boundaries remain authoritative.

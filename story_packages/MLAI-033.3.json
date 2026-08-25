@@ -1,0 +1,61 @@
+{
+  "story_id": "MLAI-033.3",
+  "title": "Evidence-Grounded Content Generation Boundary",
+  "classification": "Core",
+  "status": "governance-defined; Layer 1 approved; implementation blocked pending policy packs",
+  "implementation_authorized": false,
+  "schema_version": 1,
+  "adr": "governance/adrs/ADR-0043-durable-marketing-workflow-spine.md",
+  "layer_1_invariants": [
+    "immutable tenant-and-brand-bound grounding snapshot with deterministic versioned serialization and source IDs, versions and digests",
+    "approved Product, Offer, Audience, Positioning, Strategy and Customer Segment evidence remains owned by existing domains",
+    "provider output never authorizes claims, approval or workflow transitions",
+    "high-risk unsupported, stale, revoked, conflicting and cross-tenant claims are blocked",
+    "unknown and low-confidence claims are review_required and cannot be approved until resolved or explicitly revalidated",
+    "exact replay is distinct from regeneration",
+    "bounded generation and asset lifecycle with immutable rejection and supersession",
+    "Campaign Asset remains lifecycle owner and operation claims own only coordination, replay and recovery",
+    "missing and cross-tenant resources return indistinguishable safe responses",
+    "no execution, publishing, spend, learning, deployment or release authority"
+  ],
+  "approved_defaults": [
+    "one logical versioned tenant-and-brand Voice authority; existing VoiceProfile may adapt but is not a parallel authority",
+    "least-privilege disclosure for sensitive evidence",
+    "new raw grounding content is not persisted before retention, deletion, privacy and ownership policy approval",
+    "destructive deletion remains disabled until retention and legal-hold policy is approved",
+    "existing platform encryption and security controls are reused without a new encryption commitment",
+    "machine-readable error codes remain internal and provider-neutral until public compatibility is approved",
+    "existing Campaign Asset persistence is inspected first; a generation-attempt record requires separate authorization"
+  ],
+  "policy_packs": [
+    {"name": "anti_generic", "owner": "pending owner approval", "version": "pending", "effective_date": "pending", "test_reference": "versioned golden evaluation corpus", "change_control": "pending approval", "rollback": "revert to prior effective pack"},
+    {"name": "channel_rules", "owner": "pending owner approval", "version": "pending", "effective_date": "pending", "test_reference": "channel/content-type corpus", "change_control": "pending approval", "rollback": "revert to prior effective pack"},
+    {"name": "factuality_confidence", "owner": "pending owner approval", "version": "pending", "effective_date": "pending", "test_reference": "claim/evidence corpus", "change_control": "pending approval", "rollback": "revert to prior effective pack"},
+    {"name": "golden_corpus", "owner": "pending owner approval", "version": "pending", "effective_date": "pending", "test_reference": "privacy-reviewed immutable corpus", "change_control": "pending approval", "rollback": "restore prior corpus and rule pairing"},
+    {"name": "timeout_retry", "owner": "pending owner approval", "version": "pending", "effective_date": "pending", "test_reference": "failure and recovery tests", "change_control": "pending approval", "rollback": "revert to prior effective pack"},
+    {"name": "retention_archival", "owner": "founder and privacy authority", "version": "pending", "effective_date": "pending", "test_reference": "retention/deletion tests", "change_control": "founder approval", "rollback": "destructive deletion remains disabled"},
+    {"name": "public_error_codes", "owner": "pending API authority", "version": "pending", "effective_date": "pending", "test_reference": "compatibility corpus", "change_control": "public compatibility approval", "rollback": "retain prior code mappings"},
+    {"name": "storage_migration", "owner": "pending architecture authority", "version": "pending", "effective_date": "pending", "test_reference": "SQLite/PostgreSQL readiness and rehearsal", "change_control": "migration approval", "rollback": "forward-only recovery; historical migrations unchanged"},
+    {"name": "encryption_implementation", "owner": "pending security authority", "version": "pending", "effective_date": "pending", "test_reference": "privacy/security tests", "change_control": "security approval", "rollback": "fail closed; never silently downgrade"}
+  ],
+  "deferred_founder_decisions": [
+    "anti-generic metrics and thresholds",
+    "channel/content-type rule ownership",
+    "factuality confidence and high-risk claim policy",
+    "retention, archival, deletion and legal-hold policy",
+    "Campaign Asset versus generation-attempt persistence",
+    "public machine-readable error-code compatibility",
+    "storage fields, migration details and encryption implementation details"
+  ],
+  "implementation_sequence": [
+    "governance and policy-pack approval",
+    "grounding and canonicalization contract",
+    "deterministic anti-generic and factuality validation",
+    "Campaign Asset provenance integration",
+    "review and approval integration",
+    "evaluation corpus, regression and acceptance"
+  ],
+  "out_of_scope": [
+    "execution, publishing, providers, spend, learning, deployment, release, cloud, SOC 2 tooling, customer activation and parallel evidence or asset storage"
+  ]
+}

@@ -504,6 +504,51 @@ and C4 concurrency, rehearsal, regression and acceptance. This amendment adds
 no execution, publishing, provider, spend, learning, workspace, SOC 2, cloud,
 deployment or release authority.
 
+## MLAI-033.3 C5 evidence-grounded generation boundary
+
+The following Layer 1 invariants are founder-approved architecture extensions,
+not permission to implement them. Generation uses an immutable tenant- and
+brand-bound grounding snapshot with selected canonical fields plus exact source
+IDs, versions and digests. Snapshot and generation material use versioned
+deterministic serialization and domain-separated digests; unsupported versions
+fail closed.
+
+Product, Offer, Audience, Positioning, Strategy and Customer Segment domains
+remain evidence owners. Only approved, current, non-revoked, non-superseded and
+non-expired evidence supports governed claims. Provider output and model
+provenance never authorize claims, approval or workflow transitions. High-risk
+unsupported, stale, revoked, conflicting and cross-tenant claims are blocked;
+unknown and low-confidence claims are `review_required` and cannot be approved
+until resolved or explicitly revalidated.
+
+Exact replay is distinct from regeneration. Generation and asset lifecycle
+states are bounded to requested, grounded, generated, reviewable, approved,
+validation_failed, rejected and superseded; terminal states cannot be revived.
+Campaign Asset remains the artifact owner, while operation claims own only
+coordination, replay and recovery. Generation does not add ADR-0043 workflow
+states. Missing and cross-tenant resources return indistinguishable safe
+responses. No execution, publishing, spend, learning, deployment or release
+authority is added.
+
+One logical versioned tenant/brand Voice authority is approved; an existing
+`VoiceProfile` may be an adapter but is not a parallel authority. Sensitive
+evidence uses least-privilege disclosure. New raw grounding content is not
+persisted until retention, deletion, privacy and ownership policy is approved,
+and destructive deletion remains disabled. Existing platform encryption and
+security controls are reused without a new encryption commitment. Error codes
+remain internal/provider-neutral until a public compatibility decision exists;
+existing Campaign Asset persistence is inspected before any separately owned
+generation-attempt record.
+
+Anti-generic thresholds, channel rule packs, factuality confidence thresholds,
+golden corpus versions, timeout/retry values, retention and archival values,
+public error-code compatibility, storage fields, migration details and
+encryption implementation details are versioned policy packs. Each pack must
+record owner, version, effective date, test corpus/reference, change-control
+authority and rollback behavior. No policy value or implementation authority is
+selected here. C4, existing lifecycle ownership and the approved stop at
+`approved` remain unchanged.
+
 ## Consequences
 
 - MLAI-033 is Core, not Rabbit.
