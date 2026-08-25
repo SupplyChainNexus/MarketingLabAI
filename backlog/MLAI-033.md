@@ -343,8 +343,9 @@ commit or push operation.
 
 ### Status
 
-Founder-approved architecture invariants; policy packs and implementation
-contracts remain separately governed. No C5 implementation is authorized.
+Founder-approved architecture invariants and Phase B policy defaults are now
+recorded; implementation remains separately authorized. No C5 implementation
+is authorized by this decision.
 
 ### Lockable architecture invariants
 
@@ -386,13 +387,37 @@ codes remain internal and provider-neutral until a public compatibility
 decision exists. Existing Campaign Asset persistence is inspected first; a
 generation-attempt record requires separate authorization.
 
-Anti-generic thresholds, channel rule packs, factuality confidence thresholds,
-golden corpus versions, timeout/retry values, retention and archival values,
-public error-code compatibility, storage fields, migration details and
-encryption implementation details are versioned policy packs. Each pack must
-name an owner, immutable version, effective date, test corpus/reference,
-change-control authority and rollback behavior. No policy value is selected by
-this story.
+Policy packs remain append-only and versioned. Architecture/Quality owns
+versioning, compatibility, rollback and golden-corpus governance;
+Product/marketing owns channel/content-type rules; evidence domains retain
+source meaning and lifecycle authority. Exact effective dates, compatibility
+windows, golden-corpus fixture ownership, timeout/retry values, retention and
+archival values, public error-code compatibility, storage fields, migration
+details and encryption implementation details remain separately governed.
+
+### Founder-approved C5 Phase B policy defaults
+
+- The anti-generic safety floor is three semantically distinct anchors spanning
+  at least two source categories. Channel/content-type policy packs may require
+  additional anchors and structure.
+- Architecture/Quality owns policy versioning, compatibility, rollback and
+  golden-corpus governance. Product/marketing owns channel/content-type rule
+  definitions. Evidence domains retain authority over source meaning and
+  lifecycle.
+- High-risk claims require direct approved evidence. Derived claims are allowed
+  only through deterministic, approved transformations with complete evidence
+  lineage, unit preservation and no unsupported extrapolation.
+- Unknown and low-confidence claims are `review_required` and cannot be
+  approved unresolved. High-risk, stale, revoked, expired, superseded,
+  conflicting, digest-invalid and cross-tenant claims are `blocked`.
+- Policy packs are append-only and versioned. Rollback affects only new
+  requests; historical snapshots and validation results are never silently
+  reinterpreted.
+
+These defaults authorize no persistence, schema, migration, API, workflow,
+provider, Campaign Asset, publishing, execution, spend, learning, deployment
+or release implementation. Exact effective dates, compatibility windows and
+golden-corpus fixture ownership remain separately governed.
 
 ### Non-authorization
 

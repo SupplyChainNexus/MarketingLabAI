@@ -545,9 +545,27 @@ golden corpus versions, timeout/retry values, retention and archival values,
 public error-code compatibility, storage fields, migration details and
 encryption implementation details are versioned policy packs. Each pack must
 record owner, version, effective date, test corpus/reference, change-control
-authority and rollback behavior. No policy value or implementation authority is
-selected here. C4, existing lifecycle ownership and the approved stop at
-`approved` remain unchanged.
+authority and rollback behavior. Founder-approved Phase B defaults now set the
+anti-generic safety floor at three semantically distinct anchors across at
+least two source categories; channel/content-type packs may require additional
+anchors and structure. Architecture/Quality owns policy versioning,
+compatibility, rollback and golden-corpus governance; Product/marketing owns
+channel/content-type rules; evidence domains retain source meaning and
+lifecycle authority. High-risk claims require direct approved evidence. Derived
+claims require deterministic approved transformations with complete lineage,
+unit preservation and no unsupported extrapolation. Unknown and low-confidence
+claims are `review_required` and cannot be approved unresolved; high-risk,
+stale, revoked, expired, superseded, conflicting, digest-invalid and
+cross-tenant claims are `blocked`. Policy packs are append-only and versioned;
+rollback affects only new requests, and historical snapshots and validation
+results are never silently reinterpreted. Exact effective dates, compatibility
+windows, golden-corpus fixture ownership, timeout/retry values, retention and
+archival values, public error-code compatibility, storage fields, migration
+details and encryption implementation details remain separately governed. C4,
+existing lifecycle ownership and the approved stop at `approved` remain
+unchanged. No persistence, schema, migration, API, workflow, provider,
+Campaign Asset, publishing, execution, spend, learning, deployment or release
+implementation is authorized by this decision.
 
 ## Consequences
 

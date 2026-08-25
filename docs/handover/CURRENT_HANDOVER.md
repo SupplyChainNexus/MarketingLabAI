@@ -8,7 +8,7 @@
 - Last completed epic: MLAI-029 Marketing Strategy Intelligence
 - Active epic: MLAI-031 Controlled Pilot Hosting
 - Last completed story: MLAI-031.18C Threat Model and Server-Session Lifecycle Foundation
-- Active story: MLAI-033.3 is governance-defined with Layer 1 invariants approved; implementation remains blocked pending policy packs
+- Active story: MLAI-033.3 has Layer 1 invariants and Phase B policy defaults approved; implementation remains separately authorized
 
 ## Product direction
 
@@ -616,7 +616,28 @@ disclosure, existing platform encryption controls, disabled destructive
 deletion, internal provider-neutral error codes, and inspection of existing
 Campaign Asset persistence before any generation-attempt record. New raw
 grounding persistence remains blocked until retention, deletion, privacy and
-ownership policy is approved. Anti-generic, channel, factuality, corpus,
-timeout/retry, retention, error-code, storage/migration and encryption details
-remain versioned policy packs requiring owner, version, effective date, test
-reference, change authority and rollback behavior.
+ownership policy is approved. Founder-approved Phase B defaults lock a minimum
+anti-generic floor of three semantically distinct anchors across at least two
+source categories; channel/content-type packs may require additional anchors
+and structure. Architecture/Quality owns policy versioning, compatibility,
+rollback and golden-corpus governance. Product/marketing owns
+channel/content-type rules, while evidence domains retain source meaning and
+lifecycle authority. High-risk claims require direct approved evidence;
+derived claims require deterministic approved transformations with complete
+lineage, unit preservation and no unsupported extrapolation. Unknown and
+low-confidence claims are `review_required` and cannot be approved unresolved;
+high-risk, stale, revoked, expired, superseded, conflicting, digest-invalid
+and cross-tenant claims are `blocked`. Policy packs are append-only and
+versioned; rollback affects only new requests, and historical snapshots and
+validation results are never silently reinterpreted.
+
+Exact effective dates, compatibility windows, golden-corpus fixture ownership,
+timeout/retry values, retention and archival values, public error-code
+compatibility, storage fields, migration details and encryption implementation
+details remain separately governed. No persistence, schema, migration, API,
+workflow, provider, Campaign Asset, publishing, execution, spend, learning,
+deployment or release implementation is authorized by this decision.
+
+LDR-069 records these founder-approved Phase B policy defaults. C5 remains
+governance-defined; no implementation, persistence, schema, migration or
+external operation is authorized by the lock.

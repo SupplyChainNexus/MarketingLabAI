@@ -1130,9 +1130,43 @@ golden corpus versions, timeout/retry values, retention and archival values,
 public error-code compatibility, storage fields, migration details and
 encryption implementation details are versioned policy packs. Each pack must
 state owner, version, effective date, test corpus/reference, change-control
-authority and rollback behavior. No policy value is locked by LDR-068.
+authority and rollback behavior. At issuance, LDR-068 locked no policy value;
+the later founder-approved defaults are recorded by LDR-069.
 
 LDR-068 authorizes no application implementation, new behavior tests, schema,
 migration, database, provider, publishing, execution, spend, learning,
 workspace, cloud, deployment, SOC 2, release, staging, commit or push action.
 C4 and ADR-0043 remain authoritative.
+
+### LDR-069 — C5 Phase B policy defaults
+
+**Status:** Current / Founder-approved policy defaults; implementation remains
+separately authorized
+
+**Source:** Founder approval of the C5 Phase B policy decision proposal
+
+The C5 anti-generic safety floor is three semantically distinct anchors across
+at least two source categories. Channel/content-type policy packs may require
+additional anchors and structure. Architecture/Quality owns policy
+versioning, compatibility, rollback and golden-corpus governance.
+Product/marketing owns channel/content-type rule definitions. Evidence domains
+retain authority over source meaning and lifecycle.
+
+High-risk claims require direct approved evidence. Derived claims are allowed
+only through deterministic, approved transformations with complete evidence
+lineage, unit preservation and no unsupported extrapolation. Unknown and
+low-confidence claims are `review_required` and cannot be approved unresolved.
+High-risk, stale, revoked, expired, superseded, conflicting, digest-invalid
+and cross-tenant claims are `blocked`.
+
+Policy packs are append-only and versioned. Rollback affects only new
+requests. Historical snapshots and validation results are never silently
+reinterpreted. Exact effective dates, compatibility windows, golden-corpus
+fixture ownership, timeout/retry values, retention and archival values, public
+error-code compatibility, storage fields, migration details and encryption
+implementation details remain separately governed.
+
+LDR-069 authorizes no persistence, schema, migration, API, workflow, provider,
+Campaign Asset, publishing, execution, spend, learning, deployment, release,
+SOC 2 tooling or external operation. C4, LDR-068 and ADR-0043 remain
+authoritative.
