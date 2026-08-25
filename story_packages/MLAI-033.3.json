@@ -4,8 +4,16 @@
   "classification": "Core",
   "status": "governance-defined; Layer 1 approved; implementation blocked pending policy packs",
   "implementation_authorized": false,
-  "schema_version": 1,
+  "schema_version": 2,
   "adr": "governance/adrs/ADR-0043-durable-marketing-workflow-spine.md",
+  "scope": [
+    "immutable tenant-and-brand-bound grounding provenance",
+    "approved Product, Offer, Audience, Positioning, Strategy and Customer Segment evidence authority",
+    "one logical versioned tenant-and-brand Voice authority",
+    "deterministic anti-generic and evidence-bound factuality validation",
+    "Campaign Asset-owned draft, review, approval, rejection and supersession lifecycle",
+    "versioned policy-pack governance without implementation authority"
+  ],
   "layer_1_invariants": [
     "immutable tenant-and-brand-bound grounding snapshot with deterministic versioned serialization and source IDs, versions and digests",
     "approved Product, Offer, Audience, Positioning, Strategy and Customer Segment evidence remains owned by existing domains",
