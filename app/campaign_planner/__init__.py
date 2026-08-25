@@ -1,5 +1,10 @@
 """Campaign planning domain for MarketingLabAI."""
 
+from app.campaign_planner.asset_repository import (
+    AssetRevisionRecord,
+    CampaignAssetRepository,
+    GenerationAttemptRecord,
+)
 from app.campaign_planner.assets import (
     CampaignAsset,
     CampaignAssetStatus,
@@ -45,6 +50,9 @@ __all__ = [
     "CampaignObjective",
     "CampaignPlan",
     "CampaignPlanRepository",
+    "CampaignAssetRepository",
+    "AssetRevisionRecord",
+    "GenerationAttemptRecord",
     "CampaignPlanAuditMetadata",
     "CampaignPlanValidator",
     "CampaignPlanningService",

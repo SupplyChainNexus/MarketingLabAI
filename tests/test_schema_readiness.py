@@ -140,7 +140,19 @@ class _PostgreSQLCatalog:
                 )
             return _Rows(rows)
         if "information_schema.triggers" in normalized:
-            return _Rows()
+            rows = []
+            for name, table, action in self.expected["triggers"]:
+                timing, event, statement = action.split(" ", 2)
+                rows.append(
+                    {
+                        "table_name": table,
+                        "trigger_name": name,
+                        "action_timing": timing.upper(),
+                        "event_manipulation": event.upper(),
+                        "action_statement": statement,
+                    }
+                )
+            return _Rows(rows)
         if "from schema_migrations" in normalized:
             return _Rows(
                 {"version": version, "description": description}
@@ -304,7 +316,9 @@ class SchemaReadinessTests(unittest.TestCase):
         observed["foreign_keys"]["brands"] = load_schema_manifest()[
             "postgresql_overrides"
         ]["foreign_keys"]["brands"]
-        observed["triggers"] = []
+        observed["triggers"] = load_schema_manifest()["postgresql_overrides"][
+            "triggers"
+        ]
 
         report = compare_schema_snapshot(observed, provider="postgresql")
 
@@ -316,7 +330,7 @@ class SchemaReadinessTests(unittest.TestCase):
         self.assertEqual(manifest["manifest_id"], SCHEMA_MANIFEST_ID)
         self.assertEqual(
             manifest["schema_sha256"],
-            "c7d78428f34c8c571776ca6fbc37fa0003bfbcafea6c57174a20cad281bbaee4",
+            "7b7fff807765c903f824b31698c74cd9d3b2b47354ebf66da37bd96f70d6e521",
         )
 
     def test_postgresql_snapshot_contains_every_governed_category(self) -> None:

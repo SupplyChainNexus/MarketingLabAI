@@ -28,16 +28,41 @@ from app.database.schema_readiness import (
     unavailable_schema_report,
 )
 
-POSTGRESQL_MIGRATION_LOCK_NAMESPACE = (
-    "earthonox.marketinglabai.schema-migration.v1"
-)
+POSTGRESQL_MIGRATION_LOCK_NAMESPACE = "earthonox.marketinglabai.schema-migration.v1"
 POSTGRESQL_MIGRATION_LOCK_TIMEOUT_SECONDS = 5
+
+POSTGRESQL_IMMUTABILITY_STATEMENTS = (
+    """
+    CREATE OR REPLACE FUNCTION prevent_campaign_asset_revision_mutation()
+    RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+    BEGIN
+        RAISE EXCEPTION 'campaign_asset_revisions are immutable';
+    END;
+    $$
+    """,
+    "DROP TRIGGER IF EXISTS prevent_campaign_asset_revision_update ON campaign_asset_revisions",
+    """
+    CREATE TRIGGER prevent_campaign_asset_revision_update
+    BEFORE UPDATE ON campaign_asset_revisions
+    FOR EACH ROW EXECUTE FUNCTION prevent_campaign_asset_revision_mutation()
+    """,
+    "DROP TRIGGER IF EXISTS prevent_campaign_asset_revision_delete ON campaign_asset_revisions",
+    """
+    CREATE TRIGGER prevent_campaign_asset_revision_delete
+    BEFORE DELETE ON campaign_asset_revisions
+    FOR EACH ROW EXECUTE FUNCTION prevent_campaign_asset_revision_mutation()
+    """,
+)
 
 
 def postgresql_migration_advisory_key() -> int:
     """Return the stable signed 64-bit lock key for the governed namespace."""
 
-    digest = hashlib.sha256(POSTGRESQL_MIGRATION_LOCK_NAMESPACE.encode("utf-8")).digest()
+    digest = hashlib.sha256(
+        POSTGRESQL_MIGRATION_LOCK_NAMESPACE.encode("utf-8")
+    ).digest()
     return int.from_bytes(digest[:8], byteorder="big", signed=True)
 
 
@@ -279,6 +304,7 @@ def build_postgresql_schema() -> tuple[str, ...]:
 
     statements = [tables[name] for name in ordered]
     statements.extend(indexes)
+    statements.extend(POSTGRESQL_IMMUTABILITY_STATEMENTS)
     return tuple(statements)
 
 
@@ -459,7 +485,9 @@ class PostgreSQLDatabase(SQLiteDatabase):
                 "inspection", type(error).__name__.lower()
             )
         if not report.ready:
-            category = report.failure_categories[0] if report.failure_categories else "unknown"
+            category = (
+                report.failure_categories[0] if report.failure_categories else "unknown"
+            )
             self._emit_lifecycle_event(
                 "readiness_failure",
                 "schema_readiness",

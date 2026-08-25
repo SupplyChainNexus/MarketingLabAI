@@ -50,7 +50,7 @@ def _sqlite_lock_error(error: BaseException) -> bool:
 class SQLiteDatabase:
     """Manage SQLite connections and database initialisation."""
 
-    REQUIRED_MIGRATION_VERSIONS = frozenset(range(1, 21))
+    REQUIRED_MIGRATION_VERSIONS = frozenset(range(1, 22))
     REQUIRED_TABLES = frozenset(
         {
             "api_idempotency_records",
@@ -58,6 +58,8 @@ class SQLiteDatabase:
             "brands",
             "business_intelligence_profiles",
             "campaign_plans",
+            "campaign_assets",
+            "campaign_asset_revisions",
             "compliance_rules",
             "customer_intelligence_profiles",
             "data_migration_log",
@@ -85,6 +87,7 @@ class SQLiteDatabase:
             "workflow_recovery_scopes",
             "workflow_api_orchestrations",
             "workflow_api_operation_claims",
+            "generation_attempts",
         }
     )
 
@@ -774,6 +777,161 @@ class SQLiteDatabase:
                 CREATE INDEX IF NOT EXISTS idx_campaign_plans_status
                     ON campaign_plans(tenant_id, status);
 
+                CREATE TABLE IF NOT EXISTS campaign_assets (
+                    asset_id TEXT NOT NULL,
+                    tenant_id TEXT NOT NULL,
+                    brand_id TEXT NOT NULL,
+                    campaign_id TEXT NOT NULL,
+                    current_revision INTEGER NOT NULL DEFAULT 1 CHECK (
+                        current_revision >= 1
+                    ),
+                    lifecycle_state TEXT NOT NULL CHECK (
+                        lifecycle_state IN (
+                            'requested', 'grounded', 'generated', 'reviewable',
+                            'approved', 'validation_failed', 'rejected',
+                            'superseded'
+                        )
+                    ),
+                    version INTEGER NOT NULL CHECK (version >= 1),
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    PRIMARY KEY (tenant_id, brand_id, asset_id),
+                    FOREIGN KEY (tenant_id) REFERENCES tenants(tenant_id),
+                    FOREIGN KEY (brand_id) REFERENCES brands(brand_id)
+                );
+
+                CREATE INDEX IF NOT EXISTS idx_campaign_assets_scope
+                    ON campaign_assets(tenant_id, brand_id, lifecycle_state);
+
+                CREATE TABLE IF NOT EXISTS campaign_asset_revisions (
+                    tenant_id TEXT NOT NULL,
+                    brand_id TEXT NOT NULL,
+                    asset_id TEXT NOT NULL,
+                    revision INTEGER NOT NULL CHECK (revision >= 1),
+                    generation_identity TEXT NOT NULL,
+                    request_id TEXT NOT NULL,
+                    snapshot_digest TEXT NOT NULL,
+                    snapshot_schema_version INTEGER NOT NULL CHECK (
+                        snapshot_schema_version >= 1
+                    ),
+                    snapshot_canonicalization_version TEXT NOT NULL,
+                    source_references_json TEXT NOT NULL,
+                    output_digest TEXT NOT NULL,
+                    output_reference TEXT NOT NULL,
+                    validation_outcome TEXT NOT NULL CHECK (
+                        validation_outcome IN (
+                            'approved', 'review_required', 'blocked'
+                        )
+                    ),
+                    policy_pack_name TEXT NOT NULL,
+                    policy_pack_version INTEGER NOT NULL CHECK (
+                        policy_pack_version >= 1
+                    ),
+                    policy_pack_digest TEXT NOT NULL,
+                    safe_findings_json TEXT NOT NULL,
+                    provider_name TEXT,
+                    model_name TEXT,
+                    model_version TEXT,
+                    workflow_id TEXT,
+                    workflow_version INTEGER,
+                    approval_id TEXT,
+                    rejection_receipt_id TEXT,
+                    parent_revision INTEGER,
+                    created_at TEXT NOT NULL,
+                    CHECK (parent_revision IS NULL OR parent_revision < revision),
+                    PRIMARY KEY (tenant_id, brand_id, asset_id, revision),
+                    UNIQUE (tenant_id, brand_id, generation_identity),
+                    FOREIGN KEY (tenant_id, brand_id, asset_id)
+                        REFERENCES campaign_assets(
+                            tenant_id, brand_id, asset_id
+                        ),
+                    FOREIGN KEY (tenant_id, brand_id, workflow_id)
+                        REFERENCES marketing_workflows(
+                            tenant_id, brand_id, workflow_id
+                        ),
+                    FOREIGN KEY (tenant_id, brand_id, asset_id, parent_revision)
+                        REFERENCES campaign_asset_revisions(
+                            tenant_id, brand_id, asset_id, revision
+                        )
+                );
+
+                CREATE INDEX IF NOT EXISTS idx_campaign_asset_revisions_identity
+                    ON campaign_asset_revisions(
+                        tenant_id, brand_id, generation_identity
+                    );
+
+                CREATE INDEX IF NOT EXISTS idx_campaign_asset_revisions_workflow
+                    ON campaign_asset_revisions(
+                        tenant_id, brand_id, workflow_id, workflow_version
+                    );
+
+                CREATE TRIGGER IF NOT EXISTS prevent_campaign_asset_revision_update
+                BEFORE UPDATE ON campaign_asset_revisions
+                BEGIN
+                    SELECT RAISE(ABORT, 'campaign_asset_revisions are immutable');
+                END;
+
+                CREATE TRIGGER IF NOT EXISTS prevent_campaign_asset_revision_delete
+                BEFORE DELETE ON campaign_asset_revisions
+                BEGIN
+                    SELECT RAISE(ABORT, 'campaign_asset_revisions are immutable');
+                END;
+
+                CREATE TABLE IF NOT EXISTS generation_attempts (
+                    attempt_id TEXT PRIMARY KEY,
+                    tenant_id TEXT NOT NULL,
+                    brand_id TEXT NOT NULL,
+                    asset_id TEXT NOT NULL,
+                    revision INTEGER NOT NULL,
+                    operation_claim_id TEXT NOT NULL,
+                    generation_identity TEXT NOT NULL,
+                    request_id TEXT NOT NULL,
+                    attempt_state TEXT NOT NULL CHECK (
+                        attempt_state IN (
+                            'requested', 'grounded', 'generated',
+                            'reviewable', 'validation_failed', 'failed'
+                        )
+                    ),
+                    snapshot_digest TEXT NOT NULL,
+                    output_digest TEXT,
+                    validation_outcome TEXT CHECK (
+                        validation_outcome IS NULL OR
+                        validation_outcome IN (
+                            'approved', 'review_required', 'blocked'
+                        )
+                    ),
+                    policy_pack_name TEXT,
+                    policy_pack_version INTEGER,
+                    policy_pack_digest TEXT,
+                    provider_name TEXT,
+                    model_name TEXT,
+                    model_version TEXT,
+                    failure_class TEXT,
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    UNIQUE (tenant_id, brand_id, operation_claim_id),
+                    UNIQUE (tenant_id, brand_id, generation_identity),
+                    FOREIGN KEY (tenant_id, brand_id, asset_id, revision)
+                        REFERENCES campaign_asset_revisions(
+                            tenant_id, brand_id, asset_id, revision
+                        ),
+                    FOREIGN KEY (
+                        tenant_id, brand_id, operation_claim_id
+                    ) REFERENCES workflow_api_operation_claims(
+                        tenant_id, brand_id, operation_claim_id
+                    )
+                );
+
+                CREATE INDEX IF NOT EXISTS idx_generation_attempts_state
+                    ON generation_attempts(
+                        tenant_id, brand_id, attempt_state, updated_at
+                    );
+
+                CREATE INDEX IF NOT EXISTS idx_generation_attempts_revision
+                    ON generation_attempts(
+                        tenant_id, brand_id, asset_id, revision
+                    );
+
                 CREATE TABLE IF NOT EXISTS marketing_workflows (
                     workflow_id TEXT NOT NULL,
                     tenant_id TEXT NOT NULL,
@@ -1111,6 +1269,7 @@ class SQLiteDatabase:
                     UNIQUE (
                         parent_orchestration_id, operation, client_key_digest
                     ),
+                    UNIQUE (tenant_id, brand_id, operation_claim_id),
                     FOREIGN KEY (parent_orchestration_id)
                         REFERENCES workflow_api_orchestrations(orchestration_id),
                     FOREIGN KEY (tenant_id) REFERENCES tenants(tenant_id),
@@ -1172,6 +1331,16 @@ class SQLiteDatabase:
                 VALUES (
                     2,
                     'Add versioned compliance rules',
+                    strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+                )
+                """)
+
+            connection.execute("""
+                INSERT OR IGNORE INTO schema_migrations (
+                    version, description, applied_at
+                ) VALUES (
+                    21,
+                    'Add metadata-first Campaign Asset provenance persistence',
                     strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
                 )
                 """)
@@ -1377,9 +1546,16 @@ class SQLiteDatabase:
     def _execute_schema_script(connection, script: str) -> None:
         """Execute canonical DDL without sqlite3.executescript auto-commit."""
 
-        for statement in (part.strip() for part in script.split(";")):
-            if statement:
-                connection.execute(statement)
+        pending = ""
+        for line in script.splitlines(keepends=True):
+            pending += line
+            if sqlite3.complete_statement(pending):
+                statement = pending.strip().rstrip(";").strip()
+                if statement:
+                    connection.execute(statement)
+                pending = ""
+        if pending.strip():
+            connection.execute(pending.strip())
 
     def table_names(self) -> list[str]:
         """Return application table names."""

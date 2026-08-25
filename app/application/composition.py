@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from app.ai.assembler import AIContextAssembler
 from app.ai.orchestrator import AIOrchestrator
 from app.ai.registry import IntelligenceProviderRegistry
+from app.campaign_planner.asset_repository import CampaignAssetRepository
 from app.campaign_planner.repository import CampaignPlanRepository
 from app.campaigns.campaign_engine import CampaignEngine
 from app.campaigns.review_pipeline import CampaignReviewPipeline
@@ -69,6 +70,7 @@ class CanonicalApplication:
     strategy_intelligence: StrategyRepository
     memory: MemoryRepository
     campaign_plans: CampaignPlanRepository
+    campaign_assets: CampaignAssetRepository
     marketing_briefs: MarketingBriefRepository
     marketing_workflows: MarketingWorkflowRepository
     workflow_orchestrations: WorkflowApiOrchestrationRepository
@@ -105,6 +107,7 @@ class CanonicalApplication:
             strategy_intelligence=StrategyRepository(selected_database),
             memory=MemoryRepository(selected_database),
             campaign_plans=CampaignPlanRepository(selected_database),
+            campaign_assets=CampaignAssetRepository(selected_database),
             marketing_briefs=MarketingBriefRepository(selected_database),
             marketing_workflows=MarketingWorkflowRepository(selected_database),
             workflow_orchestrations=WorkflowApiOrchestrationRepository(

@@ -74,7 +74,15 @@ class PostgreSQLCompatibilityTests(unittest.TestCase):
             combined.index("CREATE TABLE IF NOT EXISTS brands"),
         )
         self.assertEqual(
-            sum("CREATE TABLE IF NOT EXISTS" in item for item in statements), 32
+            sum("CREATE TABLE IF NOT EXISTS" in item for item in statements), 35
+        )
+        self.assertIn(
+            "CREATE TRIGGER prevent_campaign_asset_revision_update",
+            combined,
+        )
+        self.assertIn(
+            "CREATE TRIGGER prevent_campaign_asset_revision_delete",
+            combined,
         )
         index_statements = [
             item for item in statements if item.lstrip().startswith("CREATE INDEX")
@@ -88,7 +96,7 @@ class PostgreSQLCompatibilityTests(unittest.TestCase):
         seeds = build_postgresql_seed_rows()
 
         self.assertEqual(
-            {int(row[0]) for row in seeds["schema_migrations"]}, set(range(1, 21))
+            {int(row[0]) for row in seeds["schema_migrations"]}, set(range(1, 22))
         )
         self.assertEqual(len(seeds["tenants"]), 1)
         self.assertEqual(seeds["tenants"][0][0], "default")

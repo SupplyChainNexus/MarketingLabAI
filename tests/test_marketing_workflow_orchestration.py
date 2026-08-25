@@ -109,15 +109,15 @@ class WorkflowApiOrchestrationTests(unittest.TestCase):
             created_at="2026-08-23T10:00:00.000000Z",
         )
 
-    def test_migration_20_and_manifest_are_ready(self) -> None:
+    def test_migration_21_and_manifest_are_ready(self) -> None:
         self.assertTrue(self.database.schema_is_ready())
         with self.database.connection() as connection:
             migration = connection.execute(
-                "SELECT description FROM schema_migrations WHERE version = 20"
+                "SELECT description FROM schema_migrations WHERE version = 21"
             ).fetchone()
             self.assertEqual(
                 migration["description"],
-                "Add operation-scoped API orchestration claims",
+                "Add metadata-first Campaign Asset provenance persistence",
             )
 
     def test_claim_replay_and_changed_input_conflict(self) -> None:
