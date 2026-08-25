@@ -581,6 +581,29 @@ implementation. No persistence, schema, migration, API, workflow, provider,
 Campaign Asset, publishing, execution, spend, learning, deployment or release
 implementation is authorized by this decision.
 
+### C5 Phase C metadata-first persistence policy
+
+Migration 21 is additive and metadata-first. Campaign Asset/Asset Revision
+remains the sole customer-facing lifecycle owner, and Generation Attempt is
+subordinate operational/provenance state only. Persist tenant/brand-bound asset
+and immutable revision identity; generation identity; snapshot digest and
+snapshot schema/canonicalization versions; source references; output digest;
+validation outcome; policy-pack identity; safe findings; provider/model
+provenance; workflow references; and revision lineage. Raw grounding snapshot
+content is not persisted in this phase.
+
+Exact replay uses an immutable persisted output reference without provider
+invocation. Mutable timestamped files are insufficient as the authoritative
+replay store. Destructive deletion remains disabled until retention, archival,
+deletion and legal-hold policy is approved. Encryption/key ownership and
+raw-content persistence require separate authorization. No parallel asset,
+approval, evidence, workflow or operation-claim owner is created.
+
+Migration 21 requires SQLite/PostgreSQL schema parity, migration-manifest and
+checksum updates, readiness checks and disposable rehearsal coverage. This
+policy authorizes no schema, migration, application, API, workflow, provider,
+publishing, execution, spend, learning, deployment or release implementation.
+
 ## Consequences
 
 - MLAI-033 is Core, not Rabbit.

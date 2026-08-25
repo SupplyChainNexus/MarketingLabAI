@@ -649,6 +649,23 @@ implementation requires separate authorization. No persistence, schema, migratio
 workflow, provider, Campaign Asset, publishing, execution, spend, learning,
 deployment or release implementation is authorized by this decision.
 
+The founder-approved C5 Phase C metadata-first policy makes Migration 21
+additive and metadata-first. Campaign Asset/Asset Revision remains the sole
+customer-facing lifecycle owner; Generation Attempt remains subordinate
+operational/provenance state. The approved metadata set is tenant/brand-bound
+asset and immutable revision identity, generation identity, snapshot digest and
+snapshot schema/canonicalization versions, source references, output digest,
+validation outcome, policy-pack identity, safe findings, provider/model
+provenance, workflow references and revision lineage. Raw grounding snapshot
+content is not persisted in this phase. Exact replay must use an immutable
+persisted output reference and must not invoke a provider; mutable timestamped
+files are not authoritative replay storage. Destructive deletion remains
+disabled pending retention, archival, deletion and legal-hold approval.
+Encryption/key ownership and raw-content persistence require separate
+authorization. No parallel asset, approval, evidence, workflow or
+operation-claim owner is created. Migration 21 requires SQLite/PostgreSQL
+parity, manifest and readiness updates, and disposable rehearsal coverage.
+
 LDR-069 records these founder-approved Phase B policy defaults. C5 remains
 governance-defined; no implementation, persistence, schema, migration or
 external operation is authorized by the lock.

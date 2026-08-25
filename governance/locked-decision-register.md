@@ -1198,3 +1198,33 @@ or legal-hold implementation requires separate authorization. LDR-070
 authorizes no application, database, API, workflow, provider, publishing,
 execution, spend, learning, deployment or release implementation. C4, LDR-068,
 LDR-069 and ADR-0043 remain authoritative.
+
+### LDR-071 — C5 Phase C metadata-first persistence policy
+
+**Status:** Current / Founder-approved persistence policy boundary;
+implementation remains separately authorized
+
+**Source:** Founder approval of the C5 Phase C metadata-first persistence
+policy
+
+Migration 21 is additive and metadata-first. Campaign Asset/Asset Revision
+remains the sole customer-facing lifecycle owner. Generation Attempt is
+subordinate operational/provenance state only. Persist tenant/brand-bound asset
+and immutable revision identity, generation identity, snapshot digest, snapshot
+schema and canonicalization versions, source references, output digest,
+validation outcome, policy-pack identity, safe findings, provider/model
+provenance, workflow references and revision lineage. Raw grounding snapshot
+content is not persisted in this phase.
+
+Exact replay must use an immutable persisted output reference and must not invoke
+a provider. Mutable timestamped files are insufficient as the authoritative
+replay store. Destructive deletion remains disabled until retention, archival,
+deletion and legal-hold policy is separately approved. Encryption/key ownership
+and raw-content persistence require separate authorization. No parallel asset,
+approval, evidence, workflow or operation-claim owner is created.
+
+Migration 21 requires SQLite/PostgreSQL schema parity, migration-manifest and
+checksum updates, readiness checks and disposable rehearsal coverage. LDR-071
+authorizes no schema, migration, application, API, workflow, provider,
+publishing, execution, spend, learning, deployment or release implementation.
+C4, LDR-070, LDR-069 and ADR-0043 remain authoritative.

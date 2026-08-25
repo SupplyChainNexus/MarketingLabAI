@@ -404,6 +404,29 @@ encryption or legal-hold implementation requires separate authorization.
 This decision authorizes no application, database, API, workflow, provider,
 publishing, execution, spend, learning, deployment or release implementation.
 
+### Founder-approved C5 metadata-first persistence policy
+
+Migration 21 is metadata-first. Campaign Asset/Asset Revision remains the sole
+customer-facing lifecycle owner, while Generation Attempt remains subordinate
+operational/provenance state only. Persist only tenant/brand-bound asset and
+immutable revision identity, generation identity, snapshot digest and
+snapshot schema/canonicalization versions, source references, output digest,
+validation outcome, policy-pack identity, safe findings, provider/model
+provenance, workflow references and revision lineage. Raw grounding snapshot
+content is not persisted in this phase.
+
+Exact replay uses an immutable persisted output reference and never invokes a
+provider; mutable timestamped files are insufficient as the authoritative
+replay store. Destructive deletion remains disabled until retention, archival,
+deletion and legal-hold policy is separately approved. Encryption/key ownership
+and raw-content persistence require separate authorization. No parallel asset,
+approval, evidence, workflow or operation-claim owner is created.
+
+Migration 21 requires SQLite/PostgreSQL schema parity, manifest updates,
+readiness checks and disposable rehearsal coverage. This governance edit
+authorizes no schema, migration, application, API, workflow, provider,
+publishing, execution, spend, learning, deployment or release implementation.
+
 Policy packs remain append-only and versioned. Architecture/Quality owns
 versioning, compatibility, rollback and golden-corpus governance;
 Product/marketing owns channel/content-type rules; evidence domains retain
