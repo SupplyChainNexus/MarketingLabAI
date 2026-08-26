@@ -9,6 +9,14 @@ from .grounding import (
     build_grounding_snapshot,
     load_grounding_snapshot,
 )
+from .integration import (
+    GeneratedOutput,
+    GenerationBoundaryError,
+    GenerationRequest,
+    GovernedGenerationResult,
+    GovernedGenerationService,
+    ImmutableOutputStore,
+)
 from .models import (
     ALLOWED_SOURCE_TYPES,
     SELECTED_FIELD_ALLOWLIST,
@@ -43,6 +51,12 @@ __all__ = [
     "GroundingError",
     "GroundingSnapshot",
     "GroundingValidator",
+    "GeneratedOutput",
+    "GenerationBoundaryError",
+    "GenerationRequest",
+    "GovernedGenerationResult",
+    "GovernedGenerationService",
+    "ImmutableOutputStore",
     "MAX_GROUNDING_SNAPSHOT_BYTES",
     "PrivacyClassification",
     "SELECTED_FIELD_ALLOWLIST",

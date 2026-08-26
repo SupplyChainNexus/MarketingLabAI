@@ -13,6 +13,7 @@ from app.campaigns.campaign_engine import CampaignEngine
 from app.campaigns.review_pipeline import CampaignReviewPipeline
 from app.compliance.engine import ComplianceEngine
 from app.compliance.repository import BrandRuleRepository
+from app.content_generation.integration import GovernedGenerationService
 from app.customer_intelligence.provider import CustomerContextProvider
 from app.database.connection import SQLiteDatabase
 from app.database.factory import bootstrap_database, require_database_ready
@@ -210,6 +211,19 @@ class CanonicalApplication:
             orchestrator=self.build_ai_orchestrator(registry),
             tenant_id=tenant_id,
             provider_name=provider_name,
+        )
+
+    def build_governed_generation_service(
+        self, *, output_store, generator
+    ) -> GovernedGenerationService:
+        """Compose C5 without transferring lifecycle or approval ownership."""
+
+        return GovernedGenerationService(
+            assets=self.campaign_assets,
+            operation_claims=self.workflow_operation_claims,
+            workflows=self.marketing_workflows,
+            output_store=output_store,
+            generator=generator,
         )
 
     def build_campaign_workflow(

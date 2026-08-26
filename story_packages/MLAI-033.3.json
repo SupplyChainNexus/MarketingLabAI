@@ -2,8 +2,8 @@
   "story_id": "MLAI-033.3",
   "title": "Evidence-Grounded Content Generation Boundary",
   "classification": "Core",
-  "status": "governance-defined; Layer 1, Phase B policy defaults, bounded-hybrid ownership, and Phase C metadata-first persistence policy approved; implementation remains separately authorized",
-  "implementation_authorized": false,
+  "status": "C5 Phase C generation/review integration implemented locally against existing Migration 21 persistence; verification complete; commit and push remain unauthorized",
+  "implementation_authorized": true,
   "schema_version": 2,
   "adr": "governance/adrs/ADR-0043-durable-marketing-workflow-spine.md",
   "scope": [
@@ -98,6 +98,15 @@
     "Campaign Asset provenance integration",
     "review and approval integration",
     "evaluation corpus, regression and acceptance"
+  ],
+  "implementation_paths": [
+    "app/application/composition.py",
+    "app/campaign_planner/asset_repository.py",
+    "app/content_generation/__init__.py",
+    "app/content_generation/integration.py",
+    "tests/test_content_generation_integration.py",
+    "docs/handover/CURRENT_HANDOVER.md",
+    "story_packages/MLAI-033.3.json"
   ],
   "out_of_scope": [
     "execution, publishing, providers, spend, learning, deployment, release, cloud, SOC 2 tooling, customer activation and parallel evidence or asset storage"

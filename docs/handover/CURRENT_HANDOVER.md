@@ -8,7 +8,7 @@
 - Last completed epic: MLAI-029 Marketing Strategy Intelligence
 - Active epic: MLAI-031 Controlled Pilot Hosting
 - Last completed story: MLAI-031.18C Threat Model and Server-Session Lifecycle Foundation
-- Active story: MLAI-033.3 has Layer 1 invariants and Phase B policy defaults approved; implementation remains separately authorized
+- Active story: MLAI-033.3 C5 Phase C integration is implemented locally against Migration 21; commit and push remain unauthorized
 
 ## Product direction
 
@@ -669,3 +669,27 @@ parity, manifest and readiness updates, and disposable rehearsal coverage.
 LDR-069 records these founder-approved Phase B policy defaults. C5 remains
 governance-defined; no implementation, persistence, schema, migration or
 external operation is authorized by the lock.
+
+### C5 Phase C local implementation checkpoint
+
+The 2026-08-26 task authorization implemented the generation/review boundary
+against the existing Migration 21 schema without changing schema, migrations,
+the schema manifest or readiness contracts. `GovernedGenerationService` binds
+each immutable Asset Revision and subordinate Generation Attempt to the
+tenant/brand scope, request and generation identities, grounding and output
+digests, policy and validation identities, workflow/operation-claim references,
+and revision lineage. Campaign Asset remains the lifecycle owner; workflow
+approval records remain approval/evidence authority; operation claims remain
+coordination and replay authority.
+
+Exact replay resolves and verifies the immutable output reference and returns
+the persisted result without generator invocation. Regeneration requires a new
+request and generation identity and creates an immutable successor revision.
+Approval rechecks the persisted output digest, exact policy identity, current
+approved source-reference set, tenant/brand scope, current revision and the
+workflow-owned approval. Missing, contradictory, stale, revoked, expired,
+superseded, conflicting, digest-invalid and cross-scope state fails closed.
+Only content-free source metadata is persisted; raw grounding content remains
+out of persistence. No provider integration, publishing, execution, spend,
+learning, deployment, release, UI, retention, archival, deletion or legal-hold
+behavior was added.

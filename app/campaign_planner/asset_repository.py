@@ -336,14 +336,21 @@ class CampaignAssetRepository:
                 ),
             )
 
-    def save_revision(self, revision: AssetRevisionRecord) -> None:
+    def save_revision(self, revision: AssetRevisionRecord, *, connection=None) -> None:
         source_json = _json(
             "source_references", _source_references(revision.source_references)
         )
         findings_json = _json("safe_findings", _safe_findings(revision.safe_findings))
+        if connection is not None:
+            self._insert_revision(connection, revision, source_json, findings_json)
+            return
         with self.database.transaction() as connection:
-            connection.execute(
-                """
+            self._insert_revision(connection, revision, source_json, findings_json)
+
+    @staticmethod
+    def _insert_revision(connection, revision, source_json, findings_json) -> None:
+        connection.execute(
+            """
                 INSERT INTO campaign_asset_revisions (
                     tenant_id, brand_id, asset_id, revision, generation_identity,
                     request_id, snapshot_digest, snapshot_schema_version,
@@ -355,41 +362,50 @@ class CampaignAssetRepository:
                     rejection_receipt_id, parent_revision, created_at
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
                           ?, ?, ?, ?, ?, ?, ?, ?)
-                """,
-                (
-                    revision.tenant_id,
-                    revision.brand_id,
-                    revision.asset_id,
-                    revision.revision,
-                    revision.generation_identity,
-                    revision.request_id,
-                    revision.snapshot_digest,
-                    revision.snapshot_schema_version,
-                    revision.snapshot_canonicalization_version,
-                    source_json,
-                    revision.output_digest,
-                    revision.output_reference,
-                    revision.validation_outcome,
-                    revision.policy_pack_name,
-                    revision.policy_pack_version,
-                    revision.policy_pack_digest,
-                    findings_json,
-                    revision.provider_name,
-                    revision.model_name,
-                    revision.model_version,
-                    revision.workflow_id,
-                    revision.workflow_version,
-                    revision.approval_id,
-                    revision.rejection_receipt_id,
-                    revision.parent_revision,
-                    revision.created_at,
-                ),
-            )
+            """,
+            (
+                revision.tenant_id,
+                revision.brand_id,
+                revision.asset_id,
+                revision.revision,
+                revision.generation_identity,
+                revision.request_id,
+                revision.snapshot_digest,
+                revision.snapshot_schema_version,
+                revision.snapshot_canonicalization_version,
+                source_json,
+                revision.output_digest,
+                revision.output_reference,
+                revision.validation_outcome,
+                revision.policy_pack_name,
+                revision.policy_pack_version,
+                revision.policy_pack_digest,
+                findings_json,
+                revision.provider_name,
+                revision.model_name,
+                revision.model_version,
+                revision.workflow_id,
+                revision.workflow_version,
+                revision.approval_id,
+                revision.rejection_receipt_id,
+                revision.parent_revision,
+                revision.created_at,
+            ),
+        )
 
-    def save_attempt(self, attempt: GenerationAttemptRecord) -> None:
+    def save_attempt(
+        self, attempt: GenerationAttemptRecord, *, connection=None
+    ) -> None:
+        if connection is not None:
+            self._insert_attempt(connection, attempt)
+            return
         with self.database.transaction() as connection:
-            connection.execute(
-                """
+            self._insert_attempt(connection, attempt)
+
+    @staticmethod
+    def _insert_attempt(connection, attempt) -> None:
+        connection.execute(
+            """
                 INSERT INTO generation_attempts (
                     attempt_id, tenant_id, brand_id, asset_id, revision,
                     operation_claim_id, generation_identity, request_id,
@@ -399,28 +415,177 @@ class CampaignAssetRepository:
                     failure_class, created_at, updated_at
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
                           ?, ?, ?)
+            """,
+            (
+                attempt.attempt_id,
+                attempt.tenant_id,
+                attempt.brand_id,
+                attempt.asset_id,
+                attempt.revision,
+                attempt.operation_claim_id,
+                attempt.generation_identity,
+                attempt.request_id,
+                attempt.attempt_state,
+                attempt.snapshot_digest,
+                attempt.output_digest,
+                attempt.validation_outcome,
+                attempt.policy_pack_name,
+                attempt.policy_pack_version,
+                attempt.policy_pack_digest,
+                attempt.provider_name,
+                attempt.model_name,
+                attempt.model_version,
+                attempt.failure_class,
+                attempt.created_at,
+                attempt.updated_at,
+            ),
+        )
+
+    def get_revision_by_request(
+        self, *, tenant_id: str, brand_id: str, request_id: str
+    ) -> AssetRevisionRecord | None:
+        """Return an immutable revision only inside the requested tenant scope."""
+
+        with self.database.connection() as connection:
+            rows = connection.execute(
+                """
+                SELECT * FROM campaign_asset_revisions
+                WHERE tenant_id = ? AND brand_id = ? AND request_id = ?
+                ORDER BY asset_id, revision
                 """,
                 (
-                    attempt.attempt_id,
-                    attempt.tenant_id,
-                    attempt.brand_id,
-                    attempt.asset_id,
-                    attempt.revision,
-                    attempt.operation_claim_id,
-                    attempt.generation_identity,
-                    attempt.request_id,
-                    attempt.attempt_state,
-                    attempt.snapshot_digest,
-                    attempt.output_digest,
-                    attempt.validation_outcome,
-                    attempt.policy_pack_name,
-                    attempt.policy_pack_version,
-                    attempt.policy_pack_digest,
-                    attempt.provider_name,
-                    attempt.model_name,
-                    attempt.model_version,
-                    attempt.failure_class,
-                    attempt.created_at,
-                    attempt.updated_at,
+                    _text("tenant_id", tenant_id),
+                    _text("brand_id", brand_id),
+                    _text("request_id", request_id),
                 ),
+            ).fetchall()
+        if not rows:
+            return None
+        if len(rows) != 1:
+            raise RuntimeError("conflicting generation request identity")
+        return self._revision_from_row(rows[0])
+
+    def get_revision(
+        self, *, tenant_id: str, brand_id: str, asset_id: str, revision: int
+    ) -> AssetRevisionRecord | None:
+        with self.database.connection() as connection:
+            row = connection.execute(
+                """
+                SELECT * FROM campaign_asset_revisions
+                WHERE tenant_id = ? AND brand_id = ?
+                  AND asset_id = ? AND revision = ?
+                """,
+                (
+                    _text("tenant_id", tenant_id),
+                    _text("brand_id", brand_id),
+                    _text("asset_id", asset_id),
+                    _version("revision", revision),
+                ),
+            ).fetchone()
+        return None if row is None else self._revision_from_row(row)
+
+    def asset_state(
+        self, *, tenant_id: str, brand_id: str, asset_id: str
+    ) -> tuple[str, int, int] | None:
+        with self.database.connection() as connection:
+            row = connection.execute(
+                """
+                SELECT lifecycle_state, current_revision, version
+                FROM campaign_assets
+                WHERE tenant_id = ? AND brand_id = ? AND asset_id = ?
+                """,
+                (
+                    _text("tenant_id", tenant_id),
+                    _text("brand_id", brand_id),
+                    _text("asset_id", asset_id),
+                ),
+            ).fetchone()
+        if row is None:
+            return None
+        return (
+            str(row["lifecycle_state"]),
+            int(row["current_revision"]),
+            int(row["version"]),
+        )
+
+    def advance_asset(
+        self,
+        *,
+        tenant_id: str,
+        brand_id: str,
+        asset_id: str,
+        expected_version: int,
+        expected_revision: int,
+        lifecycle_state: str,
+        updated_at: str,
+        connection=None,
+    ) -> None:
+        """Optimistically advance only Campaign Asset-owned lifecycle state."""
+
+        if lifecycle_state not in _ASSET_STATES:
+            raise ValueError("lifecycle_state is unsupported")
+        if connection is not None:
+            self._advance_asset(
+                connection,
+                tenant_id=tenant_id,
+                brand_id=brand_id,
+                asset_id=asset_id,
+                expected_version=expected_version,
+                expected_revision=expected_revision,
+                lifecycle_state=lifecycle_state,
+                updated_at=updated_at,
             )
+            return
+        with self.database.transaction() as selected_connection:
+            self._advance_asset(
+                selected_connection,
+                tenant_id=tenant_id,
+                brand_id=brand_id,
+                asset_id=asset_id,
+                expected_version=expected_version,
+                expected_revision=expected_revision,
+                lifecycle_state=lifecycle_state,
+                updated_at=updated_at,
+            )
+
+    @staticmethod
+    def _advance_asset(
+        connection,
+        *,
+        tenant_id,
+        brand_id,
+        asset_id,
+        expected_version,
+        expected_revision,
+        lifecycle_state,
+        updated_at,
+    ) -> None:
+        cursor = connection.execute(
+            """
+                UPDATE campaign_assets
+                SET lifecycle_state = ?, current_revision = ?,
+                    version = version + 1, updated_at = ?
+                WHERE tenant_id = ? AND brand_id = ? AND asset_id = ?
+                  AND version = ?
+                """,
+            (
+                lifecycle_state,
+                _version("expected_revision", expected_revision),
+                _text("updated_at", updated_at),
+                _text("tenant_id", tenant_id),
+                _text("brand_id", brand_id),
+                _text("asset_id", asset_id),
+                _version("expected_version", expected_version),
+            ),
+        )
+        if cursor.rowcount != 1:
+            raise RuntimeError("campaign asset state is stale or unavailable")
+
+    @staticmethod
+    def _revision_from_row(row) -> AssetRevisionRecord:
+        values = dict(row)
+        values["source_references"] = tuple(
+            json.loads(values.pop("source_references_json"))
+        )
+        values["safe_findings"] = tuple(json.loads(values.pop("safe_findings_json")))
+        return AssetRevisionRecord(**values)
