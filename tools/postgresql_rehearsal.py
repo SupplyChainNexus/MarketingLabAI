@@ -58,7 +58,7 @@ SESSION_TESTS = (
 )
 
 WORKFLOW_C4_TESTS = (
-    "test_migration_20_and_manifest_are_ready",
+    "test_migration_21_and_manifest_are_ready",
     "test_claim_replay_and_changed_input_conflict",
     "test_concurrent_first_submissions_have_one_authoritative_claim",
     "test_crash_recovery_preserves_claim_and_approval_transition_gap",
