@@ -604,6 +604,129 @@ checksum updates, readiness checks and disposable rehearsal coverage. This
 policy authorizes no schema, migration, application, API, workflow, provider,
 publishing, execution, spend, learning, deployment or release implementation.
 
+### C5 recovery checkpoint decision
+
+Migration 22 will add a durable pre-generation Generation Attempt checkpoint.
+Before provider invocation, the checkpoint records the tenant, brand, request
+identity, generation identity and idempotency binding needed to distinguish an
+unstarted request from an interrupted provider boundary. A pre-generation
+attempt may temporarily have no Asset Revision reference. After output
+persistence it must bind once to exactly one immutable Asset Revision; the
+binding cannot be changed or removed.
+
+Uniqueness must prevent duplicate attempts for the same tenant, brand, request
+identity and generation identity across retries and recovery. Contradictory,
+incomplete, digest-invalid, cross-tenant or cross-brand checkpoint state fails
+closed without provider invocation or partial lifecycle mutation. Exact replay
+continues to return the immutable persisted output without provider invocation.
+Regeneration continues to require a new request identity and generation
+identity.
+
+Generation Attempt remains subordinate to Campaign Asset. It cannot own an
+asset, approval, workflow state, evidence, publishing or execution. Campaign
+Asset remains lifecycle owner, Asset Revision remains immutable, workflow
+tables remain approval/evidence owners and operation claims remain
+coordination/replay owners. Migration 22 persists no raw grounding content,
+requires SQLite/PostgreSQL parity, and adds no destructive deletion, retention,
+archival or legal-hold behavior.
+
+Migration 22 must implement this formal, forward-only Generation Attempt state
+machine:
+
+| Current state | Permitted next states |
+|---|---|
+| `checkpointed` | `leased`, `failed` |
+| `leased` | `provider_in_flight`, `failed` |
+| `provider_in_flight` | `output_persisted`, `provider_outcome_unknown` |
+| `provider_outcome_unknown` | `output_persisted`, `failed` |
+| `output_persisted` | `validated`, `validation_failed`, `failed` |
+| `validated` | `revision_bound`, `failed` |
+| `revision_bound` | `completed` |
+| `completed` | none; terminal |
+| `validation_failed` | none; terminal |
+| `failed` | none; terminal |
+
+`provider_outcome_unknown` is explicit and non-terminal only for deterministic
+reconciliation. The same request/generation identity must not invoke the
+provider again from that state. Reconciliation may advance it to
+`output_persisted` only with verified immutable output, or to `failed` when a
+safe result cannot be proved. Lease renewal or recovery is a state-preserving,
+transactional compare-and-set operation with a monotonically increasing fencing
+token; it is not a backward lifecycle transition.
+
+The canonical idempotency identity is domain-separated and binds tenant, brand,
+Campaign Asset, request identity, generation identity, approved input/grounding
+snapshot digest, and generation-policy identity including version and digest.
+Retries with changed material conflict rather than replay. Transactions,
+bounded leases, explicit expiry and stale-worker fencing must prevent concurrent
+or expired workers from invoking a provider, persisting output, binding a
+revision or finalizing an attempt after losing authority.
+
+A deterministic reconciler must classify every incomplete, contradictory or
+uncertain attempt from persisted state and immutable proofs. It resumes only the
+next permitted transition, returns exact persisted results where complete,
+refuses conflicting scope or identity, and never guesses whether a provider
+acted. Recovery after output, validation, revision binding, workflow approval,
+receipt or operation-claim final response must preserve the owner of each record
+and must not create duplicate attempts, revisions, approvals, receipts or final
+responses.
+
+Before provider invocation, policy must enforce bounded retry and timeout rules,
+rate limits, maximum output size, circuit-breaker state and per-tenant cost
+controls. These controls authorize no billing, spend or provider integration.
+Observability is limited to safe correlation identity, tenant/brand scope,
+policy identity, digests, timestamps, failure category and recovery decision.
+Raw grounding content, secrets and unrestricted prompt logging are prohibited.
+
+Marketing-quality validation must cover objective, audience, offer and
+positioning, brand voice, channel constraints, prohibited claims, required
+disclaimers, call to action, factual grounding and consistency with the approved
+Marketing Brief. Human-readable validation and rejection explanations are a
+future operator requirement, not current UI authority. Rejected, failed,
+synthetic or unexecuted generations must never enter Marketing Learning or be
+represented as organizational learning.
+
+Migration 21 Generation Attempt records migrate with the explicit compatibility
+generation-policy identity `legacy-unrecorded-v1`. That identity records the
+historical absence of an authoritative generation policy and cannot authorize a
+new generation. Any duplicate, contradictory, missing-reference or
+digest-inconsistent Migration 21 record aborts Migration 22 atomically; no
+silent repair, inference, reclassification or partial migration is permitted.
+
+Generation operation claims use operation-specific terminal semantics:
+`completed`, `failed` and `requires_reconciliation`. Existing workflow-planning
+states are not generation-operation states and must not be reused. A claim in
+`requires_reconciliation` cannot authorize provider invocation or a completed
+response; it is resolved only from authoritative persisted evidence under the
+Generation Attempt reconciliation rules.
+
+The initial Migration 22 generation-control policy is versioned and locked as
+follows:
+
+- at most one provider attempt after `provider_in_flight`;
+- a 60-second provider timeout;
+- a 120-second lease, renewed every 30 seconds, with 30 seconds of clock-skew
+  allowance;
+- a maximum output size of 1 MiB;
+- no more than 10 generation admissions per tenant per minute; and
+- a circuit breaker that opens after 5 qualifying failures within 60 seconds
+  and has a 60-second recovery window.
+
+Tenant admission ceilings are quota controls, not billing or spend accounting.
+The output store may provide persist-once and lookup-by-canonical-identity
+operations for deterministic recovery. It remains subordinate to Campaign
+Asset and owns no approval, workflow, publishing or execution state.
+
+Migration 22 requires a no-mixed-writer deployment boundary. Migration 21
+binaries must not write Migration 22 state. After a Migration 22 write, rollback
+requires restoration from a verified backup or a corrective forward migration;
+historical evidence must not be rewritten to simulate rollback.
+
+This is a governance-only decision. Migration 22 schema, migration, manifest,
+readiness, rehearsal, application and test implementation require separate
+authorization. No provider integration, publishing, execution, spend, billing,
+learning, deployment, release or external operation is authorized.
+
 ## Consequences
 
 - MLAI-033 is Core, not Rabbit.

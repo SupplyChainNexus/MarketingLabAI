@@ -693,3 +693,83 @@ Only content-free source metadata is persisted; raw grounding content remains
 out of persistence. No provider integration, publishing, execution, spend,
 learning, deployment, release, UI, retention, archival, deletion or legal-hold
 behavior was added.
+
+### C5 recovery checkpoint governance decision
+
+The recovery-hardening inspection identified a durable checkpoint gap in
+Migration 21: Generation Attempt currently requires an existing immutable Asset
+Revision, so a crash after generation but before output/revision persistence
+cannot distinguish an uninvoked provider from a lost generated result. Retrying
+could therefore duplicate provider invocation.
+
+LDR-072 and ADR-0043 now govern the correction. Migration 22 will record a
+tenant/brand-bound pre-generation Generation Attempt with request, generation
+and idempotency identity before provider invocation. The attempt may temporarily
+have no revision reference, then binds immutably to exactly one Asset Revision
+after output persistence. Uniqueness prevents duplicate attempts for the same
+tenant, brand, request and generation identity.
+
+All existing ownership boundaries remain unchanged. Campaign Asset owns
+lifecycle; Asset Revision is immutable; Generation Attempt is subordinate;
+workflow tables own approval/evidence; operation claims own coordination/replay.
+Exact replay invokes no provider, regeneration uses new request and generation
+identities, contradictory or cross-scope state fails closed, and raw grounding
+content remains unpersisted. SQLite/PostgreSQL parity is mandatory. No deletion,
+retention, archival or legal-hold behavior is added.
+
+This checkpoint is governance only. Migration 22 and all schema, manifest,
+readiness, rehearsal, application and test work remain separately unauthorized.
+
+The founder subsequently strengthened and locked this direction. Migration 22
+must define a forward-only Generation Attempt state machine from `checkpointed`
+through lease, provider, output, validation and immutable revision-binding
+boundaries. `completed`, `validation_failed` and `failed` are terminal. The
+explicit `provider_outcome_unknown` state prohibits repeat provider invocation
+for the same identity and permits only proof-based reconciliation to verified
+output or terminal failure.
+
+The canonical idempotency identity binds tenant, brand, Campaign Asset, request,
+generation, approved input/snapshot digest and versioned generation policy.
+Transactional transitions, bounded leases, expiry and monotonic fencing protect
+against concurrent and stale workers. Deterministic reconciliation advances
+only permitted states and prevents duplicate attempts, revisions, approvals,
+receipts and final responses across every crash boundary.
+
+Migration 22 policy must also bound retries, timeouts, rate limits, output size,
+circuit breaking and per-tenant cost before provider invocation. Observability
+is metadata-only: correlation identity, scope, policy, digests, timestamps,
+failure category and recovery decision. Raw grounding, secrets and unrestricted
+prompt logs remain prohibited.
+
+Marketing-quality validation must cover objective, audience, offer/positioning,
+brand voice, channel constraints, prohibited claims, disclaimers, CTA, factual
+grounding and approved Marketing Brief consistency. Human-readable validation
+and rejection explanations remain a future operator requirement. Rejected,
+failed, synthetic or unexecuted generations are excluded from Marketing
+Learning. These strengthened requirements remain governance-only and authorize
+none of the deferred implementation or external-operation capabilities.
+
+The founder resolved the remaining Migration 22 planning contracts. Legacy
+Migration 21 attempts use the non-authorizing compatibility identity
+`legacy-unrecorded-v1`; any duplicate, contradiction, missing reference or
+digest inconsistency aborts the migration atomically without repair or
+reclassification. Generation operation claims use only the operation-specific
+terminal states `completed`, `failed` and `requires_reconciliation`, never the
+existing workflow-planning states.
+
+The initial versioned control policy permits one provider attempt after
+`provider_in_flight`, a 60-second provider timeout, a 120-second lease with
+30-second renewal cadence and clock-skew allowance, a 1 MiB output limit, 10
+tenant generation admissions per minute, and a circuit breaker of 5 qualifying
+failures in 60 seconds with a 60-second recovery window. Tenant ceilings are
+quota controls, not billing or spend accounting. The output store may add
+persist-once and canonical-identity lookup for recovery but remains subordinate
+to Campaign Asset and outside approval, workflow, publishing and execution
+ownership.
+
+Migration 22 has a no-mixed-writer deployment boundary. Migration 21 binaries
+cannot write Migration 22 state. Once Migration 22 state has been written,
+rollback requires verified backup restoration or a corrective forward
+migration. These decisions refine LDR-072 and ADR-0043; no additional ADR is
+required. They remain governance-only and do not authorize implementation,
+migration execution, deployment or release-state changes.

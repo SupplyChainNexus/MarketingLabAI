@@ -1228,3 +1228,102 @@ checksum updates, readiness checks and disposable rehearsal coverage. LDR-071
 authorizes no schema, migration, application, API, workflow, provider,
 publishing, execution, spend, learning, deployment or release implementation.
 C4, LDR-070, LDR-069 and ADR-0043 remain authoritative.
+
+### LDR-072 — C5 pre-generation recovery checkpoint
+
+**Status:** Current / Founder-approved recovery persistence decision;
+implementation remains separately authorized
+
+**Source:** Founder authorization of the C5 recovery checkpoint decision
+
+Migration 22 will add a durable pre-generation Generation Attempt checkpoint.
+The checkpoint records tenant, brand, request identity, generation identity and
+idempotency state before provider invocation. A pre-generation attempt may
+temporarily have no Asset Revision reference, then binds once to exactly one
+immutable Asset Revision after output persistence. That binding is immutable.
+
+Uniqueness must prevent duplicate attempts for the same tenant, brand, request
+identity and generation identity across retries and recovery. Contradictory,
+incomplete, digest-invalid, cross-tenant or cross-brand state fails closed
+without provider invocation or partial lifecycle mutation. Exact replay returns
+the persisted result without provider invocation. Regeneration requires a new
+request identity and generation identity.
+
+Generation Attempt remains subordinate to Campaign Asset and cannot own assets,
+approvals, workflow state, evidence, publishing or execution. Campaign Asset
+remains lifecycle owner; Asset Revision remains immutable; workflow tables
+remain approval/evidence owners; operation claims remain coordination/replay
+owners. Raw grounding content is not persisted. Migration 22 requires
+SQLite/PostgreSQL parity and adds no destructive deletion, retention, archival
+or legal-hold behavior.
+
+Migration 22 locks the forward-only Generation Attempt state sequence
+`checkpointed -> leased -> provider_in_flight -> output_persisted -> validated
+-> revision_bound -> completed`. `provider_in_flight` may instead advance to the
+explicit `provider_outcome_unknown` state; deterministic reconciliation may
+advance that state only to `output_persisted` with verified immutable output or
+to terminal `failed`. `output_persisted` may advance to terminal
+`validation_failed` or `failed`; earlier states may advance to `failed` only as
+defined by ADR-0043. `completed`, `validation_failed` and `failed` are terminal.
+No backward transition or terminal-state revival is permitted.
+
+The canonical, domain-separated idempotency identity binds tenant, brand,
+Campaign Asset, request identity, generation identity, approved input/grounding
+snapshot digest and generation-policy name, version and digest. Transactional
+transitions, bounded leases, expiry, monotonically increasing fencing tokens and
+compare-and-set enforcement prevent stale or concurrent workers from acting.
+Lease renewal/recovery is state-preserving and cannot weaken fencing.
+
+Deterministic reconciliation classifies incomplete, contradictory and uncertain
+attempts from persisted state and immutable proof, advances only a permitted
+next state, returns exact stored results when complete and refuses unproved or
+conflicting state. The same identity is never reinvoked from
+`provider_outcome_unknown`. Recovery preserves uniqueness of attempts,
+revisions, approvals, receipts and operation-claim final responses and preserves
+the authoritative owner of each record.
+
+Policy boundaries must define retry, timeout, rate-limit, maximum-output-size,
+circuit-breaker and per-tenant cost controls before provider invocation. Safe
+observability may record correlation identity, scope, policy, digests,
+timestamps, failure category and recovery decision, but never raw grounding
+content, secrets or unrestricted prompts.
+
+Marketing-quality validation covers objective, audience, offer/positioning,
+brand voice, channel constraints, prohibited claims, disclaimers, call to
+action, factual grounding and approved Marketing Brief consistency.
+Human-readable validation and rejection explanations are a future operator
+requirement. Rejected, failed, synthetic or unexecuted generations never become
+Marketing Learning or organizational learning.
+
+Legacy Migration 21 Generation Attempt records receive the explicit
+compatibility generation-policy identity `legacy-unrecorded-v1`. It documents
+that no authoritative generation-policy identity was recorded and cannot
+authorize new generation. Any duplicate, contradictory, missing-reference or
+digest-inconsistent Migration 21 record aborts Migration 22 atomically. Silent
+repair, inference, reclassification and partial migration are prohibited.
+
+Generation operation claims have operation-specific terminal semantics:
+`completed`, `failed` and `requires_reconciliation`. Existing workflow-planning
+states must not be reused for generation operations. A
+`requires_reconciliation` claim grants no provider or completion authority and
+is resolved only from authoritative persisted recovery evidence.
+
+The initial versioned Migration 22 control policy allows at most one provider
+attempt after `provider_in_flight`; sets a 60-second provider timeout, a
+120-second lease, a 30-second renewal cadence and a 30-second clock-skew
+allowance; limits output to 1 MiB and tenant admission to 10 generations per
+minute; and opens the circuit breaker after 5 qualifying failures within 60
+seconds with a 60-second recovery window. Tenant ceilings are quota controls,
+not billing or spend accounting.
+
+The output store may support persist-once and lookup-by-canonical-identity for
+deterministic recovery while remaining subordinate to Campaign Asset and
+outside approval, workflow, publishing and execution ownership. Migration 22
+requires a no-mixed-writer deployment boundary: Migration 21 binaries cannot
+write Migration 22 state. After any Migration 22 write, rollback requires a
+verified backup restoration or corrective forward migration.
+
+LDR-072 is governance only. It authorizes no schema, migration, manifest,
+readiness, rehearsal, application, API, test, provider, publishing, execution,
+spend, billing, learning, deployment or release implementation. C4, LDR-068
+through LDR-071 and ADR-0043 remain authoritative.
